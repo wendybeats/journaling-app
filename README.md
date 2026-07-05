@@ -32,7 +32,12 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 
 ### Run it
 
-No build step, no dependencies:
+Fastest: double-click **`preview.html`** — a self-contained build (fonts and
+all) that runs straight from the file, no server. Its footer has a
+`Seed demo / Clear` control for demo data and the theme toggle. Rebuild it
+after source changes with `node tools/build-preview.js`.
+
+Full version (real `localStorage` persistence), no dependencies:
 
 ```sh
 python3 -m http.server 4173
