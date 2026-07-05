@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Vellum — Design Tokens (Stage 0)
+   Source of truth: docs/vellum-design-tokens.md
+   Rule: components never reference raw hex or raw point sizes — only the
+   semantic custom properties defined here.
+   ========================================================================== */
+
+/* --- Fonts (self-hosted, OFL) ---------------------------------------------
+   font.heading  → Instrument Sans (grotesk stand-in; Söhne is the target)
+   font.body     → Newsreader (named candidate in the token doc)
+   font.meta     → Fragment Mono                                            */
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('../fonts/InstrumentSans.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Newsreader';
+  src: url('../fonts/Newsreader.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Newsreader';
+  src: url('../fonts/Newsreader-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fragment Mono';
+  src: url('../fonts/FragmentMono.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  /* --- 1.1 Primitives (never used by components directly) --- */
+  --bone:         #E8E6E1;
+  --bone-raised:  #EFEDE8;
+  --ink:          #1A1A1A;
+  --graphite:     #4A4843;
+  --stone:        #A9A6A0;
+  --hairline:     #C9C6BF;
+  --char:         #161514;
+  --char-raised:  #201F1D;
+  --bone-type:    #E8E6E1;
+  --graphite-dk:  #B8B5AE;
+  --stone-dk:     #6B6862;
+  --hairline-dk:  #332F2B;
+
+  /* --- 2.1 Families --- */
+  --font-heading: 'Instrument Sans', system-ui, sans-serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-meta: 'Fragment Mono', 'SF Mono', ui-monospace, monospace;
+
+  /* --- 2.2 Type scale --- */
+  --type-display-size: 32px;   --type-display-lh: 1.1;  --type-display-weight: 500; --type-display-tracking: -0.01em;
+  --type-title-size:   22px;   --type-title-lh:   1.2;  --type-title-weight:   500; --type-title-tracking: -0.005em;
+  --type-written-size: 16px;   --type-written-lh: 1.8;  /* load-bearing; never below 1.7 */
+  --type-written-large-size: 18px; --type-written-large-lh: 1.75;
+  --type-meta-size:    11px;   --type-meta-lh:    1.4;  --type-meta-tracking: 0.14em;
+  --type-meta-small-size: 10px;
+
+  /* --- 3. Spacing --- */
+  --space-xs:  6px;
+  --space-sm:  10px;
+  --space-md:  22px;
+  --space-lg:  34px;   /* between entries; day rule below — a floor, not a target */
+  --space-xl:  44px;   /* screen top padding; before the dot grid */
+  --space-2xl: 48px;
+  --space-screen-x: 28px;
+  --space-card: 22px;
+
+  /* --- 4. Radii & lines --- */
+  --radius-card: 14px;
+  --radius-control: 8px;
+  --radius-pill: 999px;
+  --line-weight: 1px;
+  /* No shadows in the system. Elevation = surface.raised tint only. */
+
+  /* --- 5. Dots --- */
+  --dot-size: 7px;
+  --dot-size-today: 11px;
+  --dot-today-ring: 1.5px;
+  --dot-today-ring-offset: 2px;
+  --dot-gap: 12px;
+  --dot-grid-cols: 7;
+  --dot-size-year: 5px;
+  --dot-gap-year: 6px;
+
+  /* --- 6. Motion --- */
+  --motion-fast: 180ms;
+  --motion-base: 260ms;
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* --- 1.2 Semantic tokens — light mode (default) --- */
+:root,
+:root[data-theme='light'] {
+  --surface-page:     var(--bone);
+  --surface-raised:   var(--bone-raised);
+  --surface-inverted: var(--ink);
+  --text-written:     var(--ink);        /* the only full-contrast text */
+  --text-heading:     var(--graphite);
+  --text-meta:        var(--stone);
+  --text-on-inverted: var(--bone-raised);
+  --dot-filled:       var(--ink);
+  --dot-empty:        var(--hairline);
+  --dot-today:        var(--ink);
+  --line-rule:        var(--hairline);
+  --line-cursor:      var(--ink);
+  color-scheme: light;
+}
+
+/* --- 1.2 Semantic tokens — dark mode --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface-page:     var(--char);
+    --surface-raised:   var(--char-raised);
+    --surface-inverted: var(--bone-type);
+    --text-written:     var(--bone-type);
+    --text-heading:     var(--graphite-dk);
+    --text-meta:        var(--stone-dk);
+    --text-on-inverted: var(--ink);
+    --dot-filled:       var(--bone-type);
+    --dot-empty:        var(--stone-dk);
+    --dot-today:        var(--bone-type);
+    --line-rule:        var(--hairline-dk);
+    --line-cursor:      var(--bone-type);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --surface-page:     var(--char);
+  --surface-raised:   var(--char-raised);
+  --surface-inverted: var(--bone-type);
+  --text-written:     var(--bone-type);
+  --text-heading:     var(--graphite-dk);
+  --text-meta:        var(--stone-dk);
+  --text-on-inverted: var(--ink);
+  --dot-filled:       var(--bone-type);
+  --dot-empty:        var(--stone-dk);
+  --dot-today:        var(--bone-type);
+  --line-rule:        var(--hairline-dk);
+  --line-cursor:      var(--bone-type);
+  color-scheme: dark;
+}

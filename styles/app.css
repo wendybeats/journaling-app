@@ -1,0 +1,305 @@
+/* ==========================================================================
+   Vellum — app styles
+   Components reference semantic tokens only (see styles/tokens.css).
+   ========================================================================== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+a { color: inherit; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--surface-page);
+  color: var(--text-written);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* --- Type registers ----------------------------------------------------- */
+
+.type-display {
+  font-family: var(--font-heading);
+  font-size: var(--type-display-size);
+  line-height: var(--type-display-lh);
+  font-weight: var(--type-display-weight);
+  letter-spacing: var(--type-display-tracking);
+  color: var(--text-heading);
+}
+
+.type-title {
+  font-family: var(--font-heading);
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-lh);
+  font-weight: var(--type-title-weight);
+  letter-spacing: var(--type-title-tracking);
+  color: var(--text-heading);
+}
+
+.type-written {
+  font-family: var(--font-body);
+  font-size: var(--type-written-size);
+  line-height: var(--type-written-lh);
+  font-weight: 400;
+  color: var(--text-written);
+}
+
+.type-meta,
+.type-meta-small {
+  font-family: var(--font-meta);
+  font-size: var(--type-meta-size);
+  line-height: var(--type-meta-lh);
+  font-weight: 400;
+  letter-spacing: var(--type-meta-tracking);
+  text-transform: uppercase;
+  color: var(--text-meta);
+}
+.type-meta-small { font-size: var(--type-meta-small-size); }
+
+/* --- Shell ---------------------------------------------------------------- */
+
+.shell {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-screen-x);
+}
+
+.chrome {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--space-md);
+}
+
+.chrome .wordmark {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-heading);
+  text-decoration: none;
+}
+
+.chrome nav { display: flex; gap: var(--space-md); }
+
+.chrome nav a {
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--motion-ease);
+}
+.chrome nav a.active { color: var(--text-heading); }
+
+main {
+  flex: 1;
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-2xl);
+}
+
+main.leaving { opacity: 0; transition: opacity var(--motion-base) var(--motion-ease); }
+main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
+@keyframes view-enter { from { opacity: 0; } to { opacity: 1; } }
+
+footer {
+  padding: var(--space-md) 0 var(--space-md);
+  display: flex;
+  justify-content: space-between;
+}
+footer button {
+  background: none; border: none; cursor: pointer;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
+  padding: 0;
+}
+footer button:hover { color: var(--text-heading); }
+
+/* --- Day page (Today + Archive share this anatomy) ------------------------ */
+
+.day-meta { margin-top: var(--space-sm); }
+
+.day-rule {
+  border: none;
+  border-top: var(--line-weight) solid var(--line-rule);
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.entry { margin-bottom: var(--space-lg); }
+.entry time { display: block; margin-bottom: var(--space-sm); }
+.entry p { white-space: pre-wrap; }
+.entry p + p { margin-top: calc(var(--type-written-size) * 0.9); }
+
+.entry.settling { animation: settle var(--motion-fast) var(--motion-ease); }
+@keyframes settle {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Drop cap — archive reading view, first entry of a day only */
+.archive .day:first-of-type .entry:first-of-type p:first-of-type::first-letter,
+.archive .day .entry.dropcap p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.2em;
+  line-height: 0.85;
+  padding-right: 0.08em;
+  font-weight: 400;
+  color: var(--text-written);
+}
+
+/* --- Writing surface ------------------------------------------------------ */
+
+.writing textarea {
+  width: 100%;
+  border: none;
+  background: none;
+  resize: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: var(--type-written-size);
+  line-height: var(--type-written-lh);
+  color: var(--text-written);
+  caret-color: var(--line-cursor);
+  min-height: calc(var(--type-written-size) * var(--type-written-lh) * 3);
+}
+
+.writing textarea::placeholder {
+  font-style: italic;
+  color: var(--text-meta);
+  opacity: 1;
+}
+
+.capture-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  min-height: 28px;
+}
+
+.speak {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-xs) 0;
+  border-radius: var(--radius-pill);
+}
+.speak .speak-dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: var(--radius-pill);
+  background: var(--dot-empty);
+  transition: background var(--motion-fast) var(--motion-ease);
+}
+.speak:hover .speak-dot { background: var(--text-meta); }
+.speak.recording .speak-dot {
+  background: var(--dot-filled);
+  animation: breathe 1.4s var(--motion-ease) infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.6); }
+}
+
+.save-ack {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease);
+}
+.save-ack.visible { opacity: 1; }
+
+/* --- Month dot grid card --------------------------------------------------- */
+
+.grid-card {
+  background: var(--surface-raised);
+  border-radius: var(--radius-card);
+  padding: var(--space-card);
+  margin-top: var(--space-2xl);
+}
+
+.grid-card header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.dot-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--dot-grid-cols), var(--dot-size-today));
+  justify-content: space-between;
+  row-gap: var(--dot-gap);
+}
+
+.dot-cell {
+  width: var(--dot-size-today);
+  height: var(--dot-size-today);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: var(--radius-pill);
+  background: var(--dot-empty);
+  transition: background var(--motion-fast) var(--motion-ease);
+}
+.dot.filled { background: var(--dot-filled); }
+.dot.today {
+  width: var(--dot-size-today);
+  height: var(--dot-size-today);
+  box-shadow: 0 0 0 var(--dot-today-ring-offset) var(--surface-raised),
+              0 0 0 calc(var(--dot-today-ring-offset) + var(--dot-today-ring)) var(--dot-today);
+}
+.dot.today:not(.filled) { background: transparent; }
+
+/* --- Archive --------------------------------------------------------------- */
+
+.view-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+.view-toggle { display: flex; gap: var(--space-sm); }
+.view-toggle a {
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--motion-ease);
+}
+.view-toggle a.active { color: var(--text-heading); }
+
+.archive .day { margin-top: var(--space-2xl); }
+.archive .day:first-of-type { margin-top: var(--space-lg); }
+.archive .day .day-rule { margin-bottom: var(--space-lg); }
+.archive .day .entry:last-of-type { margin-bottom: 0; }
+
+.empty-note { margin-top: var(--space-lg); font-style: italic; color: var(--text-meta); }
+
+/* --- Year matrix ------------------------------------------------------------ */
+
+.year-block { margin-top: var(--space-lg); }
+.year-block + .year-block { margin-top: var(--space-2xl); }
+.year-label { margin-bottom: var(--space-md); }
+
+.year-row {
+  display: grid;
+  grid-template-columns: 30px repeat(31, 1fr);
+  align-items: center;
+  height: calc(var(--dot-size-year) + var(--dot-gap-year));
+}
+
+.year-row .dot {
+  width: var(--dot-size-year);
+  height: var(--dot-size-year);
+}
+.year-row .dot.today {
+  box-shadow: 0 0 0 1px var(--surface-page),
+              0 0 0 2px var(--dot-today);
+}
