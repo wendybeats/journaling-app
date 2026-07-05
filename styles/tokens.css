@@ -42,6 +42,8 @@
   --bone:         #E8E6E1;
   --bone-raised:  #EFEDE8;
   --ink:          #1A1A1A;
+  --ink-soft:     #262320;   /* written text — a step off full ink */
+  --bone-soft:    #DEDAD3;   /* written text, dark mode */
   --graphite:     #4A4843;
   --stone:        #A9A6A0;
   --hairline:     #C9C6BF;
@@ -60,7 +62,7 @@
   /* --- 2.2 Type scale --- */
   --type-display-size: 32px;   --type-display-lh: 1.1;  --type-display-weight: 500; --type-display-tracking: -0.01em;
   --type-title-size:   22px;   --type-title-lh:   1.2;  --type-title-weight:   500; --type-title-tracking: -0.005em;
-  --type-written-size: 16px;   --type-written-lh: 1.8;  /* load-bearing; never below 1.7 */
+  --type-written-size: 17px;   --type-written-lh: 1.8;  /* load-bearing; never below 1.7 */
   --type-written-large-size: 18px; --type-written-large-lh: 1.75;
   --type-meta-size:    11px;   --type-meta-lh:    1.4;  --type-meta-tracking: 0.14em;
   --type-meta-small-size: 10px;
@@ -91,6 +93,9 @@
   --dot-grid-cols: 7;
   --dot-size-year: 5px;
   --dot-gap-year: 6px;
+  --dot-size-week: 18px;   /* large register: week rows, weekly breakdowns */
+  --dot-size-week-today: 24px;
+  --dot-gap-week: 18px;
 
   /* --- 6. Motion --- */
   --motion-fast: 180ms;
@@ -104,7 +109,7 @@
   --surface-page:     var(--bone);
   --surface-raised:   var(--bone-raised);
   --surface-inverted: var(--ink);
-  --text-written:     var(--ink);        /* the only full-contrast text */
+  --text-written:     var(--ink-soft);   /* the written register — a step off full ink */
   --text-heading:     var(--graphite);
   --text-meta:        var(--stone);
   --text-on-inverted: var(--bone-raised);
@@ -122,7 +127,7 @@
     --surface-page:     var(--char);
     --surface-raised:   var(--char-raised);
     --surface-inverted: var(--bone-type);
-    --text-written:     var(--bone-type);
+    --text-written:     var(--bone-soft);
     --text-heading:     var(--graphite-dk);
     --text-meta:        var(--stone-dk);
     --text-on-inverted: var(--ink);
@@ -138,7 +143,7 @@
   --surface-page:     var(--char);
   --surface-raised:   var(--char-raised);
   --surface-inverted: var(--bone-type);
-  --text-written:     var(--bone-type);
+  --text-written:     var(--bone-soft);
   --text-heading:     var(--graphite-dk);
   --text-meta:        var(--stone-dk);
   --text-on-inverted: var(--ink);

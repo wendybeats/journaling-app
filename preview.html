@@ -49,6 +49,8 @@
   --bone:         #E8E6E1;
   --bone-raised:  #EFEDE8;
   --ink:          #1A1A1A;
+  --ink-soft:     #262320;   /* written text — a step off full ink */
+  --bone-soft:    #DEDAD3;   /* written text, dark mode */
   --graphite:     #4A4843;
   --stone:        #A9A6A0;
   --hairline:     #C9C6BF;
@@ -67,7 +69,7 @@
   /* --- 2.2 Type scale --- */
   --type-display-size: 32px;   --type-display-lh: 1.1;  --type-display-weight: 500; --type-display-tracking: -0.01em;
   --type-title-size:   22px;   --type-title-lh:   1.2;  --type-title-weight:   500; --type-title-tracking: -0.005em;
-  --type-written-size: 16px;   --type-written-lh: 1.8;  /* load-bearing; never below 1.7 */
+  --type-written-size: 17px;   --type-written-lh: 1.8;  /* load-bearing; never below 1.7 */
   --type-written-large-size: 18px; --type-written-large-lh: 1.75;
   --type-meta-size:    11px;   --type-meta-lh:    1.4;  --type-meta-tracking: 0.14em;
   --type-meta-small-size: 10px;
@@ -98,6 +100,9 @@
   --dot-grid-cols: 7;
   --dot-size-year: 5px;
   --dot-gap-year: 6px;
+  --dot-size-week: 18px;   /* large register: week rows, weekly breakdowns */
+  --dot-size-week-today: 24px;
+  --dot-gap-week: 18px;
 
   /* --- 6. Motion --- */
   --motion-fast: 180ms;
@@ -111,7 +116,7 @@
   --surface-page:     var(--bone);
   --surface-raised:   var(--bone-raised);
   --surface-inverted: var(--ink);
-  --text-written:     var(--ink);        /* the only full-contrast text */
+  --text-written:     var(--ink-soft);   /* the written register — a step off full ink */
   --text-heading:     var(--graphite);
   --text-meta:        var(--stone);
   --text-on-inverted: var(--bone-raised);
@@ -129,7 +134,7 @@
     --surface-page:     var(--char);
     --surface-raised:   var(--char-raised);
     --surface-inverted: var(--bone-type);
-    --text-written:     var(--bone-type);
+    --text-written:     var(--bone-soft);
     --text-heading:     var(--graphite-dk);
     --text-meta:        var(--stone-dk);
     --text-on-inverted: var(--ink);
@@ -145,7 +150,7 @@
   --surface-page:     var(--char);
   --surface-raised:   var(--char-raised);
   --surface-inverted: var(--bone-type);
-  --text-written:     var(--bone-type);
+  --text-written:     var(--bone-soft);
   --text-heading:     var(--graphite-dk);
   --text-meta:        var(--stone-dk);
   --text-on-inverted: var(--ink);
@@ -169,6 +174,7 @@ a { color: inherit; }
 html, body { height: 100%; }
 
 body {
+  --ring-backdrop: var(--surface-page);
   background: var(--surface-page);
   color: var(--text-written);
   font-family: var(--font-body);
@@ -296,13 +302,15 @@ footer button:hover { color: var(--text-heading); }
   to   { opacity: 1; transform: none; }
 }
 
-/* Drop cap — archive reading view, first entry of a day only */
-.archive .day:first-of-type .entry:first-of-type p:first-of-type::first-letter,
+/* Drop cap — archive reading view, first entry of a day, exactly two lines:
+   2 lines = 2 × 1.8em; sized so the cap spans from the first line's cap top
+   to the second line's baseline. */
 .archive .day .entry.dropcap p:first-of-type::first-letter {
   float: left;
-  font-size: 3.2em;
-  line-height: 0.85;
-  padding-right: 0.08em;
+  font-size: 4.55em;
+  line-height: 0.78;
+  padding-right: 0.1em;
+  margin-top: 0.045em;
   font-weight: 400;
   color: var(--text-written);
 }
@@ -374,6 +382,7 @@ footer button:hover { color: var(--text-heading); }
 /* --- Month dot grid card --------------------------------------------------- */
 
 .grid-card {
+  --ring-backdrop: var(--surface-raised);
   background: var(--surface-raised);
   border-radius: var(--radius-card);
   padding: var(--space-card);
@@ -412,10 +421,89 @@ footer button:hover { color: var(--text-heading); }
 .dot.today {
   width: var(--dot-size-today);
   height: var(--dot-size-today);
-  box-shadow: 0 0 0 var(--dot-today-ring-offset) var(--surface-raised),
+  box-shadow: 0 0 0 var(--dot-today-ring-offset) var(--ring-backdrop),
               0 0 0 calc(var(--dot-today-ring-offset) + var(--dot-today-ring)) var(--dot-today);
 }
 .dot.today:not(.filled) { background: transparent; }
+
+/* --- Week register (large dots) -------------------------------------------- */
+
+.week-strip {
+  margin-top: var(--space-lg);
+}
+
+.week-strip header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.weekday-letters,
+.week-row-large {
+  display: grid;
+  grid-template-columns: repeat(7, var(--dot-size-week-today));
+  justify-content: space-between;
+}
+
+.weekday-letters {
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}
+
+.week-row-large {
+  row-gap: var(--dot-gap-week);
+  margin-bottom: var(--dot-gap-week);
+}
+
+.week-row-large .dot-cell {
+  width: var(--dot-size-week-today);
+  height: var(--dot-size-week-today);
+}
+
+.week-row-large .dot {
+  width: var(--dot-size-week);
+  height: var(--dot-size-week);
+}
+
+.week-row-large .dot.today {
+  width: var(--dot-size-week-today);
+  height: var(--dot-size-week-today);
+}
+
+.dot.tappable { cursor: pointer; }
+.tappable-row { cursor: pointer; }
+
+/* --- Months view + drill ----------------------------------------------------- */
+
+.months-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.months-stack .grid-card { margin-top: 0; }
+
+.month-block { cursor: pointer; }
+.month-block.expanded { cursor: default; }
+
+.weeks-body .weekday-letters { margin-bottom: var(--space-md); }
+.weeks-body .week-row-large:last-of-type { margin-bottom: 0; }
+
+.crumb {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: var(--space-md);
+  cursor: pointer;
+  text-align: left;
+}
+.crumb:hover { color: var(--text-heading); }
+
+.archive-canvas { margin-top: var(--space-lg); }
+.archive-canvas .year-block:first-of-type { margin-top: 0; }
+.archive-canvas > .grid-card { margin-top: 0; }
 
 /* --- Archive --------------------------------------------------------------- */
 
@@ -459,7 +547,7 @@ footer button:hover { color: var(--text-heading); }
   height: var(--dot-size-year);
 }
 .year-row .dot.today {
-  box-shadow: 0 0 0 1px var(--surface-page),
+  box-shadow: 0 0 0 1px var(--ring-backdrop),
               0 0 0 2px var(--dot-today);
 }
 
@@ -534,10 +622,24 @@ function entriesFor(key) {
   return entries[key] ?? [];
 }
 
+/** A pause under 30 minutes continues the same timestamped section;
+ *  a longer gap starts a new one. */
+const SESSION_GAP_MS = 30 * 60 * 1000;
+
 function addEntry(text, at = Date.now()) {
   const key = dayKey(new Date(at));
-  const entry = { id: crypto.randomUUID(), at, text };
-  entries[key] = [...entriesFor(key), entry].sort((a, b) => a.at - b.at);
+  const dayEntries = entriesFor(key);
+  const last = dayEntries[dayEntries.length - 1];
+
+  if (last && at - (last.lastAt ?? last.at) < SESSION_GAP_MS) {
+    last.text = `${last.text}\n\n${text}`;
+    last.lastAt = at;
+    persist();
+    return last;
+  }
+
+  const entry = { id: crypto.randomUUID(), at, lastAt: at, text };
+  entries[key] = [...dayEntries, entry].sort((a, b) => a.at - b.at);
   persist();
   return entry;
 }
@@ -613,15 +715,24 @@ function timeOfDay(at) {
   return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
 }
 
-/** "JULY 5, 2026 · 3 ENTRIES · 4 MIN" */
-function dayMetaRow(date, dayEntries) {
+/** "JULY 5, 2026 · 3 ENTRIES · 4 MIN" — reading time only where asked for
+ *  (Today keeps it; archive meta rows drop it). */
+function dayMetaRow(date, dayEntries, { withMin = true } = {}) {
   const parts = [dayMetaDate(date)];
   if (dayEntries.length) {
     parts.push(`${dayEntries.length} ${dayEntries.length === 1 ? 'entry' : 'entries'}`);
-    const words = dayEntries.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
-    parts.push(`${Math.max(1, Math.round(words / 200))} min`);
+    if (withMin) {
+      const words = dayEntries.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
+      parts.push(`${Math.max(1, Math.round(words / 200))} min`);
+    }
   }
   return parts.join(' · ');
+}
+
+/** "JUNE 29 – JULY 5" for the Sunday-start week containing `date`. */
+function weekRangeLabel(start, end) {
+  const one = (d) => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  return `${one(start)} – ${one(end)}`;
 }
 
 function monthName(m) {
@@ -633,61 +744,124 @@ function monthAbbr(m) {
 }
 
 
-// The dot is the product's atom. Month grid + year matrix renderers.
+// The dot is the product's atom. Every renderer here stamps dots with
+// `data-flip` date keys so layouts can morph into each other (see flip.js).
 
 
-function dot(key, isToday) {
+const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+function dot(key, { today = false, navigable = false } = {}) {
   const el = document.createElement('span');
   el.className = 'dot';
-  if (hasEntries(key)) el.classList.add('filled');
-  if (isToday) el.classList.add('today');
+  el.dataset.flip = key;
+  const filled = hasEntries(key);
+  if (filled) el.classList.add('filled');
+  if (today) el.classList.add('today');
+  if (navigable && filled) {
+    el.classList.add('tappable');
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      location.hash = `#archive/day/${key}`;
+    });
+  }
   return el;
 }
 
-/** Month grid card: 7 columns, week-aligned, whole month shown (future = empty). */
-function monthCard(now = new Date()) {
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const todayKey = dayKey(now);
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-
-  const card = document.createElement('section');
-  card.className = 'grid-card';
-
-  const header = document.createElement('header');
-  const label = document.createElement('span');
-  label.className = 'type-meta';
-  label.textContent = monthName(m);
-  const count = document.createElement('span');
-  count.className = 'type-meta-small';
+function daysWrittenIn(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   let written = 0;
   for (let d = 1; d <= daysInMonth; d++) {
-    if (hasEntries(dayKey(new Date(y, m, d)))) written++;
+    if (hasEntries(dayKey(new Date(year, month, d)))) written++;
   }
-  count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
-  header.append(label, count);
+  return written;
+}
 
+function monthLabel(year, month) {
+  return year === new Date().getFullYear() ? monthName(month) : `${monthName(month)} ${year}`;
+}
+
+/** 7-column week-aligned dot grid for a month (the compact register). */
+function monthGridBody(year, month) {
+  const todayKey = dayKey();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const grid = document.createElement('div');
   grid.className = 'dot-grid';
-  const lead = new Date(y, m, 1).getDay(); // Sunday-start
+  const lead = new Date(year, month, 1).getDay(); // Sunday-start
   for (let i = 0; i < lead; i++) {
     grid.appendChild(document.createElement('span'));
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    const key = dayKey(new Date(y, m, d));
+    const key = dayKey(new Date(year, month, d));
     const cell = document.createElement('span');
     cell.className = 'dot-cell';
-    cell.appendChild(dot(key, key === todayKey));
+    cell.appendChild(dot(key, { today: key === todayKey }));
     grid.appendChild(cell);
   }
-
-  card.append(header, grid);
-  return card;
+  return grid;
 }
 
-/** Year matrix: one row per month, one dot per day. Dense; density is the payoff. */
-function yearMatrix(year, now = new Date()) {
-  const todayKey = dayKey(now);
+/** Weekday letter header for large week rows. */
+function weekdayLetters() {
+  const row = document.createElement('div');
+  row.className = 'weekday-letters type-meta-small';
+  for (const l of WEEKDAY_LETTERS) {
+    const s = document.createElement('span');
+    s.textContent = l;
+    row.appendChild(s);
+  }
+  return row;
+}
+
+/** One week as a row of large, tappable dots. `days` holds 7 date keys
+ *  (null = day outside the month, rendered blank). */
+function weekRowLarge(days) {
+  const todayKey = dayKey();
+  const row = document.createElement('div');
+  row.className = 'week-row-large';
+  for (const key of days) {
+    const cell = document.createElement('span');
+    cell.className = 'dot-cell';
+    if (key) cell.appendChild(dot(key, { today: key === todayKey, navigable: true }));
+    row.appendChild(cell);
+  }
+  return row;
+}
+
+/** The weekly breakdown of a month: letters + one large row per week. */
+function weeksOfMonthBody(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const body = document.createElement('div');
+  body.className = 'weeks-body';
+  body.appendChild(weekdayLetters());
+  let week = new Array(new Date(year, month, 1).getDay()).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    week.push(dayKey(new Date(year, month, d)));
+    if (week.length === 7) {
+      body.appendChild(weekRowLarge(week));
+      week = [];
+    }
+  }
+  if (week.length) {
+    while (week.length < 7) week.push(null);
+    body.appendChild(weekRowLarge(week));
+  }
+  return body;
+}
+
+/** The 7 date keys of the Sunday-start week containing `date`. */
+function weekOf(date = new Date()) {
+  const start = new Date(date);
+  start.setDate(start.getDate() - start.getDay());
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return dayKey(d);
+  });
+}
+
+/** Year matrix: one row per month, one dot per day. Rows are tappable. */
+function yearMatrix(year, { onMonthTap } = {}) {
+  const todayKey = dayKey();
   const block = document.createElement('section');
   block.className = 'year-block';
 
@@ -710,11 +884,89 @@ function yearMatrix(year, now = new Date()) {
         continue;
       }
       const key = dayKey(new Date(year, m, d));
-      row.appendChild(dot(key, key === todayKey));
+      row.appendChild(dot(key, { today: key === todayKey }));
+    }
+    if (onMonthTap) {
+      row.classList.add('tappable-row');
+      row.addEventListener('click', () => onMonthTap(year, m));
     }
     block.appendChild(row);
   }
   return block;
+}
+
+
+// FLIP transitions for the dot language. Elements carrying `data-flip` keys
+// are matched across a DOM mutation and animated from their old position to
+// their new one — dots travel between layouts instead of views switching.
+
+/**
+ * Run `mutate` (which swaps/reflows DOM inside `canvas`), then animate every
+ * [data-flip] element from its previous rect to its new one. Elements whose
+ * size changed scale; same-size elements just translate. New keys fade in.
+ */
+function flipDots(canvas, mutate) {
+  const before = new Map();
+  for (const el of canvas.querySelectorAll('[data-flip]')) {
+    before.set(el.dataset.flip, el.getBoundingClientRect());
+  }
+
+  mutate();
+
+  for (const el of canvas.querySelectorAll('[data-flip]')) {
+    const first = before.get(el.dataset.flip);
+
+    if (!first) {
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity var(--motion-base) var(--motion-ease)';
+        el.style.opacity = '';
+        el.addEventListener('transitionend', () => { el.style.transition = ''; }, { once: true });
+      });
+      continue;
+    }
+
+    const now = el.getBoundingClientRect();
+    const dx = first.left - now.left;
+    const dy = first.top - now.top;
+    const sx = now.width ? first.width / now.width : 1;
+    const sy = now.height ? first.height / now.height : 1;
+    if (!dx && !dy && sx === 1 && sy === 1) continue;
+
+    el.style.transformOrigin = 'top left';
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform var(--motion-base) var(--motion-ease)';
+      el.style.transform = '';
+      el.addEventListener('transitionend', () => {
+        el.style.transition = '';
+        el.style.transformOrigin = '';
+      }, { once: true });
+    });
+  }
+}
+
+/**
+ * Animate an element's height across an inner-content swap, so the raised
+ * card stretches in sync with translating siblings (same duration + easing).
+ */
+function animateHeight(el, mutate) {
+  const oldH = el.offsetHeight;
+  mutate();
+  const newH = el.offsetHeight;
+  if (oldH === newH) return;
+  el.style.height = `${oldH}px`;
+  el.style.overflow = 'hidden';
+  void el.offsetHeight; // commit the starting height
+  el.style.transition = 'height var(--motion-base) var(--motion-ease)';
+  el.style.height = `${newH}px`;
+  el.addEventListener('transitionend', () => {
+    el.style.height = '';
+    el.style.overflow = '';
+    el.style.transition = '';
+  }, { once: true });
 }
 
 
@@ -842,8 +1094,48 @@ function seedDemoData() {
 }
 
 
+// Shared archive chrome: title + the Days / Week / Months / Years toggle.
+
+const TABS = [
+  ['Days', '#archive', 'archive'],
+  ['Week', '#archive/week', 'archive/week'],
+  ['Months', '#archive/months', 'archive/months'],
+  ['Years', '#archive/years', 'archive/years'],
+];
+
+function archiveHead(active) {
+  const head = document.createElement('div');
+  head.className = 'view-head';
+  const title = document.createElement('h1');
+  title.className = 'type-display';
+  title.textContent = 'Archive';
+  const toggle = document.createElement('nav');
+  toggle.className = 'type-meta view-toggle';
+  for (const [label, href, name] of TABS) {
+    const a = document.createElement('a');
+    a.href = href;
+    a.textContent = label;
+    if (name === active) a.classList.add('active');
+    toggle.appendChild(a);
+  }
+  head.append(title, toggle);
+  return head;
+}
+
+/** Faint mono back control, e.g. "← 2026" or "← Months". */
+function crumb(label, onTap) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'type-meta crumb';
+  btn.textContent = `← ${label}`;
+  btn.addEventListener('click', onTap);
+  return btn;
+}
+
+
 // Today — the blank page is the home screen. Heading, meta, entries so far,
-// the writing surface with cursor ready, and the month dot grid.
+// and the writing surface with cursor ready. Just about the day: the dot
+// grids live in the archive.
 
 
 const IDLE_COMMIT_MS = 5000;
@@ -885,7 +1177,14 @@ function renderToday(root) {
     meta.textContent = dayMetaRow(now, entriesFor(key));
   }
 
-  for (const entry of entriesFor(key)) list.appendChild(entryNode(entry));
+  function renderList(settlingId = null) {
+    list.innerHTML = '';
+    for (const entry of entriesFor(key)) {
+      list.appendChild(entryNode(entry, entry.id === settlingId));
+    }
+  }
+
+  renderList();
   refreshMeta();
 
   // --- Writing surface ---
@@ -924,7 +1223,7 @@ function renderToday(root) {
     textarea.value = '';
     saveDraft('');
     autosize();
-    list.appendChild(entryNode(entry, true));
+    renderList(entry.id);
     refreshMeta();
     acknowledge(`saved ${timeOfDay(entry.at)}`);
     textarea.placeholder = 'Write, or speak.';
@@ -982,7 +1281,7 @@ function renderToday(root) {
   captureRow.append(speak, ack);
   writing.appendChild(captureRow);
 
-  root.append(heading, meta, rule, list, writing, monthCard(now));
+  root.append(heading, meta, rule, list, writing);
 
   // Cursor ready — the app opens writable
   requestAnimationFrame(() => textarea.focus({ preventScroll: true }));
@@ -997,22 +1296,11 @@ function renderToday(root) {
 }
 
 
-// Archive (month) — reverse-chronological reading view of day pages.
+// Archive → Days: reverse-chronological reading view of day pages.
 
 
 function renderArchive(root) {
-  const head = document.createElement('div');
-  head.className = 'view-head';
-  const title = document.createElement('h1');
-  title.className = 'type-display';
-  title.textContent = 'Archive';
-  const toggle = document.createElement('nav');
-  toggle.className = 'type-meta view-toggle';
-  toggle.innerHTML = `
-    <a href="#archive" class="active">Days</a>
-    <a href="#year">Years</a>`;
-  head.append(title, toggle);
-  root.appendChild(head);
+  root.appendChild(archiveHead('archive'));
 
   const days = daysWithEntries();
   if (!days.length) {
@@ -1039,7 +1327,7 @@ function renderArchive(root) {
 
     const meta = document.createElement('div');
     meta.className = 'type-meta day-meta';
-    meta.textContent = dayMetaRow(date, dayEntries);
+    meta.textContent = dayMetaRow(date, dayEntries, { withMin: false });
 
     const rule = document.createElement('hr');
     rule.className = 'day-rule';
@@ -1070,32 +1358,200 @@ function renderArchive(root) {
 }
 
 
-// Archive (year matrix) — the zoomed-out dot field. The retention payoff.
+// Archive → Week: the current week as a single row of large dots.
+// Filled dots tap through to that day's writing.
 
 
-function renderYear(root) {
-  const head = document.createElement('div');
-  head.className = 'view-head';
-  const title = document.createElement('h1');
-  title.className = 'type-display';
-  title.textContent = 'Archive';
-  const toggle = document.createElement('nav');
-  toggle.className = 'type-meta view-toggle';
-  toggle.innerHTML = `
-    <a href="#archive">Days</a>
-    <a href="#year" class="active">Years</a>`;
-  head.append(title, toggle);
-  root.appendChild(head);
+function renderWeek(root) {
+  root.appendChild(archiveHead('archive/week'));
 
-  const currentYear = new Date().getFullYear();
-  const years = new Set([currentYear]);
-  for (const key of daysWithEntries()) years.add(Number(key.slice(0, 4)));
+  const days = weekOf();
+  const strip = document.createElement('section');
+  strip.className = 'week-strip';
 
-  // Newest first; every year with data renders — density is not capped
-  for (const year of [...years].sort((a, b) => b - a)) {
-    root.appendChild(yearMatrix(year));
+  const header = document.createElement('header');
+  const range = document.createElement('span');
+  range.className = 'type-meta';
+  range.textContent = weekRangeLabel(fromKey(days[0]), fromKey(days[6]));
+  const count = document.createElement('span');
+  count.className = 'type-meta-small';
+  const written = days.filter(hasEntries).length;
+  count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
+  header.append(range, count);
+
+  strip.append(header, weekdayLetters(), weekRowLarge(days));
+  root.appendChild(strip);
+  return {};
+}
+
+
+// Archive → Months: every month from the current one back through the data,
+// as compact grid cards. Tapping a month morphs it — dots traveling — into
+// its weekly breakdown, right on the screen. Large dots tap through to days.
+
+
+/**
+ * A raised month card that toggles between its compact grid and its weekly
+ * breakdown. `canvas` is the ancestor the FLIP pass scans, so sibling cards
+ * glide as the card stretches. Returns the card element.
+ */
+function monthBlock(canvas, year, month, { startExpanded = false } = {}) {
+  const card = document.createElement('section');
+  card.className = 'grid-card month-block';
+  card.dataset.flip = `card-${year}-${month}`;
+  let expanded = startExpanded;
+
+  const header = document.createElement('header');
+  const label = document.createElement('span');
+  label.className = 'type-meta';
+  label.textContent = monthLabel(year, month);
+  const count = document.createElement('span');
+  count.className = 'type-meta-small';
+  const written = daysWrittenIn(year, month);
+  count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
+  header.append(label, count);
+
+  let body = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
+  card.append(header, body);
+  card.classList.toggle('expanded', expanded);
+
+  function toggle() {
+    expanded = !expanded;
+    flipDots(canvas, () => {
+      animateHeight(card, () => {
+        const next = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
+        body.replaceWith(next);
+        body = next;
+        card.classList.toggle('expanded', expanded);
+      });
+    });
   }
 
+  card.addEventListener('click', (e) => {
+    // Large filled dots navigate to their day; anywhere else toggles the card
+    if (e.target.closest('.dot.tappable')) return;
+    toggle();
+  });
+
+  return card;
+}
+
+function renderMonths(root) {
+  root.appendChild(archiveHead('archive/months'));
+
+  const canvas = document.createElement('div');
+  canvas.className = 'months-stack archive-canvas';
+
+  const now = new Date();
+  const days = daysWithEntries();
+  const oldest = days.length ? days[days.length - 1] : null;
+  const first = oldest
+    ? { y: Number(oldest.slice(0, 4)), m: Number(oldest.slice(5, 7)) - 1 }
+    : { y: now.getFullYear(), m: now.getMonth() };
+
+  let y = now.getFullYear();
+  let m = now.getMonth();
+  while (y > first.y || (y === first.y && m >= first.m)) {
+    canvas.appendChild(monthBlock(canvas, y, m));
+    m--;
+    if (m < 0) { m = 11; y--; }
+  }
+
+  root.appendChild(canvas);
+  return {};
+}
+
+
+// Archive → Years: the dense dot field. Tapping a month row lifts that month
+// out of the matrix — its dots travel into the compact grid — and from there
+// it can break down further into weeks, then days.
+
+
+function renderYears(root) {
+  root.appendChild(archiveHead('archive/years'));
+
+  const canvas = document.createElement('div');
+  canvas.className = 'archive-canvas';
+
+  function showYears() {
+    canvas.innerHTML = '';
+    const currentYear = new Date().getFullYear();
+    const years = new Set([currentYear]);
+    for (const key of daysWithEntries()) years.add(Number(key.slice(0, 4)));
+    // Newest first; every year with data renders — density is not capped
+    for (const year of [...years].sort((a, b) => b - a)) {
+      canvas.appendChild(yearMatrix(year, { onMonthTap: focusMonth }));
+    }
+  }
+
+  function focusMonth(year, month) {
+    // The tapped month's dots fly from their matrix row into the month grid
+    flipDots(canvas, () => {
+      canvas.innerHTML = '';
+      const back = crumb(String(year), () => flipDots(canvas, showYears));
+      canvas.appendChild(back);
+      canvas.appendChild(monthBlock(canvas, year, month));
+    });
+  }
+
+  showYears();
+  root.appendChild(canvas);
+  return {};
+}
+
+
+// A single day's page — where tapping any dot in the archive lands.
+
+
+function renderDay(root, key) {
+  root.appendChild(crumb('Archive', () => history.back()));
+
+  const date = fromKey(key);
+  const dayEntries = entriesFor(key);
+
+  const heading = document.createElement('h1');
+  heading.className = 'type-display';
+  heading.textContent = dayHeading(date);
+
+  const meta = document.createElement('div');
+  meta.className = 'type-meta day-meta';
+  meta.textContent = dayMetaRow(date, dayEntries, { withMin: false });
+
+  const rule = document.createElement('hr');
+  rule.className = 'day-rule';
+
+  root.append(heading, meta, rule);
+
+  const container = document.createElement('div');
+  container.className = 'archive';
+  const day = document.createElement('section');
+  day.className = 'day';
+
+  dayEntries.forEach((entry, i) => {
+    const el = document.createElement('article');
+    el.className = 'entry type-written';
+    if (i === 0) el.classList.add('dropcap');
+    const time = document.createElement('time');
+    time.className = 'type-meta-small';
+    time.textContent = timeOfDay(entry.at);
+    el.appendChild(time);
+    for (const para of entry.text.split(/\n{2,}/)) {
+      const p = document.createElement('p');
+      p.textContent = para;
+      el.appendChild(p);
+    }
+    day.appendChild(el);
+  });
+
+  if (!dayEntries.length) {
+    const note = document.createElement('p');
+    note.className = 'type-written empty-note';
+    note.textContent = 'Nothing written this day.';
+    day.appendChild(note);
+  }
+
+  container.appendChild(day);
+  root.appendChild(container);
   return {};
 }
 
@@ -1105,23 +1561,30 @@ function renderYear(root) {
 
 const MOTION_BASE = 260; // keep in sync with --motion-base
 
-const routes = {
-  today: renderToday,
-  archive: renderArchive,
-  year: renderYear,
-};
-
 const view = document.getElementById('view');
 let current = null; // { name, teardown }
 
+/** Resolve the hash to { name, render }. Unknown hashes land on Today. */
+function resolve() {
+  const h = location.hash.replace(/^#\/?/, '');
+  if (!h || h === 'today') return { name: 'today', render: renderToday };
+  if (h === 'archive') return { name: h, render: renderArchive };
+  if (h === 'archive/week') return { name: h, render: renderWeek };
+  if (h === 'archive/months') return { name: h, render: renderMonths };
+  if (h === 'archive/years' || h === 'year') return { name: 'archive/years', render: renderYears };
+  const day = h.match(/^archive\/day\/(\d{4}-\d{2}-\d{2})$/);
+  if (day) return { name: h, render: (root) => renderDay(root, day[1]) };
+  return { name: 'today', render: renderToday };
+}
+
 function routeName() {
-  const name = location.hash.replace(/^#\/?/, '') || 'today';
-  return routes[name] ? name : 'today';
+  return resolve().name;
 }
 
 function setNav(name) {
   for (const a of document.querySelectorAll('.chrome nav a')) {
-    const active = a.dataset.route === name || (a.dataset.route === 'archive' && name === 'year');
+    const active = a.dataset.route === name
+      || (a.dataset.route === 'archive' && name.startsWith('archive'));
     a.classList.toggle('active', active);
   }
 }
@@ -1131,7 +1594,7 @@ function mount(name) {
   view.classList.remove('leaving');
   view.classList.add('entering');
   view.addEventListener('animationend', () => view.classList.remove('entering'), { once: true });
-  const handle = routes[name](view) ?? {};
+  const handle = resolve().render(view) ?? {};
   current = { name, teardown: handle.teardown };
   setNav(name);
   window.scrollTo(0, 0);

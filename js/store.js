@@ -30,10 +30,24 @@ export function entriesFor(key) {
   return entries[key] ?? [];
 }
 
+/** A pause under 30 minutes continues the same timestamped section;
+ *  a longer gap starts a new one. */
+const SESSION_GAP_MS = 30 * 60 * 1000;
+
 export function addEntry(text, at = Date.now()) {
   const key = dayKey(new Date(at));
-  const entry = { id: crypto.randomUUID(), at, text };
-  entries[key] = [...entriesFor(key), entry].sort((a, b) => a.at - b.at);
+  const dayEntries = entriesFor(key);
+  const last = dayEntries[dayEntries.length - 1];
+
+  if (last && at - (last.lastAt ?? last.at) < SESSION_GAP_MS) {
+    last.text = `${last.text}\n\n${text}`;
+    last.lastAt = at;
+    persist();
+    return last;
+  }
+
+  const entry = { id: crypto.randomUUID(), at, lastAt: at, text };
+  entries[key] = [...dayEntries, entry].sort((a, b) => a.at - b.at);
   persist();
   return entry;
 }

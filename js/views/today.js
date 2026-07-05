@@ -1,9 +1,9 @@
 // Today — the blank page is the home screen. Heading, meta, entries so far,
-// the writing surface with cursor ready, and the month dot grid.
+// and the writing surface with cursor ready. Just about the day: the dot
+// grids live in the archive.
 
 import { dayKey, entriesFor, addEntry, saveDraft, loadDraft } from '../store.js';
 import { dayHeading, dayMetaRow, timeOfDay } from '../format.js';
-import { monthCard } from '../dots.js';
 import { voiceSupported, createRecorder } from '../voice.js';
 
 const IDLE_COMMIT_MS = 5000;
@@ -45,7 +45,14 @@ export function renderToday(root) {
     meta.textContent = dayMetaRow(now, entriesFor(key));
   }
 
-  for (const entry of entriesFor(key)) list.appendChild(entryNode(entry));
+  function renderList(settlingId = null) {
+    list.innerHTML = '';
+    for (const entry of entriesFor(key)) {
+      list.appendChild(entryNode(entry, entry.id === settlingId));
+    }
+  }
+
+  renderList();
   refreshMeta();
 
   // --- Writing surface ---
@@ -84,7 +91,7 @@ export function renderToday(root) {
     textarea.value = '';
     saveDraft('');
     autosize();
-    list.appendChild(entryNode(entry, true));
+    renderList(entry.id);
     refreshMeta();
     acknowledge(`saved ${timeOfDay(entry.at)}`);
     textarea.placeholder = 'Write, or speak.';
@@ -142,7 +149,7 @@ export function renderToday(root) {
   captureRow.append(speak, ack);
   writing.appendChild(captureRow);
 
-  root.append(heading, meta, rule, list, writing, monthCard(now));
+  root.append(heading, meta, rule, list, writing);
 
   // Cursor ready — the app opens writable
   requestAnimationFrame(() => textarea.focus({ preventScroll: true }));

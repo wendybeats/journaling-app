@@ -28,15 +28,24 @@ export function timeOfDay(at) {
   return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${mer}`;
 }
 
-/** "JULY 5, 2026 · 3 ENTRIES · 4 MIN" */
-export function dayMetaRow(date, dayEntries) {
+/** "JULY 5, 2026 · 3 ENTRIES · 4 MIN" — reading time only where asked for
+ *  (Today keeps it; archive meta rows drop it). */
+export function dayMetaRow(date, dayEntries, { withMin = true } = {}) {
   const parts = [dayMetaDate(date)];
   if (dayEntries.length) {
     parts.push(`${dayEntries.length} ${dayEntries.length === 1 ? 'entry' : 'entries'}`);
-    const words = dayEntries.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
-    parts.push(`${Math.max(1, Math.round(words / 200))} min`);
+    if (withMin) {
+      const words = dayEntries.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
+      parts.push(`${Math.max(1, Math.round(words / 200))} min`);
+    }
   }
   return parts.join(' · ');
+}
+
+/** "JUNE 29 – JULY 5" for the Sunday-start week containing `date`. */
+export function weekRangeLabel(start, end) {
+  const one = (d) => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  return `${one(start)} – ${one(end)}`;
 }
 
 export function monthName(m) {

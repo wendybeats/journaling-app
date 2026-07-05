@@ -10,6 +10,7 @@ a { color: inherit; }
 html, body { height: 100%; }
 
 body {
+  --ring-backdrop: var(--surface-page);
   background: var(--surface-page);
   color: var(--text-written);
   font-family: var(--font-body);
@@ -137,13 +138,15 @@ footer button:hover { color: var(--text-heading); }
   to   { opacity: 1; transform: none; }
 }
 
-/* Drop cap — archive reading view, first entry of a day only */
-.archive .day:first-of-type .entry:first-of-type p:first-of-type::first-letter,
+/* Drop cap — archive reading view, first entry of a day, exactly two lines:
+   2 lines = 2 × 1.8em; sized so the cap spans from the first line's cap top
+   to the second line's baseline. */
 .archive .day .entry.dropcap p:first-of-type::first-letter {
   float: left;
-  font-size: 3.2em;
-  line-height: 0.85;
-  padding-right: 0.08em;
+  font-size: 4.55em;
+  line-height: 0.78;
+  padding-right: 0.1em;
+  margin-top: 0.045em;
   font-weight: 400;
   color: var(--text-written);
 }
@@ -215,6 +218,7 @@ footer button:hover { color: var(--text-heading); }
 /* --- Month dot grid card --------------------------------------------------- */
 
 .grid-card {
+  --ring-backdrop: var(--surface-raised);
   background: var(--surface-raised);
   border-radius: var(--radius-card);
   padding: var(--space-card);
@@ -253,10 +257,89 @@ footer button:hover { color: var(--text-heading); }
 .dot.today {
   width: var(--dot-size-today);
   height: var(--dot-size-today);
-  box-shadow: 0 0 0 var(--dot-today-ring-offset) var(--surface-raised),
+  box-shadow: 0 0 0 var(--dot-today-ring-offset) var(--ring-backdrop),
               0 0 0 calc(var(--dot-today-ring-offset) + var(--dot-today-ring)) var(--dot-today);
 }
 .dot.today:not(.filled) { background: transparent; }
+
+/* --- Week register (large dots) -------------------------------------------- */
+
+.week-strip {
+  margin-top: var(--space-lg);
+}
+
+.week-strip header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.weekday-letters,
+.week-row-large {
+  display: grid;
+  grid-template-columns: repeat(7, var(--dot-size-week-today));
+  justify-content: space-between;
+}
+
+.weekday-letters {
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}
+
+.week-row-large {
+  row-gap: var(--dot-gap-week);
+  margin-bottom: var(--dot-gap-week);
+}
+
+.week-row-large .dot-cell {
+  width: var(--dot-size-week-today);
+  height: var(--dot-size-week-today);
+}
+
+.week-row-large .dot {
+  width: var(--dot-size-week);
+  height: var(--dot-size-week);
+}
+
+.week-row-large .dot.today {
+  width: var(--dot-size-week-today);
+  height: var(--dot-size-week-today);
+}
+
+.dot.tappable { cursor: pointer; }
+.tappable-row { cursor: pointer; }
+
+/* --- Months view + drill ----------------------------------------------------- */
+
+.months-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.months-stack .grid-card { margin-top: 0; }
+
+.month-block { cursor: pointer; }
+.month-block.expanded { cursor: default; }
+
+.weeks-body .weekday-letters { margin-bottom: var(--space-md); }
+.weeks-body .week-row-large:last-of-type { margin-bottom: 0; }
+
+.crumb {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: var(--space-md);
+  cursor: pointer;
+  text-align: left;
+}
+.crumb:hover { color: var(--text-heading); }
+
+.archive-canvas { margin-top: var(--space-lg); }
+.archive-canvas .year-block:first-of-type { margin-top: 0; }
+.archive-canvas > .grid-card { margin-top: 0; }
 
 /* --- Archive --------------------------------------------------------------- */
 
@@ -300,6 +383,6 @@ footer button:hover { color: var(--text-heading); }
   height: var(--dot-size-year);
 }
 .year-row .dot.today {
-  box-shadow: 0 0 0 1px var(--surface-page),
+  box-shadow: 0 0 0 1px var(--ring-backdrop),
               0 0 0 2px var(--dot-today);
 }

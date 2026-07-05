@@ -1,6 +1,6 @@
 # Vellum — Design Tokens (Stage 0)
 
-**Version:** 1.0
+**Version:** 1.1 — written register softened to `ink-soft`/`bone-soft` and bumped to 17px (July 5 review)
 **Date:** July 5, 2026
 **Scope:** Foundational design primitives — the single source of truth for every color, type, spacing, and motion value in the product. Everything downstream (Figma variables, SwiftUI, App Store assets) resolves to these tokens.
 
@@ -21,7 +21,9 @@ Two layers: a small primitive palette (raw values, never used directly in views)
 |---|---|---|
 | `bone` | `#E8E6E1` | Base page, light mode |
 | `bone-raised` | `#EFEDE8` | Raised card/section, light mode |
-| `ink` | `#1A1A1A` | Full-contrast text + filled dots |
+| `ink` | `#1A1A1A` | Full-contrast marks: filled dots, cursor |
+| `ink-soft` | `#262320` | Written text — one step off full ink |
+| `bone-soft` | `#DEDAD3` | Written text, dark mode |
 | `graphite` | `#4A4843` | Muted header type |
 | `stone` | `#A9A6A0` | Metadata, unfilled dots (light) |
 | `hairline` | `#C9C6BF` | Rules, dividers, dots faint (light) |
@@ -41,7 +43,7 @@ No accent color exists in the system by design. If one is ever added it is a del
 | `surface.page` | `bone` | `char` | App background |
 | `surface.raised` | `bone-raised` | `char-raised` | Dot-grid card, settings sections |
 | `surface.inverted` | `ink` | `bone-type` | v2 reflection cards, quote callouts |
-| `text.written` | `ink` | `bone-type` | **The user's own writing (only full-contrast text)** |
+| `text.written` | `ink-soft` | `bone-soft` | **The user's own writing (the darkest *text* on the page, one step off full ink)** |
 | `text.heading` | `graphite` | `graphite-dk` | Grotesk day/screen headers |
 | `text.meta` | `stone` | `stone-dk` | Mono metadata, timestamps, labels |
 | `text.onInverted` | `bone-raised` | `ink` | Text inside `surface.inverted` |
@@ -51,7 +53,7 @@ No accent color exists in the system by design. If one is ever added it is a del
 | `line.rule` | `hairline` | `hairline-dk` | Dividers, header underlines |
 | `line.cursor` | `ink` | `bone-type` | Writing caret |
 
-**Contrast intent:** `text.written` is the darkest element on any screen. `text.heading` sits deliberately below it. `text.meta` is faintest. This ordering is the system's spine and must hold in both modes — verify `text.heading` never reads as dark as `text.written`.
+**Contrast intent:** `text.written` is the darkest text on any screen (only the dot/cursor marks sit at full ink). `text.heading` sits deliberately below it. `text.meta` is faintest. This ordering is the system's spine and must hold in both modes — verify `text.heading` never reads as dark as `text.written`.
 
 ---
 
@@ -82,9 +84,9 @@ Body serif candidate: a high-readability text serif (not a display Didot — sav
 |---|---|---|---|---|---|---|
 | `type.display` | heading | 32 / 1.1 | 500 | -0.01em | none | `text.heading` |
 | `type.title` | heading | 22 / 1.2 | 500 | -0.005em | none | `text.heading` |
-| `type.written` | body | 16 / 1.8 | 400 | 0 | none | `text.written` |
+| `type.written` | body | 17 / 1.8 | 400 | 0 | none | `text.written` |
 | `type.writtenLarge` | body | 18 / 1.75 | 400 | 0 | none | `text.written` |
-| `type.reading` | body | 16 / 1.8 | 400 | 0 | none | `text.written` |
+| `type.reading` | body | 17 / 1.8 | 400 | 0 | none | `text.written` |
 | `type.meta` | meta | 11 / 1.4 | 400 | 0.14em | UPPERCASE | `text.meta` |
 | `type.metaSmall` | meta | 10 / 1.4 | 400 | 0.14em | UPPERCASE | `text.meta` |
 

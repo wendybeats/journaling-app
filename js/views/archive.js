@@ -1,21 +1,11 @@
-// Archive (month) — reverse-chronological reading view of day pages.
+// Archive → Days: reverse-chronological reading view of day pages.
 
 import { daysWithEntries, entriesFor } from '../store.js';
 import { fromKey, dayHeading, dayMetaRow, timeOfDay } from '../format.js';
+import { archiveHead } from './shared.js';
 
 export function renderArchive(root) {
-  const head = document.createElement('div');
-  head.className = 'view-head';
-  const title = document.createElement('h1');
-  title.className = 'type-display';
-  title.textContent = 'Archive';
-  const toggle = document.createElement('nav');
-  toggle.className = 'type-meta view-toggle';
-  toggle.innerHTML = `
-    <a href="#archive" class="active">Days</a>
-    <a href="#year">Years</a>`;
-  head.append(title, toggle);
-  root.appendChild(head);
+  root.appendChild(archiveHead('archive'));
 
   const days = daysWithEntries();
   if (!days.length) {
@@ -42,7 +32,7 @@ export function renderArchive(root) {
 
     const meta = document.createElement('div');
     meta.className = 'type-meta day-meta';
-    meta.textContent = dayMetaRow(date, dayEntries);
+    meta.textContent = dayMetaRow(date, dayEntries, { withMin: false });
 
     const rule = document.createElement('hr');
     rule.className = 'day-rule';

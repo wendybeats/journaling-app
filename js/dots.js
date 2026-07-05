@@ -1,60 +1,123 @@
-// The dot is the product's atom. Month grid + year matrix renderers.
+// The dot is the product's atom. Every renderer here stamps dots with
+// `data-flip` date keys so layouts can morph into each other (see flip.js).
 
 import { dayKey, hasEntries } from './store.js';
 import { monthName, monthAbbr } from './format.js';
 
-function dot(key, isToday) {
+const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+export function dot(key, { today = false, navigable = false } = {}) {
   const el = document.createElement('span');
   el.className = 'dot';
-  if (hasEntries(key)) el.classList.add('filled');
-  if (isToday) el.classList.add('today');
+  el.dataset.flip = key;
+  const filled = hasEntries(key);
+  if (filled) el.classList.add('filled');
+  if (today) el.classList.add('today');
+  if (navigable && filled) {
+    el.classList.add('tappable');
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      location.hash = `#archive/day/${key}`;
+    });
+  }
   return el;
 }
 
-/** Month grid card: 7 columns, week-aligned, whole month shown (future = empty). */
-export function monthCard(now = new Date()) {
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const todayKey = dayKey(now);
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-
-  const card = document.createElement('section');
-  card.className = 'grid-card';
-
-  const header = document.createElement('header');
-  const label = document.createElement('span');
-  label.className = 'type-meta';
-  label.textContent = monthName(m);
-  const count = document.createElement('span');
-  count.className = 'type-meta-small';
+export function daysWrittenIn(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   let written = 0;
   for (let d = 1; d <= daysInMonth; d++) {
-    if (hasEntries(dayKey(new Date(y, m, d)))) written++;
+    if (hasEntries(dayKey(new Date(year, month, d)))) written++;
   }
-  count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
-  header.append(label, count);
+  return written;
+}
 
+export function monthLabel(year, month) {
+  return year === new Date().getFullYear() ? monthName(month) : `${monthName(month)} ${year}`;
+}
+
+/** 7-column week-aligned dot grid for a month (the compact register). */
+export function monthGridBody(year, month) {
+  const todayKey = dayKey();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const grid = document.createElement('div');
   grid.className = 'dot-grid';
-  const lead = new Date(y, m, 1).getDay(); // Sunday-start
+  const lead = new Date(year, month, 1).getDay(); // Sunday-start
   for (let i = 0; i < lead; i++) {
     grid.appendChild(document.createElement('span'));
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    const key = dayKey(new Date(y, m, d));
+    const key = dayKey(new Date(year, month, d));
     const cell = document.createElement('span');
     cell.className = 'dot-cell';
-    cell.appendChild(dot(key, key === todayKey));
+    cell.appendChild(dot(key, { today: key === todayKey }));
     grid.appendChild(cell);
   }
-
-  card.append(header, grid);
-  return card;
+  return grid;
 }
 
-/** Year matrix: one row per month, one dot per day. Dense; density is the payoff. */
-export function yearMatrix(year, now = new Date()) {
-  const todayKey = dayKey(now);
+/** Weekday letter header for large week rows. */
+export function weekdayLetters() {
+  const row = document.createElement('div');
+  row.className = 'weekday-letters type-meta-small';
+  for (const l of WEEKDAY_LETTERS) {
+    const s = document.createElement('span');
+    s.textContent = l;
+    row.appendChild(s);
+  }
+  return row;
+}
+
+/** One week as a row of large, tappable dots. `days` holds 7 date keys
+ *  (null = day outside the month, rendered blank). */
+export function weekRowLarge(days) {
+  const todayKey = dayKey();
+  const row = document.createElement('div');
+  row.className = 'week-row-large';
+  for (const key of days) {
+    const cell = document.createElement('span');
+    cell.className = 'dot-cell';
+    if (key) cell.appendChild(dot(key, { today: key === todayKey, navigable: true }));
+    row.appendChild(cell);
+  }
+  return row;
+}
+
+/** The weekly breakdown of a month: letters + one large row per week. */
+export function weeksOfMonthBody(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const body = document.createElement('div');
+  body.className = 'weeks-body';
+  body.appendChild(weekdayLetters());
+  let week = new Array(new Date(year, month, 1).getDay()).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    week.push(dayKey(new Date(year, month, d)));
+    if (week.length === 7) {
+      body.appendChild(weekRowLarge(week));
+      week = [];
+    }
+  }
+  if (week.length) {
+    while (week.length < 7) week.push(null);
+    body.appendChild(weekRowLarge(week));
+  }
+  return body;
+}
+
+/** The 7 date keys of the Sunday-start week containing `date`. */
+export function weekOf(date = new Date()) {
+  const start = new Date(date);
+  start.setDate(start.getDate() - start.getDay());
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return dayKey(d);
+  });
+}
+
+/** Year matrix: one row per month, one dot per day. Rows are tappable. */
+export function yearMatrix(year, { onMonthTap } = {}) {
+  const todayKey = dayKey();
   const block = document.createElement('section');
   block.className = 'year-block';
 
@@ -77,7 +140,11 @@ export function yearMatrix(year, now = new Date()) {
         continue;
       }
       const key = dayKey(new Date(year, m, d));
-      row.appendChild(dot(key, key === todayKey));
+      row.appendChild(dot(key, { today: key === todayKey }));
+    }
+    if (onMonthTap) {
+      row.classList.add('tappable-row');
+      row.addEventListener('click', () => onMonthTap(year, m));
     }
     block.appendChild(row);
   }
