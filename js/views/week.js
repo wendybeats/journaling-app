@@ -1,7 +1,7 @@
 // Archive → Week: weeks as single rows of large dots, current week first,
 // stacking back through the data. Filled dots tap through to that day.
 
-import { hasEntries, daysWithEntries } from '../store.js';
+import { daysWithEntries } from '../store.js';
 import { fromKey, weekRangeLabel } from '../format.js';
 import { weekOf, weekdayLetters, weekRowLarge } from '../dots.js';
 import { archiveHead } from './shared.js';
@@ -14,11 +14,7 @@ function weekStrip(days) {
   const range = document.createElement('span');
   range.className = 'type-meta';
   range.textContent = weekRangeLabel(fromKey(days[0]), fromKey(days[6]));
-  const count = document.createElement('span');
-  count.className = 'type-meta-small';
-  const written = days.filter(hasEntries).length;
-  count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
-  header.append(range, count);
+  header.append(range);
 
   strip.append(header, weekRowLarge(days));
   return strip;

@@ -10,13 +10,15 @@ import { archiveHead } from './shared.js';
 /**
  * A raised month card that toggles between its compact grid and its weekly
  * breakdown. `canvas` is the ancestor the FLIP pass scans, so sibling cards
- * glide as the card stretches. Returns the card element.
+ * glide as the card stretches. `coordinator` (one per view) keeps a single
+ * card expanded at a time: expanding one collapses the previous in the same
+ * FLIP pass. Returns the card element.
  */
-export function monthBlock(canvas, year, month, { startExpanded = false } = {}) {
+export function monthBlock(canvas, year, month, coordinator = null) {
   const card = document.createElement('section');
   card.className = 'grid-card month-block';
   card.dataset.flip = `card-${year}-${month}`;
-  let expanded = startExpanded;
+  let expanded = false;
 
   const header = document.createElement('header');
   const label = document.createElement('span');
@@ -28,19 +30,32 @@ export function monthBlock(canvas, year, month, { startExpanded = false } = {}) 
   count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
   header.append(label, count);
 
-  let body = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
+  let body = monthGridBody(year, month);
   card.append(header, body);
-  card.classList.toggle('expanded', expanded);
+
+  // Swap the body without animating — callers wrap this in a FLIP pass
+  function setExpandedRaw(next) {
+    if (expanded === next) return;
+    expanded = next;
+    animateHeight(card, () => {
+      const nextBody = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
+      body.replaceWith(nextBody);
+      body = nextBody;
+      card.classList.toggle('expanded', expanded);
+    });
+  }
+
+  const api = { collapseRaw: () => setExpandedRaw(false) };
 
   function toggle() {
-    expanded = !expanded;
     flipDots(canvas, () => {
-      animateHeight(card, () => {
-        const next = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
-        body.replaceWith(next);
-        body = next;
-        card.classList.toggle('expanded', expanded);
-      });
+      if (!expanded && coordinator) {
+        coordinator.current?.collapseRaw();
+        coordinator.current = api;
+      } else if (coordinator && coordinator.current === api && expanded) {
+        coordinator.current = null;
+      }
+      setExpandedRaw(!expanded);
     });
   }
 
@@ -58,6 +73,7 @@ export function renderMonths(root) {
 
   const canvas = document.createElement('div');
   canvas.className = 'months-stack archive-canvas';
+  const coordinator = { current: null }; // one expanded month at a time
 
   const now = new Date();
   const days = daysWithEntries();
@@ -69,7 +85,7 @@ export function renderMonths(root) {
   let y = now.getFullYear();
   let m = now.getMonth();
   while (y > first.y || (y === first.y && m >= first.m)) {
-    canvas.appendChild(monthBlock(canvas, y, m));
+    canvas.appendChild(monthBlock(canvas, y, m, coordinator));
     m--;
     if (m < 0) { m = 11; y--; }
   }

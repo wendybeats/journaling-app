@@ -138,15 +138,18 @@ footer button:hover { color: var(--text-heading); }
   to   { opacity: 1; transform: none; }
 }
 
-/* Drop cap — archive reading view, first entry of a day, exactly two lines:
-   2 lines = 2 × 1.8em; sized so the cap spans from the first line's cap top
-   to the second line's baseline. */
+/* Drop cap — archive reading view, first entry of a day. Flush across exactly
+   two lines: cap top on line 1's cap top, baseline on line 2's baseline.
+   Values computed from Newsreader's measured metrics (capHeight .72,
+   ascent .74, descent .27) at body 1em / 1.8:
+   glyph height = 2.52em → font-size 2.52/.72 = 3.5em; line-height .8 keeps
+   the float box under two line boxes so a third line wraps clear. */
 .archive .day .entry.dropcap p:first-of-type::first-letter {
   float: left;
-  font-size: 4.55em;
-  line-height: 0.78;
+  font-size: 3.5em;
+  line-height: 0.8;
   padding-right: 0.1em;
-  margin-top: 0.045em;
+  margin-top: 0.204em;
   font-weight: 400;
   color: var(--text-written);
 }
@@ -264,10 +267,16 @@ footer button:hover { color: var(--text-heading); }
 
 /* --- Week register (large dots) -------------------------------------------- */
 
-.weeks-stack { margin-top: var(--space-lg); }
-.weeks-stack > .weekday-letters { margin-bottom: var(--space-md); }
+.weeks-stack {
+  /* The Week tab doubles the large dot register; letters and rows inherit */
+  --dot-size-week: var(--dot-size-week-xl);
+  --dot-size-week-today: var(--dot-size-week-xl-today);
+  margin-top: var(--space-lg);
+}
+.weeks-stack > .weekday-letters { margin-bottom: var(--space-lg); }
 
-.week-strip + .week-strip { margin-top: var(--space-lg); }
+.week-strip + .week-strip { margin-top: var(--space-2xl); }
+.week-strip header { margin-bottom: var(--space-md); }
 
 .week-strip header {
   display: flex;
