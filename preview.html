@@ -428,9 +428,10 @@ footer button:hover { color: var(--text-heading); }
 
 /* --- Week register (large dots) -------------------------------------------- */
 
-.week-strip {
-  margin-top: var(--space-lg);
-}
+.weeks-stack { margin-top: var(--space-lg); }
+.weeks-stack > .weekday-letters { margin-bottom: var(--space-md); }
+
+.week-strip + .week-strip { margin-top: var(--space-lg); }
 
 .week-strip header {
   display: flex;
@@ -1358,14 +1359,11 @@ function renderArchive(root) {
 }
 
 
-// Archive → Week: the current week as a single row of large dots.
-// Filled dots tap through to that day's writing.
+// Archive → Week: weeks as single rows of large dots, current week first,
+// stacking back through the data. Filled dots tap through to that day.
 
 
-function renderWeek(root) {
-  root.appendChild(archiveHead('archive/week'));
-
-  const days = weekOf();
+function weekStrip(days) {
   const strip = document.createElement('section');
   strip.className = 'week-strip';
 
@@ -1379,8 +1377,30 @@ function renderWeek(root) {
   count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
   header.append(range, count);
 
-  strip.append(header, weekdayLetters(), weekRowLarge(days));
-  root.appendChild(strip);
+  strip.append(header, weekRowLarge(days));
+  return strip;
+}
+
+function renderWeek(root) {
+  root.appendChild(archiveHead('archive/week'));
+
+  const stack = document.createElement('div');
+  stack.className = 'weeks-stack';
+  stack.appendChild(weekdayLetters());
+
+  const all = daysWithEntries();
+  const oldest = all.length ? fromKey(all[all.length - 1]) : new Date();
+
+  // Current week first, stacking back to the week of the earliest entry
+  const cursor = new Date();
+  cursor.setDate(cursor.getDate() - cursor.getDay()); // Sunday of this week
+  while (true) {
+    stack.appendChild(weekStrip(weekOf(cursor)));
+    if (cursor <= oldest) break;
+    cursor.setDate(cursor.getDate() - 7);
+  }
+
+  root.appendChild(stack);
   return {};
 }
 

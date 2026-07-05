@@ -264,9 +264,10 @@ footer button:hover { color: var(--text-heading); }
 
 /* --- Week register (large dots) -------------------------------------------- */
 
-.week-strip {
-  margin-top: var(--space-lg);
-}
+.weeks-stack { margin-top: var(--space-lg); }
+.weeks-stack > .weekday-letters { margin-bottom: var(--space-md); }
+
+.week-strip + .week-strip { margin-top: var(--space-lg); }
 
 .week-strip header {
   display: flex;
