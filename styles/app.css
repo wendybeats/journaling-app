@@ -562,6 +562,22 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   line-height: 1;
 }
 
+/* Intertitles — a large title fades in/out before a slide's content */
+.recap-intertitle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 var(--space-screen-x);
+  opacity: 0;
+  transition: opacity 400ms var(--motion-ease);
+  text-wrap: balance;
+  pointer-events: none;
+}
+.recap-intertitle.on { opacity: 1; }
+
 /* Slide 3 — recurring topics */
 .recap-topic-word {
   font-family: var(--font-body);

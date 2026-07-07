@@ -1,9 +1,10 @@
-// Monthly recap — a full-screen five-slide sequence in the dot language:
+// Monthly recap — a full-screen slide sequence in the dot language:
 // arrival circles → the month drawing itself dot by dot with its numbers →
-// recurring topics with the user's own sentences → tone + what was hard →
-// "Reflect & start anew". Timed slides carry a reverse countdown bar;
-// tap advances early, tap-and-hold pauses time; slides with nothing honest
-// to show remove themselves.
+// recurring ideas → your word → challenges → "Reflect & start anew".
+// Chapter slides open with an intertitle that fades in and out before the
+// content begins. Timed slides carry a reverse countdown bar; tap advances
+// early, tap-and-hold pauses time; slides with nothing honest to show
+// remove themselves.
 
 import { fromKey, monthName } from '../format.js';
 import { monthGridBody } from '../dots.js';
@@ -12,9 +13,11 @@ import { markSeen } from '../reflect.js';
 const DOT_STAGGER_MS = 60;
 const STAT_STAGGER_MS = 180;
 const INTRO_MS = 4500;
-const STATS_MS = 7500;
+const STATS_MS = 6500;
 const TOPIC_MS = 4500;
 const TONE_MS = 4500;
+const INTERTITLE_IN_MS = 400;
+const INTERTITLE_HOLD_MS = 1200;
 const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
 
 function el(tag, cls, text) {
@@ -82,6 +85,30 @@ function quoteNode(q) {
   block.appendChild(el('p', null, `“${q.text.replace(/[.?!]$/, '')}”`));
   block.appendChild(el('footer', 'type-meta-small', dayStamp(q.day)));
   return block;
+}
+
+/** A large title that fades in, holds, fades out — then the slide's real
+ *  content begins. Returns a cancel function; onDone fires exactly once. */
+function intertitle(slide, text, onDone) {
+  const t = el('div', 'recap-intertitle type-display', text);
+  slide.appendChild(t);
+  const timers = [];
+  let done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    timers.forEach(clearTimeout);
+    t.remove();
+    onDone();
+  }
+  if (reducedMotion()) {
+    finish();
+    return () => {};
+  }
+  requestAnimationFrame(() => t.classList.add('on'));
+  timers.push(setTimeout(() => t.classList.remove('on'), INTERTITLE_IN_MS + INTERTITLE_HOLD_MS));
+  timers.push(setTimeout(finish, INTERTITLE_IN_MS * 2 + INTERTITLE_HOLD_MS));
+  return () => { timers.forEach(clearTimeout); t.remove(); done = true; };
 }
 
 export function showMonthlyRecap(signal, { onDone } = {}) {
@@ -226,6 +253,17 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
       run() {
         const timers = [];
         let bar = null;
+        holder.style.visibility = 'hidden';
+
+        let started = false;
+        function startContent() {
+          if (started) return;
+          started = true;
+          holder.style.visibility = '';
+          showTopic(0);
+        }
+        const cancelInter = intertitle(slide, 'Recurring ideas', startContent);
+        setControls({ skip: () => { cancelInter(); startContent(); } });
 
         function showTopic(i) {
           if (i >= signal.topics.length) { advance(); return; }
@@ -263,36 +301,18 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
           }, settled));
         }
 
-        showTopic(0);
-        return () => { timers.forEach(clearTimeout); bar?.cancel(); };
+        return () => { cancelInter(); timers.forEach(clearTimeout); bar?.cancel(); };
       },
     };
   }
 
-  // --- Slide 4: tone + what seemed difficult ---
+  // --- Slide 4: your word (tone) ---
   function toneSlide(advance) {
     const slide = el('div', 'recap-slide');
     const center = el('div', 'recap-center');
-
-    if (signal.tone) {
-      center.appendChild(el('div', 'type-meta-small', 'Tone'));
-      center.appendChild(el('p', 'recap-tone',
-        `Your word was “${signal.tone.word}” — it appeared ${signal.tone.count} times.`));
-    }
-
-    const reveals = [];
-    if (signal.difficult.length) {
-      const label = el('div', 'type-meta-small recap-difficult-label recap-reveal', 'What seemed difficult');
-      center.appendChild(label);
-      reveals.push(label);
-      for (const q of signal.difficult.slice(0, 2)) {
-        const node = quoteNode(q);
-        node.classList.add('recap-reveal');
-        center.appendChild(node);
-        reveals.push(node);
-      }
-    }
-
+    const sentence = el('p', 'recap-tone recap-reveal',
+      `Your word was \u201c${signal.tone.word}\u201d \u2014 it appeared ${signal.tone.count} times.`);
+    center.appendChild(sentence);
     slide.appendChild(center);
     const bar = countdownBar(TONE_MS, advance);
     slide.appendChild(bar.el);
@@ -300,12 +320,55 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
     return {
       slide,
       run() {
-        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
         const timers = [];
-        const enterMs = reducedMotion() ? 0 : 500;
-        reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), enterMs + i * 250)));
-        timers.push(setTimeout(() => bar.start(), enterMs + reveals.length * 250));
-        return () => { timers.forEach(clearTimeout); bar.cancel(); };
+        let started = false;
+        function startContent() {
+          if (started) return;
+          started = true;
+          timers.push(setTimeout(() => sentence.classList.add('on'), 50));
+          timers.push(setTimeout(() => bar.start(), 450));
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+        }
+        const cancelInter = intertitle(slide, 'Your Word', startContent);
+        setControls({ skip: () => { cancelInter(); startContent(); } });
+        return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
+      },
+    };
+  }
+
+  // --- Slide 5: challenges (what seemed difficult) ---
+  function challengesSlide(advance) {
+    const slide = el('div', 'recap-slide');
+    const center = el('div', 'recap-center');
+    const reveals = [];
+    const label = el('div', 'type-meta-small recap-reveal', 'What seemed difficult');
+    center.appendChild(label);
+    reveals.push(label);
+    for (const q of signal.difficult.slice(0, 2)) {
+      const node = quoteNode(q);
+      node.classList.add('recap-reveal');
+      center.appendChild(node);
+      reveals.push(node);
+    }
+    slide.appendChild(center);
+    const bar = countdownBar(TONE_MS, advance);
+    slide.appendChild(bar.el);
+
+    return {
+      slide,
+      run() {
+        const timers = [];
+        let started = false;
+        function startContent() {
+          if (started) return;
+          started = true;
+          reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 50 + i * 250)));
+          timers.push(setTimeout(() => bar.start(), 50 + reveals.length * 250));
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+        }
+        const cancelInter = intertitle(slide, 'Challenges', startContent);
+        setControls({ skip: () => { cancelInter(); startContent(); } });
+        return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
       },
     };
   }
@@ -329,7 +392,8 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
   // Assemble — slides with nothing honest to show remove themselves
   const builders = [introSlide, statsSlide];
   if (signal.topics.length) builders.push(topicsSlide);
-  if (signal.tone || signal.difficult.length) builders.push(toneSlide);
+  if (signal.tone) builders.push(toneSlide);
+  if (signal.difficult.length) builders.push(challengesSlide);
   builders.push(outroSlide);
 
   let idx = -1;
