@@ -1,10 +1,10 @@
-// Shared archive chrome: title + the Days / Week / Months / Years toggle.
+// Shared archive chrome: title + the Log / Calendar / Search row.
+
+import { openSearch } from './search.js';
 
 const TABS = [
-  ['Days', '#archive', 'archive'],
-  ['Week', '#archive/week', 'archive/week'],
-  ['Months', '#archive/months', 'archive/months'],
-  ['Years', '#archive/years', 'archive/years'],
+  ['Log', '#archive', 'archive'],
+  ['Calendar', '#archive/calendar', 'archive/calendar'],
 ];
 
 export function archiveHead(active) {
@@ -22,6 +22,14 @@ export function archiveHead(active) {
     if (name === active) a.classList.add('active');
     toggle.appendChild(a);
   }
+  const search = document.createElement('a');
+  search.href = '#search';
+  search.textContent = 'Search';
+  search.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSearch();
+  });
+  toggle.appendChild(search);
   head.append(title, toggle);
   return head;
 }

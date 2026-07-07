@@ -100,11 +100,9 @@
   --dot-grid-cols: 7;
   --dot-size-year: 5px;
   --dot-gap-year: 6px;
-  --dot-size-week: 18px;   /* large register: weekly breakdown inside month cards */
-  --dot-size-week-today: 24px;
+  --dot-size-week: 36px;   /* large register: weekly breakdown, tappable */
+  --dot-size-week-today: 44px;
   --dot-gap-week: 18px;
-  --dot-size-week-xl: 36px; /* Week tab rows — double the large register */
-  --dot-size-week-xl-today: 48px;
 
   /* --- 6. Motion --- */
   --motion-fast: 180ms;
@@ -433,23 +431,6 @@ footer button:hover { color: var(--text-heading); }
 
 /* --- Week register (large dots) -------------------------------------------- */
 
-.weeks-stack {
-  /* The Week tab doubles the large dot register; letters and rows inherit */
-  --dot-size-week: var(--dot-size-week-xl);
-  --dot-size-week-today: var(--dot-size-week-xl-today);
-  margin-top: var(--space-lg);
-}
-.weeks-stack > .weekday-letters { margin-bottom: var(--space-lg); }
-
-.week-strip + .week-strip { margin-top: var(--space-2xl); }
-.week-strip header { margin-bottom: var(--space-md); }
-
-.week-strip header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--space-md);
-}
-
 .weekday-letters,
 .week-row-large {
   display: grid;
@@ -516,6 +497,79 @@ footer button:hover { color: var(--text-heading); }
 .archive-canvas { margin-top: var(--space-lg); }
 .archive-canvas .year-block:first-of-type { margin-top: 0; }
 .archive-canvas > .grid-card { margin-top: 0; }
+
+/* --- Search ------------------------------------------------------------------ */
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--surface-page);
+  overflow-y: auto;
+}
+
+.search-inner {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-screen-x) var(--space-2xl);
+}
+
+.search-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text-heading);
+  padding: var(--space-xs);
+}
+
+.search-input {
+  width: 100%;
+  margin-top: var(--space-xl);
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--font-body);
+  color: var(--text-written);
+  caret-color: var(--line-cursor);
+  border-bottom: var(--line-weight) solid var(--line-rule);
+  border-radius: 0;
+  padding: 0 0 var(--space-sm);
+}
+
+.search-input::placeholder {
+  font-style: italic;
+  color: var(--text-meta);
+  opacity: 1;
+}
+
+.search-results { margin-top: var(--space-lg); }
+.search-summary { margin-bottom: var(--space-sm); }
+
+.search-hit { cursor: pointer; }
+.search-hit p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-hit mark {
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--text-meta);
+  text-decoration-thickness: var(--line-weight);
+  text-underline-offset: 0.18em;
+}
 
 /* --- Archive --------------------------------------------------------------- */
 
@@ -1106,13 +1160,150 @@ function seedDemoData() {
 }
 
 
-// Shared archive chrome: title + the Days / Week / Months / Years toggle.
+// Search — a large blank screen over the app. One oversized input whose type
+// starts huge and shrinks to fit as the query grows; results read like the
+// log, grouped by day, and tap through to the day page.
+
+
+const TYPE_MAX = 42;
+const TYPE_MIN = 17;
+
+function openSearch() {
+  if (document.querySelector('.search-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'search-overlay';
+  const inner = document.createElement('div');
+  inner.className = 'search-inner';
+
+  const top = document.createElement('div');
+  top.className = 'search-top';
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'search-close';
+  close.setAttribute('aria-label', 'Close search');
+  close.textContent = '×';
+  top.appendChild(close);
+
+  const input = document.createElement('input');
+  input.className = 'search-input';
+  input.type = 'text';
+  input.placeholder = 'Search your log';
+  input.setAttribute('aria-label', 'Search your log');
+
+  const results = document.createElement('div');
+  results.className = 'search-results archive';
+
+  function destroy() {
+    document.removeEventListener('keydown', onKey);
+    document.body.style.overflow = '';
+    overlay.remove();
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') destroy();
+  }
+  close.addEventListener('click', destroy);
+  document.addEventListener('keydown', onKey);
+
+  // --- Type fitting: start very large, shrink to keep the query on the bar ---
+  const meter = document.createElement('canvas').getContext('2d');
+  function fit() {
+    const width = input.clientWidth - 2;
+    let size = TYPE_MAX;
+    for (; size > TYPE_MIN; size--) {
+      meter.font = `400 ${size}px Newsreader, Georgia, serif`;
+      if (meter.measureText(input.value).width <= width) break;
+    }
+    input.style.fontSize = `${size}px`;
+  }
+
+  // --- Matching: case-insensitive keyword over the whole log ---
+  function markedText(text, q) {
+    const p = document.createElement('p');
+    const lower = text.toLowerCase();
+    let i = 0;
+    for (let hit = lower.indexOf(q); hit !== -1; hit = lower.indexOf(q, i)) {
+      p.appendChild(document.createTextNode(text.slice(i, hit)));
+      const mark = document.createElement('mark');
+      mark.textContent = text.slice(hit, hit + q.length);
+      p.appendChild(mark);
+      i = hit + q.length;
+    }
+    p.appendChild(document.createTextNode(text.slice(i)));
+    return p;
+  }
+
+  function run() {
+    const q = input.value.trim().toLowerCase();
+    results.innerHTML = '';
+    if (!q) return;
+
+    let dayCount = 0;
+    let entryCount = 0;
+    const frag = document.createDocumentFragment();
+
+    for (const key of daysWithEntries()) {
+      const hits = entriesFor(key).filter((e) => e.text.toLowerCase().includes(q));
+      if (!hits.length) continue;
+      dayCount++;
+      entryCount += hits.length;
+
+      const day = document.createElement('section');
+      day.className = 'day search-day';
+      const heading = document.createElement('h2');
+      heading.className = 'type-title';
+      heading.textContent = dayHeading(fromKey(key));
+      const rule = document.createElement('hr');
+      rule.className = 'day-rule';
+      day.append(heading, rule);
+
+      for (const entry of hits) {
+        const el = document.createElement('article');
+        el.className = 'entry type-written search-hit';
+        const time = document.createElement('time');
+        time.className = 'type-meta-small';
+        time.textContent = timeOfDay(entry.at);
+        el.appendChild(time);
+        el.appendChild(markedText(entry.text.replace(/\n{2,}/g, '  '), q));
+        el.addEventListener('click', () => {
+          destroy();
+          location.hash = `#archive/day/${key}`;
+        });
+        day.appendChild(el);
+      }
+      frag.appendChild(day);
+    }
+
+    const summary = document.createElement('div');
+    summary.className = 'type-meta search-summary';
+    summary.textContent = entryCount
+      ? `${entryCount} ${entryCount === 1 ? 'entry' : 'entries'} · ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`
+      : 'nothing found';
+    results.append(summary, frag);
+  }
+
+  let debounce = null;
+  input.addEventListener('input', () => {
+    fit();
+    clearTimeout(debounce);
+    debounce = setTimeout(run, 160);
+  });
+
+  inner.append(top, input, results);
+  overlay.appendChild(inner);
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  fit();
+  requestAnimationFrame(() => input.focus());
+}
+
+
+// Shared archive chrome: title + the Log / Calendar / Search row.
+
 
 const TABS = [
-  ['Days', '#archive', 'archive'],
-  ['Week', '#archive/week', 'archive/week'],
-  ['Months', '#archive/months', 'archive/months'],
-  ['Years', '#archive/years', 'archive/years'],
+  ['Log', '#archive', 'archive'],
+  ['Calendar', '#archive/calendar', 'archive/calendar'],
 ];
 
 function archiveHead(active) {
@@ -1130,6 +1321,14 @@ function archiveHead(active) {
     if (name === active) a.classList.add('active');
     toggle.appendChild(a);
   }
+  const search = document.createElement('a');
+  search.href = '#search';
+  search.textContent = 'Search';
+  search.addEventListener('click', (e) => {
+    e.preventDefault();
+    openSearch();
+  });
+  toggle.appendChild(search);
   head.append(title, toggle);
   return head;
 }
@@ -1308,7 +1507,7 @@ function renderToday(root) {
 }
 
 
-// Archive → Days: reverse-chronological reading view of day pages.
+// Archive → Log: reverse-chronological reading view of day pages.
 
 
 function renderArchive(root) {
@@ -1370,59 +1569,17 @@ function renderArchive(root) {
 }
 
 
-// Archive → Week: weeks as single rows of large dots, current week first,
-// stacking back through the data. Filled dots tap through to that day.
-
-
-function weekStrip(days) {
-  const strip = document.createElement('section');
-  strip.className = 'week-strip';
-
-  const header = document.createElement('header');
-  const range = document.createElement('span');
-  range.className = 'type-meta';
-  range.textContent = weekRangeLabel(fromKey(days[0]), fromKey(days[6]));
-  header.append(range);
-
-  strip.append(header, weekRowLarge(days));
-  return strip;
-}
-
-function renderWeek(root) {
-  root.appendChild(archiveHead('archive/week'));
-
-  const stack = document.createElement('div');
-  stack.className = 'weeks-stack';
-  stack.appendChild(weekdayLetters());
-
-  const all = daysWithEntries();
-  const oldest = all.length ? fromKey(all[all.length - 1]) : new Date();
-
-  // Current week first, stacking back to the week of the earliest entry
-  const cursor = new Date();
-  cursor.setDate(cursor.getDate() - cursor.getDay()); // Sunday of this week
-  while (true) {
-    stack.appendChild(weekStrip(weekOf(cursor)));
-    if (cursor <= oldest) break;
-    cursor.setDate(cursor.getDate() - 7);
-  }
-
-  root.appendChild(stack);
-  return {};
-}
-
-
-// Archive → Months: every month from the current one back through the data,
-// as compact grid cards. Tapping a month morphs it — dots traveling — into
-// its weekly breakdown, right on the screen. Large dots tap through to days.
+// Archive → Calendar: one continuous experience, zooming from years down to
+// a single day. Starts at the year matrices; tapping a month row morphs the
+// whole year into a stack of month cards (anchored to the tapped month);
+// tapping a month card expands it into weeks; large dots open the day.
 
 
 /**
  * A raised month card that toggles between its compact grid and its weekly
  * breakdown. `canvas` is the ancestor the FLIP pass scans, so sibling cards
- * glide as the card stretches. `coordinator` (one per view) keeps a single
- * card expanded at a time: expanding one collapses the previous in the same
- * FLIP pass. Returns the card element.
+ * glide as the card stretches. `coordinator` keeps one card expanded at a
+ * time — expanding a month collapses the previous in the same pass.
  */
 function monthBlock(canvas, year, month, coordinator = null) {
   const card = document.createElement('section');
@@ -1443,7 +1600,7 @@ function monthBlock(canvas, year, month, coordinator = null) {
   let body = monthGridBody(year, month);
   card.append(header, body);
 
-  // Swap the body without animating — callers wrap this in a FLIP pass
+  // Swap the body without a FLIP pass — callers wrap this in one
   function setExpandedRaw(next) {
     if (expanded === next) return;
     expanded = next;
@@ -1478,40 +1635,8 @@ function monthBlock(canvas, year, month, coordinator = null) {
   return card;
 }
 
-function renderMonths(root) {
-  root.appendChild(archiveHead('archive/months'));
-
-  const canvas = document.createElement('div');
-  canvas.className = 'months-stack archive-canvas';
-  const coordinator = { current: null }; // one expanded month at a time
-
-  const now = new Date();
-  const days = daysWithEntries();
-  const oldest = days.length ? days[days.length - 1] : null;
-  const first = oldest
-    ? { y: Number(oldest.slice(0, 4)), m: Number(oldest.slice(5, 7)) - 1 }
-    : { y: now.getFullYear(), m: now.getMonth() };
-
-  let y = now.getFullYear();
-  let m = now.getMonth();
-  while (y > first.y || (y === first.y && m >= first.m)) {
-    canvas.appendChild(monthBlock(canvas, y, m, coordinator));
-    m--;
-    if (m < 0) { m = 11; y--; }
-  }
-
-  root.appendChild(canvas);
-  return {};
-}
-
-
-// Archive → Years: the dense dot field. Tapping a month row lifts that month
-// out of the matrix — its dots travel into the compact grid — and from there
-// it can break down further into weeks, then days.
-
-
-function renderYears(root) {
-  root.appendChild(archiveHead('archive/years'));
+function renderCalendar(root) {
+  root.appendChild(archiveHead('archive/calendar'));
 
   const canvas = document.createElement('div');
   canvas.className = 'archive-canvas';
@@ -1523,17 +1648,29 @@ function renderYears(root) {
     for (const key of daysWithEntries()) years.add(Number(key.slice(0, 4)));
     // Newest first; every year with data renders — density is not capped
     for (const year of [...years].sort((a, b) => b - a)) {
-      canvas.appendChild(yearMatrix(year, { onMonthTap: focusMonth }));
+      canvas.appendChild(yearMatrix(year, { onMonthTap: showMonths }));
     }
   }
 
-  function focusMonth(year, month) {
-    // The tapped month's dots fly from their matrix row into the month grid
+  /** The tapped year's dots fly from matrix rows into twelve month cards,
+   *  scrolled so the tapped month is in view. */
+  function showMonths(year, month) {
     flipDots(canvas, () => {
       canvas.innerHTML = '';
-      const back = crumb(String(year), () => flipDots(canvas, showYears));
-      canvas.appendChild(back);
-      canvas.appendChild(monthBlock(canvas, year, month));
+      canvas.appendChild(crumb(String(year), () => flipDots(canvas, showYears)));
+      const coordinator = { current: null }; // one expanded month at a time
+      const stack = document.createElement('div');
+      stack.className = 'months-stack';
+      let selected = null;
+      for (let m = 0; m < 12; m++) {
+        const card = monthBlock(canvas, year, m, coordinator);
+        if (m === month) selected = card;
+        stack.appendChild(card);
+      }
+      canvas.appendChild(stack);
+      // Anchor the selected month inside the mutate, so the FLIP pass
+      // measures post-scroll positions and dots fly to where they land
+      selected?.scrollIntoView({ block: 'start' });
     });
   }
 
@@ -1612,9 +1749,9 @@ function resolve() {
   const h = location.hash.replace(/^#\/?/, '');
   if (!h || h === 'today') return { name: 'today', render: renderToday };
   if (h === 'archive') return { name: h, render: renderArchive };
-  if (h === 'archive/week') return { name: h, render: renderWeek };
-  if (h === 'archive/months') return { name: h, render: renderMonths };
-  if (h === 'archive/years' || h === 'year') return { name: 'archive/years', render: renderYears };
+  if (['archive/calendar', 'archive/week', 'archive/months', 'archive/years', 'year'].includes(h)) {
+    return { name: 'archive/calendar', render: renderCalendar };
+  }
   const day = h.match(/^archive\/day\/(\d{4}-\d{2}-\d{2})$/);
   if (day) return { name: h, render: (root) => renderDay(root, day[1]) };
   return { name: 'today', render: renderToday };

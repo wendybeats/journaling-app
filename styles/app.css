@@ -267,23 +267,6 @@ footer button:hover { color: var(--text-heading); }
 
 /* --- Week register (large dots) -------------------------------------------- */
 
-.weeks-stack {
-  /* The Week tab doubles the large dot register; letters and rows inherit */
-  --dot-size-week: var(--dot-size-week-xl);
-  --dot-size-week-today: var(--dot-size-week-xl-today);
-  margin-top: var(--space-lg);
-}
-.weeks-stack > .weekday-letters { margin-bottom: var(--space-lg); }
-
-.week-strip + .week-strip { margin-top: var(--space-2xl); }
-.week-strip header { margin-bottom: var(--space-md); }
-
-.week-strip header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--space-md);
-}
-
 .weekday-letters,
 .week-row-large {
   display: grid;
@@ -350,6 +333,79 @@ footer button:hover { color: var(--text-heading); }
 .archive-canvas { margin-top: var(--space-lg); }
 .archive-canvas .year-block:first-of-type { margin-top: 0; }
 .archive-canvas > .grid-card { margin-top: 0; }
+
+/* --- Search ------------------------------------------------------------------ */
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--surface-page);
+  overflow-y: auto;
+}
+
+.search-inner {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-screen-x) var(--space-2xl);
+}
+
+.search-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text-heading);
+  padding: var(--space-xs);
+}
+
+.search-input {
+  width: 100%;
+  margin-top: var(--space-xl);
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--font-body);
+  color: var(--text-written);
+  caret-color: var(--line-cursor);
+  border-bottom: var(--line-weight) solid var(--line-rule);
+  border-radius: 0;
+  padding: 0 0 var(--space-sm);
+}
+
+.search-input::placeholder {
+  font-style: italic;
+  color: var(--text-meta);
+  opacity: 1;
+}
+
+.search-results { margin-top: var(--space-lg); }
+.search-summary { margin-bottom: var(--space-sm); }
+
+.search-hit { cursor: pointer; }
+.search-hit p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-hit mark {
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--text-meta);
+  text-decoration-thickness: var(--line-weight);
+  text-underline-offset: 0.18em;
+}
 
 /* --- Archive --------------------------------------------------------------- */
 

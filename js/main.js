@@ -2,9 +2,7 @@
 
 import { renderToday } from './views/today.js';
 import { renderArchive } from './views/archive.js';
-import { renderWeek } from './views/week.js';
-import { renderMonths } from './views/months.js';
-import { renderYears } from './views/year.js';
+import { renderCalendar } from './views/calendar.js';
 import { renderDay } from './views/day.js';
 import { seedDemoData } from './seed.js';
 
@@ -18,9 +16,9 @@ function resolve() {
   const h = location.hash.replace(/^#\/?/, '');
   if (!h || h === 'today') return { name: 'today', render: renderToday };
   if (h === 'archive') return { name: h, render: renderArchive };
-  if (h === 'archive/week') return { name: h, render: renderWeek };
-  if (h === 'archive/months') return { name: h, render: renderMonths };
-  if (h === 'archive/years' || h === 'year') return { name: 'archive/years', render: renderYears };
+  if (['archive/calendar', 'archive/week', 'archive/months', 'archive/years', 'year'].includes(h)) {
+    return { name: 'archive/calendar', render: renderCalendar };
+  }
   const day = h.match(/^archive\/day\/(\d{4}-\d{2}-\d{2})$/);
   if (day) return { name: h, render: (root) => renderDay(root, day[1]) };
   return { name: 'today', render: renderToday };

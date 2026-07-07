@@ -93,11 +93,9 @@
   --dot-grid-cols: 7;
   --dot-size-year: 5px;
   --dot-gap-year: 6px;
-  --dot-size-week: 18px;   /* large register: weekly breakdown inside month cards */
-  --dot-size-week-today: 24px;
+  --dot-size-week: 36px;   /* large register: weekly breakdown, tappable */
+  --dot-size-week-today: 44px;
   --dot-gap-week: 18px;
-  --dot-size-week-xl: 36px; /* Week tab rows — double the large register */
-  --dot-size-week-xl-today: 48px;
 
   /* --- 6. Motion --- */
   --motion-fast: 180ms;

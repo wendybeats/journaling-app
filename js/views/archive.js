@@ -1,4 +1,4 @@
-// Archive → Days: reverse-chronological reading view of day pages.
+// Archive → Log: reverse-chronological reading view of day pages.
 
 import { daysWithEntries, entriesFor } from '../store.js';
 import { fromKey, dayHeading, dayMetaRow, timeOfDay } from '../format.js';
