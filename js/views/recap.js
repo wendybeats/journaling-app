@@ -2,7 +2,8 @@
 // arrival circles → the month drawing itself dot by dot with its numbers →
 // recurring topics with the user's own sentences → tone + what was hard →
 // "Reflect & start anew". Timed slides carry a reverse countdown bar;
-// slides with nothing honest to show remove themselves.
+// tap advances early, tap-and-hold pauses time; slides with nothing honest
+// to show remove themselves.
 
 import { fromKey, monthName } from '../format.js';
 import { monthGridBody } from '../dots.js';
@@ -10,6 +11,11 @@ import { markSeen } from '../reflect.js';
 
 const DOT_STAGGER_MS = 60;
 const STAT_STAGGER_MS = 180;
+const INTRO_MS = 4500;
+const STATS_MS = 7500;
+const TOPIC_MS = 4500;
+const TONE_MS = 4500;
+const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -27,23 +33,47 @@ function reducedMotion() {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/** The reverse countdown bar: full → empty over `ms`, then onDone. */
+/** The reverse countdown bar: full → empty over `ms`, then onDone.
+ *  Pausable — a held finger stops time, release resumes what's left. */
 function countdownBar(ms, onDone) {
   const bar = el('div', 'recap-bar');
   const fill = el('div', 'recap-bar-fill');
   bar.appendChild(fill);
   let timer = null;
+  let startedAt = 0;
+  let remaining = ms;
+  let running = false;
+
+  function start() {
+    if (running || remaining <= 0) return;
+    running = true;
+    startedAt = performance.now();
+    timer = setTimeout(onDone, remaining);
+    // Next frame, so a just-frozen transform commits before re-animating
+    requestAnimationFrame(() => {
+      if (!running) return;
+      fill.style.transition = `transform ${remaining}ms linear`;
+      fill.style.transform = 'scaleX(0)';
+    });
+  }
+  function pause() {
+    if (!running) return;
+    running = false;
+    clearTimeout(timer);
+    remaining -= performance.now() - startedAt;
+    // Freeze in scaleX() form: a matrix() start can't interpolate to the
+    // singular scaleX(0) target, so the resume would jump instead of glide
+    const m = getComputedStyle(fill).transform;
+    const sx = m.startsWith('matrix(') ? parseFloat(m.slice(7)) : 1;
+    fill.style.transition = 'none';
+    fill.style.transform = `scaleX(${sx})`;
+  }
   return {
     el: bar,
-    start() {
-      void fill.offsetWidth;
-      fill.style.transition = `transform ${ms}ms linear`;
-      fill.style.transform = 'scaleX(0)';
-      timer = setTimeout(onDone, ms);
-    },
-    cancel() {
-      clearTimeout(timer);
-    },
+    start,
+    pause,
+    resume: start,
+    cancel() { running = false; clearTimeout(timer); },
   };
 }
 
@@ -62,6 +92,33 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
   overlay.appendChild(stage);
 
   let cleanup = null;
+  let controls = null; // { skip, pause, resume } for the current slide
+  function setControls(c) {
+    controls = c;
+  }
+
+  // Tap advances; a held press pauses time until release
+  let holdTimer = null;
+  let holding = false;
+  overlay.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    e.preventDefault();
+    holding = false;
+    holdTimer = setTimeout(() => { holding = true; controls?.pause?.(); }, HOLD_MS);
+  });
+  overlay.addEventListener('pointerup', (e) => {
+    clearTimeout(holdTimer);
+    if (holding) {
+      holding = false;
+      controls?.resume?.();
+    } else if (!e.target.closest('button')) {
+      controls?.skip?.();
+    }
+  });
+  overlay.addEventListener('pointercancel', () => {
+    clearTimeout(holdTimer);
+    if (holding) { holding = false; controls?.resume?.(); }
+  });
 
   function close(seen) {
     cleanup?.();
@@ -90,9 +147,16 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
     skip.type = 'button';
     skip.addEventListener('click', () => close(true));
 
-    const bar = countdownBar(3000, advance);
+    const bar = countdownBar(INTRO_MS, advance);
     slide.append(bar.el, skip);
-    return { slide, run: () => (bar.start(), () => bar.cancel()) };
+    return {
+      slide,
+      run() {
+        bar.start();
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+        return () => bar.cancel();
+      },
+    };
   }
 
   // --- Slide 2: the month, drawn dot by dot, then its numbers ---
@@ -105,23 +169,26 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
     grid.classList.add('recap-grid');
 
     const stats = [
-      [String(signal.days), signal.days === 1 ? 'day written' : 'days written'],
+      [String(signal.days), 'days written'],
       [signal.words.toLocaleString(), 'words'],
-      [String(signal.longestRun), `${signal.longestRun === 1 ? 'day' : 'days'} longest run`],
+      [String(signal.longestRun), 'longest run'],
     ].map(([num, label]) => {
-      const row = el('div', 'recap-stat recap-reveal');
-      row.append(el('span', 'recap-stat-number', num), el('span', 'type-meta', label));
-      return row;
+      const col = el('div', 'recap-stat recap-reveal');
+      col.append(el('span', 'recap-stat-number', num), el('span', 'type-meta-small', label));
+      return col;
     });
+    const statsRow = el('div', 'recap-stats-row');
+    statsRow.append(...stats);
 
-    center.append(title, grid, ...stats);
+    center.append(title, grid, statsRow);
     slide.appendChild(center);
-    const bar = countdownBar(5000, advance);
+    const bar = countdownBar(STATS_MS, advance);
     slide.appendChild(bar.el);
 
     return {
       slide,
       run() {
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
         const timers = [];
         const dots = [...slide.querySelectorAll('.dot.filled')];
         for (const d of dots) d.classList.add('recap-pending');
@@ -162,9 +229,17 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
 
         function showTopic(i) {
           if (i >= signal.topics.length) { advance(); return; }
+          timers.forEach(clearTimeout);
+          timers.length = 0;
+          bar?.cancel();
           const topic = signal.topics[i];
           holder.innerHTML = '';
           barHolder.innerHTML = '';
+          setControls({
+            skip: () => showTopic(i + 1),
+            pause: () => bar?.pause(),
+            resume: () => bar?.resume(),
+          });
 
           holder.appendChild(el('div', 'type-meta-small', `Recurring · ${i + 1} of ${signal.topics.length}`));
           holder.appendChild(el('div', 'recap-topic-word', `“${topic.word}”`));
@@ -182,7 +257,7 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
           });
           const settled = enterMs + quotes.length * 250;
           timers.push(setTimeout(() => {
-            bar = countdownBar(3000, () => showTopic(i + 1));
+            bar = countdownBar(TOPIC_MS, () => showTopic(i + 1));
             barHolder.appendChild(bar.el);
             bar.start();
           }, settled));
@@ -219,12 +294,13 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
     }
 
     slide.appendChild(center);
-    const bar = countdownBar(3000, advance);
+    const bar = countdownBar(TONE_MS, advance);
     slide.appendChild(bar.el);
 
     return {
       slide,
       run() {
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
         const timers = [];
         const enterMs = reducedMotion() ? 0 : 500;
         reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), enterMs + i * 250)));
@@ -247,7 +323,7 @@ export function showMonthlyRecap(signal, { onDone } = {}) {
     cta.type = 'button';
     cta.addEventListener('click', () => close(true));
     slide.appendChild(cta);
-    return { slide, run: () => null };
+    return { slide, run: () => (setControls(null), null) };
   }
 
   // Assemble — slides with nothing honest to show remove themselves

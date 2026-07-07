@@ -268,17 +268,17 @@ main.leaving { opacity: 0; transition: opacity var(--motion-base) var(--motion-e
 main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 @keyframes view-enter { from { opacity: 0; } to { opacity: 1; } }
 
-footer {
+.shell > footer {
   padding: var(--space-md) 0 var(--space-md);
   display: flex;
   justify-content: space-between;
 }
-footer button {
+.shell > footer button {
   background: none; border: none; cursor: pointer;
   font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
   padding: 0;
 }
-footer button:hover { color: var(--text-heading); }
+.shell > footer button:hover { color: var(--text-heading); }
 
 /* --- Day page (Today + Archive share this anatomy) ------------------------ */
 
@@ -596,6 +596,9 @@ footer button:hover { color: var(--text-heading); }
   background: var(--surface-page);
   opacity: 0;
   transition: opacity var(--motion-base) var(--motion-ease);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 .recap-overlay.open { opacity: 1; }
 .recap-overlay.leaving { opacity: 0; }
@@ -699,10 +702,19 @@ footer button:hover { color: var(--text-heading); }
 }
 .recap-reveal.on { opacity: 1; transform: none; }
 
+.recap-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+}
 .recap-stat {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 88px;
 }
 .recap-stat-number {
   font-family: var(--font-heading);
@@ -711,6 +723,7 @@ footer button:hover { color: var(--text-heading); }
   letter-spacing: var(--type-display-tracking);
   color: var(--text-heading);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 /* Slide 3 — recurring topics */
@@ -724,6 +737,9 @@ footer button:hover { color: var(--text-heading); }
 
 .recap-quote {
   max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 .recap-quote p {
   font-family: var(--font-body);
@@ -752,17 +768,17 @@ footer button:hover { color: var(--text-heading); }
   left: 50%;
   transform: translateX(-50%);
   background: none;
-  border: var(--line-weight) solid var(--line-rule);
-  border-radius: var(--radius-control);
-  padding: 12px 26px;
+  border: none;
+  padding: var(--space-sm);
   cursor: pointer;
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
+  font-family: var(--font-meta);
+  font-size: 14px;
+  letter-spacing: var(--type-meta-tracking);
+  text-transform: uppercase;
   color: var(--text-heading);
-  transition: border-color var(--motion-fast) var(--motion-ease);
+  transition: color var(--motion-fast) var(--motion-ease);
 }
-.recap-continue:hover { border-color: var(--text-meta); }
+.recap-continue:hover { color: var(--text-written); }
 
 @media (prefers-reduced-motion: reduce) {
   .recap-slide, .recap-reveal, .recap-grid .dot.filled { transition: none; }
@@ -1309,16 +1325,16 @@ function monthlySignal(year, month) {
       counts.set(st, c);
     }
   }
-  const topics = [...counts.entries()]
+  const ranked = [...counts.entries()]
     .filter(([st, c]) => c.count >= 4 && c.days.size >= 3 && st !== (tone && stem(tone.word)))
     .sort((a, b) => b[1].days.size - a[1].days.size || b[1].count - a[1].count)
-    .slice(0, 3)
+    .slice(0, 8)
     .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
 
-  // Two verbatim example quotes per topic — distinct sentences, distinct
-  // days where possible, and no sentence reused across topics
+  // Two verbatim example quotes per topic — distinct sentences (never
+  // reused across topics), distinct days where possible
   const usedText = new Set();
-  for (const topic of topics) {
+  for (const topic of ranked) {
     topic.quotes = [];
     const usedDays = new Set();
     for (const entry of all) {
@@ -1333,7 +1349,26 @@ function monthlySignal(year, month) {
         usedText.add(hit);
       }
     }
+    // Second pass: a same-day second sentence beats showing only one
+    if (topic.quotes.length < 2) {
+      for (const entry of all) {
+        if (topic.quotes.length >= 2) break;
+        for (const line of sentences(entry.text)) {
+          if (topic.quotes.length >= 2) break;
+          if (tokenize(line).map(stem).includes(topic.stem) && !usedText.has(line)) {
+            topic.quotes.push({ text: line, day: entry.day });
+            usedText.add(line);
+          }
+        }
+      }
+    }
   }
+
+  // Topics that can show two examples come first
+  const topics = ranked
+    .sort((a, b) => (b.quotes.length >= 2) - (a.quotes.length >= 2)
+      || b.days - a.days || b.mentions - a.mentions)
+    .slice(0, 3);
 
   // Difficulty: explicit markers, quoted; up to two distinct sentences
   const difficult = [];
@@ -1929,11 +1964,17 @@ function openSearch() {
 // arrival circles → the month drawing itself dot by dot with its numbers →
 // recurring topics with the user's own sentences → tone + what was hard →
 // "Reflect & start anew". Timed slides carry a reverse countdown bar;
-// slides with nothing honest to show remove themselves.
+// tap advances early, tap-and-hold pauses time; slides with nothing honest
+// to show remove themselves.
 
 
 const DOT_STAGGER_MS = 60;
 const STAT_STAGGER_MS = 180;
+const INTRO_MS = 4500;
+const STATS_MS = 7500;
+const TOPIC_MS = 4500;
+const TONE_MS = 4500;
+const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -1951,23 +1992,47 @@ function reducedMotion() {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/** The reverse countdown bar: full → empty over `ms`, then onDone. */
+/** The reverse countdown bar: full → empty over `ms`, then onDone.
+ *  Pausable — a held finger stops time, release resumes what's left. */
 function countdownBar(ms, onDone) {
   const bar = el('div', 'recap-bar');
   const fill = el('div', 'recap-bar-fill');
   bar.appendChild(fill);
   let timer = null;
+  let startedAt = 0;
+  let remaining = ms;
+  let running = false;
+
+  function start() {
+    if (running || remaining <= 0) return;
+    running = true;
+    startedAt = performance.now();
+    timer = setTimeout(onDone, remaining);
+    // Next frame, so a just-frozen transform commits before re-animating
+    requestAnimationFrame(() => {
+      if (!running) return;
+      fill.style.transition = `transform ${remaining}ms linear`;
+      fill.style.transform = 'scaleX(0)';
+    });
+  }
+  function pause() {
+    if (!running) return;
+    running = false;
+    clearTimeout(timer);
+    remaining -= performance.now() - startedAt;
+    // Freeze in scaleX() form: a matrix() start can't interpolate to the
+    // singular scaleX(0) target, so the resume would jump instead of glide
+    const m = getComputedStyle(fill).transform;
+    const sx = m.startsWith('matrix(') ? parseFloat(m.slice(7)) : 1;
+    fill.style.transition = 'none';
+    fill.style.transform = `scaleX(${sx})`;
+  }
   return {
     el: bar,
-    start() {
-      void fill.offsetWidth;
-      fill.style.transition = `transform ${ms}ms linear`;
-      fill.style.transform = 'scaleX(0)';
-      timer = setTimeout(onDone, ms);
-    },
-    cancel() {
-      clearTimeout(timer);
-    },
+    start,
+    pause,
+    resume: start,
+    cancel() { running = false; clearTimeout(timer); },
   };
 }
 
@@ -1986,6 +2051,33 @@ function showMonthlyRecap(signal, { onDone } = {}) {
   overlay.appendChild(stage);
 
   let cleanup = null;
+  let controls = null; // { skip, pause, resume } for the current slide
+  function setControls(c) {
+    controls = c;
+  }
+
+  // Tap advances; a held press pauses time until release
+  let holdTimer = null;
+  let holding = false;
+  overlay.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    e.preventDefault();
+    holding = false;
+    holdTimer = setTimeout(() => { holding = true; controls?.pause?.(); }, HOLD_MS);
+  });
+  overlay.addEventListener('pointerup', (e) => {
+    clearTimeout(holdTimer);
+    if (holding) {
+      holding = false;
+      controls?.resume?.();
+    } else if (!e.target.closest('button')) {
+      controls?.skip?.();
+    }
+  });
+  overlay.addEventListener('pointercancel', () => {
+    clearTimeout(holdTimer);
+    if (holding) { holding = false; controls?.resume?.(); }
+  });
 
   function close(seen) {
     cleanup?.();
@@ -2014,9 +2106,16 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     skip.type = 'button';
     skip.addEventListener('click', () => close(true));
 
-    const bar = countdownBar(3000, advance);
+    const bar = countdownBar(INTRO_MS, advance);
     slide.append(bar.el, skip);
-    return { slide, run: () => (bar.start(), () => bar.cancel()) };
+    return {
+      slide,
+      run() {
+        bar.start();
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+        return () => bar.cancel();
+      },
+    };
   }
 
   // --- Slide 2: the month, drawn dot by dot, then its numbers ---
@@ -2029,23 +2128,26 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     grid.classList.add('recap-grid');
 
     const stats = [
-      [String(signal.days), signal.days === 1 ? 'day written' : 'days written'],
+      [String(signal.days), 'days written'],
       [signal.words.toLocaleString(), 'words'],
-      [String(signal.longestRun), `${signal.longestRun === 1 ? 'day' : 'days'} longest run`],
+      [String(signal.longestRun), 'longest run'],
     ].map(([num, label]) => {
-      const row = el('div', 'recap-stat recap-reveal');
-      row.append(el('span', 'recap-stat-number', num), el('span', 'type-meta', label));
-      return row;
+      const col = el('div', 'recap-stat recap-reveal');
+      col.append(el('span', 'recap-stat-number', num), el('span', 'type-meta-small', label));
+      return col;
     });
+    const statsRow = el('div', 'recap-stats-row');
+    statsRow.append(...stats);
 
-    center.append(title, grid, ...stats);
+    center.append(title, grid, statsRow);
     slide.appendChild(center);
-    const bar = countdownBar(5000, advance);
+    const bar = countdownBar(STATS_MS, advance);
     slide.appendChild(bar.el);
 
     return {
       slide,
       run() {
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
         const timers = [];
         const dots = [...slide.querySelectorAll('.dot.filled')];
         for (const d of dots) d.classList.add('recap-pending');
@@ -2086,9 +2188,17 @@ function showMonthlyRecap(signal, { onDone } = {}) {
 
         function showTopic(i) {
           if (i >= signal.topics.length) { advance(); return; }
+          timers.forEach(clearTimeout);
+          timers.length = 0;
+          bar?.cancel();
           const topic = signal.topics[i];
           holder.innerHTML = '';
           barHolder.innerHTML = '';
+          setControls({
+            skip: () => showTopic(i + 1),
+            pause: () => bar?.pause(),
+            resume: () => bar?.resume(),
+          });
 
           holder.appendChild(el('div', 'type-meta-small', `Recurring · ${i + 1} of ${signal.topics.length}`));
           holder.appendChild(el('div', 'recap-topic-word', `“${topic.word}”`));
@@ -2106,7 +2216,7 @@ function showMonthlyRecap(signal, { onDone } = {}) {
           });
           const settled = enterMs + quotes.length * 250;
           timers.push(setTimeout(() => {
-            bar = countdownBar(3000, () => showTopic(i + 1));
+            bar = countdownBar(TOPIC_MS, () => showTopic(i + 1));
             barHolder.appendChild(bar.el);
             bar.start();
           }, settled));
@@ -2143,12 +2253,13 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     }
 
     slide.appendChild(center);
-    const bar = countdownBar(3000, advance);
+    const bar = countdownBar(TONE_MS, advance);
     slide.appendChild(bar.el);
 
     return {
       slide,
       run() {
+        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
         const timers = [];
         const enterMs = reducedMotion() ? 0 : 500;
         reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), enterMs + i * 250)));
@@ -2171,7 +2282,7 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     cta.type = 'button';
     cta.addEventListener('click', () => close(true));
     slide.appendChild(cta);
-    return { slide, run: () => null };
+    return { slide, run: () => (setControls(null), null) };
   }
 
   // Assemble — slides with nothing honest to show remove themselves

@@ -183,16 +183,16 @@ export function monthlySignal(year, month) {
       counts.set(st, c);
     }
   }
-  const topics = [...counts.entries()]
+  const ranked = [...counts.entries()]
     .filter(([st, c]) => c.count >= 4 && c.days.size >= 3 && st !== (tone && stem(tone.word)))
     .sort((a, b) => b[1].days.size - a[1].days.size || b[1].count - a[1].count)
-    .slice(0, 3)
+    .slice(0, 8)
     .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
 
-  // Two verbatim example quotes per topic — distinct sentences, distinct
-  // days where possible, and no sentence reused across topics
+  // Two verbatim example quotes per topic — distinct sentences (never
+  // reused across topics), distinct days where possible
   const usedText = new Set();
-  for (const topic of topics) {
+  for (const topic of ranked) {
     topic.quotes = [];
     const usedDays = new Set();
     for (const entry of all) {
@@ -207,7 +207,26 @@ export function monthlySignal(year, month) {
         usedText.add(hit);
       }
     }
+    // Second pass: a same-day second sentence beats showing only one
+    if (topic.quotes.length < 2) {
+      for (const entry of all) {
+        if (topic.quotes.length >= 2) break;
+        for (const line of sentences(entry.text)) {
+          if (topic.quotes.length >= 2) break;
+          if (tokenize(line).map(stem).includes(topic.stem) && !usedText.has(line)) {
+            topic.quotes.push({ text: line, day: entry.day });
+            usedText.add(line);
+          }
+        }
+      }
+    }
   }
+
+  // Topics that can show two examples come first
+  const topics = ranked
+    .sort((a, b) => (b.quotes.length >= 2) - (a.quotes.length >= 2)
+      || b.days - a.days || b.mentions - a.mentions)
+    .slice(0, 3);
 
   // Difficulty: explicit markers, quoted; up to two distinct sentences
   const difficult = [];

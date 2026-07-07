@@ -104,17 +104,17 @@ main.leaving { opacity: 0; transition: opacity var(--motion-base) var(--motion-e
 main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 @keyframes view-enter { from { opacity: 0; } to { opacity: 1; } }
 
-footer {
+.shell > footer {
   padding: var(--space-md) 0 var(--space-md);
   display: flex;
   justify-content: space-between;
 }
-footer button {
+.shell > footer button {
   background: none; border: none; cursor: pointer;
   font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
   padding: 0;
 }
-footer button:hover { color: var(--text-heading); }
+.shell > footer button:hover { color: var(--text-heading); }
 
 /* --- Day page (Today + Archive share this anatomy) ------------------------ */
 
@@ -432,6 +432,9 @@ footer button:hover { color: var(--text-heading); }
   background: var(--surface-page);
   opacity: 0;
   transition: opacity var(--motion-base) var(--motion-ease);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 .recap-overlay.open { opacity: 1; }
 .recap-overlay.leaving { opacity: 0; }
@@ -535,10 +538,19 @@ footer button:hover { color: var(--text-heading); }
 }
 .recap-reveal.on { opacity: 1; transform: none; }
 
+.recap-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+}
 .recap-stat {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 88px;
 }
 .recap-stat-number {
   font-family: var(--font-heading);
@@ -547,6 +559,7 @@ footer button:hover { color: var(--text-heading); }
   letter-spacing: var(--type-display-tracking);
   color: var(--text-heading);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 /* Slide 3 — recurring topics */
@@ -560,6 +573,9 @@ footer button:hover { color: var(--text-heading); }
 
 .recap-quote {
   max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 .recap-quote p {
   font-family: var(--font-body);
@@ -588,17 +604,17 @@ footer button:hover { color: var(--text-heading); }
   left: 50%;
   transform: translateX(-50%);
   background: none;
-  border: var(--line-weight) solid var(--line-rule);
-  border-radius: var(--radius-control);
-  padding: 12px 26px;
+  border: none;
+  padding: var(--space-sm);
   cursor: pointer;
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
+  font-family: var(--font-meta);
+  font-size: 14px;
+  letter-spacing: var(--type-meta-tracking);
+  text-transform: uppercase;
   color: var(--text-heading);
-  transition: border-color var(--motion-fast) var(--motion-ease);
+  transition: color var(--motion-fast) var(--motion-ease);
 }
-.recap-continue:hover { border-color: var(--text-meta); }
+.recap-continue:hover { color: var(--text-written); }
 
 @media (prefers-reduced-motion: reduce) {
   .recap-slide, .recap-reveal, .recap-grid .dot.filled { transition: none; }
