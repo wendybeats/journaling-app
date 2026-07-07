@@ -21,12 +21,13 @@ export function renderArchive(root) {
   const container = document.createElement('div');
   container.className = 'archive';
 
-  // Archived reflections rest at their week boundary: above the last day
-  // of the week they mirror (list is newest-first)
+  // Archived reflections rest at their period boundary: above the last day
+  // of the period they mirror (list is newest-first)
   const reflections = Object.values(archivedReflections())
     .map((signal) => {
-      const end = fromKey(signal.startKey);
-      end.setDate(end.getDate() + 6);
+      const end = signal.kind === 'weekly'
+        ? (() => { const e = fromKey(signal.startKey); e.setDate(e.getDate() + 6); return e; })()
+        : new Date(signal.year, signal.month + 1, 0);
       const y = end.getFullYear();
       const m = String(end.getMonth() + 1).padStart(2, '0');
       const d = String(end.getDate()).padStart(2, '0');

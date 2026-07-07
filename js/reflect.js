@@ -1,8 +1,9 @@
-// Reflection engine (R1) — a deterministic stand-in for the two-stage
+// Reflection engine (R1+R2) — a deterministic stand-in for the two-stage
 // pipeline in docs/vellum-reflection-spec.md. It only surfaces what the
-// entries literally contain: a topic needs >=3 mentions across the week,
-// every quote is a verbatim sentence from an entry, and a week below the
-// threshold produces silence, not an apology.
+// entries literally contain: topics need repeated mentions, every quote is
+// a verbatim sentence, tone words must be the user's own, difficulty needs
+// explicit textual evidence, and thin periods get silence (weekly) or the
+// honest quiet variant (monthly) — never a reach.
 
 import { dayKey, entriesFor, hasEntries } from './store.js';
 
@@ -62,7 +63,8 @@ const STOPWORDS = new Set(('the a an and or but if then than that this these tho
   'him hers itself myself something anything nothing everything went going gone got get ' +
   // generic descriptors — true but never a thread worth mirroring
   'long short good great bad better best hard easy small little big first last much many made make come came back ' +
-  'right different actually finally really quite maybe almost enough every another other').split(' '));
+  'right different actually finally really quite maybe almost enough every another other instead though although ' +
+  'however anyway anymore toward towards besides without within').split(' '));
 
 function tokenize(text) {
   return (text.toLowerCase().match(/[a-z']+/g) ?? [])
@@ -130,7 +132,99 @@ export function weeklySignal(start) {
     topic = { word: topic, mentions: c.count, days: c.days.size };
   }
 
-  return { startKey: dayKey(start), days: writtenDays.length, words, sufficient, topic, quotes };
+  const startKey = dayKey(start);
+  return { kind: 'weekly', id: `w-${startKey}`, startKey, days: writtenDays.length, words, sufficient, topic, quotes };
+}
+
+// Tone vocabulary — the tone section may only use the user's own recurring
+// words, drawn from this feeling-adjacent list
+const TONE_WORDS = ('tired calm quiet quietly slow slowly heavy light lighter easy easier hard harder soft softer ' +
+  'angry sad happy grateful anxious restless hopeful proud lonely warm cold dark bright gentle rough steady ' +
+  'frustrated content peaceful uneasy raw tender flat full empty').split(' ');
+
+// Difficulty markers — explicit textual evidence only, never sentiment inference
+const DIFFICULT_RE = /fighting|struggl|difficult|too hard|bad sleep|short fuse|hurt|exhaust|worried|worry|afraid|fear|couldn't|can't stop|falling behind/i;
+
+/** Stage 1 over one calendar month. Always returns a signal — an
+ *  insufficient month arrives as the quiet variant, not silence. */
+export function monthlySignal(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const keys = Array.from({ length: daysInMonth }, (_, i) => dayKey(new Date(year, month, i + 1)));
+  const writtenDays = keys.filter(hasEntries);
+  const all = writtenDays.flatMap((k) => entriesFor(k).map((e) => ({ ...e, day: k })));
+  const words = all.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
+  const sufficient = writtenDays.length >= 8;
+
+  // Longest run of consecutive written days
+  let longestRun = 0;
+  let run = 0;
+  for (const k of keys) {
+    run = hasEntries(k) ? run + 1 : 0;
+    longestRun = Math.max(longestRun, run);
+  }
+
+  // Tone: the user's own recurring feeling-word (>=3 occurrences)
+  let tone = null;
+  const corpus = all.map((e) => e.text.toLowerCase()).join(' ');
+  for (const w of TONE_WORDS) {
+    const count = (corpus.match(new RegExp(`\\b${w}\\b`, 'g')) ?? []).length;
+    if (count >= 3 && (!tone || count > tone.count)) tone = { word: w, count };
+  }
+
+  // Recurring topics: monthly bar is higher — >=4 mentions across >=3 days.
+  // The tone word belongs to the tone section, not the topic list.
+  const counts = new Map();
+  for (const entry of all) {
+    for (const raw of tokenize(entry.text)) {
+      const st = stem(raw);
+      const c = counts.get(st) ?? { count: 0, days: new Set(), display: raw };
+      c.count++;
+      c.days.add(entry.day);
+      counts.set(st, c);
+    }
+  }
+  const topics = [...counts.entries()]
+    .filter(([st, c]) => c.count >= 4 && c.days.size >= 3 && st !== (tone && stem(tone.word)))
+    .sort((a, b) => b[1].days.size - a[1].days.size || b[1].count - a[1].count)
+    .slice(0, 3)
+    .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
+
+  // One verbatim quote anchoring the top topic
+  let topQuote = null;
+  if (topics.length) {
+    for (const entry of all) {
+      const hit = sentences(entry.text).find((line) => tokenize(line).map(stem).includes(topics[0].stem));
+      if (hit) { topQuote = { text: hit, day: entry.day }; break; }
+    }
+  }
+
+  // Difficulty: explicit markers, quoted; up to two distinct sentences
+  const difficult = [];
+  const seenText = new Set();
+  for (const entry of all) {
+    if (difficult.length >= 2) break;
+    const hit = sentences(entry.text).find((line) => DIFFICULT_RE.test(line) && !seenText.has(line));
+    if (hit) {
+      difficult.push({ text: hit, day: entry.day });
+      seenText.add(hit);
+    }
+  }
+
+  return {
+    kind: 'monthly', id: `m-${year}-${String(month + 1).padStart(2, '0')}`,
+    year, month, days: writtenDays.length, words, longestRun, sufficient,
+    topics, topQuote, tone, difficult,
+  };
+}
+
+/** The previous month's recap, or null (no consent / already seen). */
+export function pendingMonthly(now = new Date()) {
+  if (consentStatus() !== 'yes') return null;
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const signal = monthlySignal(prev.getFullYear(), prev.getMonth());
+  if (state.seen?.[signal.id]) return null;
+  if (signal.days === 0) return null; // a month with no writing at all stays silent
+  return signal;
 }
 
 /** The weekly reflection waiting to be shown, or null (no consent /
@@ -138,8 +232,8 @@ export function weeklySignal(start) {
 export function pendingWeekly(now = new Date()) {
   if (consentStatus() !== 'yes') return null;
   const start = lastCompletedWeekStart(now);
-  if (state.seen?.[dayKey(start)]) return null;
   const signal = weeklySignal(start);
+  if (state.seen?.[signal.id]) return null;
   return signal.sufficient ? signal : null;
 }
 
@@ -150,17 +244,17 @@ export function consentEligible(now = new Date()) {
 }
 
 export function markSeen(signal) {
-  state.seen = { ...(state.seen ?? {}), [signal.startKey]: true };
-  state.archived = { ...(state.archived ?? {}), [signal.startKey]: signal };
+  state.seen = { ...(state.seen ?? {}), [signal.id]: true };
+  state.archived = { ...(state.archived ?? {}), [signal.id]: signal };
   persist();
 }
 
-export function removeReflection(startKey) {
-  delete state.archived?.[startKey];
+export function removeReflection(id) {
+  delete state.archived?.[id];
   persist();
 }
 
-/** Archived reflections, keyed by week-start day key. */
+/** Archived reflections, keyed by signal id. */
 export function archivedReflections() {
   return state.archived ?? {};
 }

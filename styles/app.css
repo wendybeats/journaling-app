@@ -412,14 +412,50 @@ footer button:hover { color: var(--text-heading); }
   color: var(--text-meta);
 }
 
-/* Archived form, resting in the Notebook scroll */
-.reflection-inline { margin: var(--space-2xl) 0; }
+/* Archived form: one quiet on-color line; tap to reopen the full card */
+.reflection-inline {
+  background: var(--surface-raised);
+  border-radius: var(--radius-card);
+  padding: var(--space-md) var(--space-card);
+  margin: var(--space-2xl) 0;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--motion-ease);
+}
+.reflection-inline:hover { color: var(--text-heading); }
+
+.reflection-label {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--line-weight) solid color-mix(in srgb, var(--text-meta) 35%, transparent);
+}
+.reflection-label:first-of-type { border-top: none; padding-top: 0; }
+
+.reflection-topics { margin-top: var(--space-sm); }
+.reflection-topic {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-xs) 0;
+}
+.reflection-topic-word {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--type-written-size);
+}
+
+.reflection-footer {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--line-weight) solid color-mix(in srgb, var(--text-meta) 35%, transparent);
+}
 
 /* --- Consent card (Today, once) ---------------------------------------------- */
 
 .consent-card { margin-top: var(--space-2xl); cursor: default; }
 
+.consent-title { margin-top: var(--space-xs); }
 .consent-body { margin-top: var(--space-sm); }
+.consent-privacy { margin-top: var(--space-sm); }
 
 .consent-actions {
   display: flex;
