@@ -13,7 +13,7 @@ import { markSeen } from '../reflect.js';
 const DOT_STAGGER_MS = 60;
 const STAT_STAGGER_MS = 180;
 const INTRO_MS = 4500;
-const STATS_MS = 6500;
+const STATS_MS = 6000;
 const TOPIC_MS = 4500;
 const TONE_MS = 4500;
 const INTERTITLE_IN_MS = 400;
@@ -87,11 +87,20 @@ function quoteNode(q) {
   return block;
 }
 
-/** A large title that fades in, holds, fades out — then the slide's real
- *  content begins. Returns a cancel function; onDone fires exactly once. */
+// Size an intertitle so the text fills the stage width minus 40px per side
+const titleMeter = document.createElement('canvas').getContext('2d');
+function fitTitleSize(text, maxWidth) {
+  titleMeter.font = 'italic 400 100px Newsreader, Georgia, serif';
+  const w = titleMeter.measureText(text).width;
+  return Math.max(24, Math.floor((100 * maxWidth) / w));
+}
+
+/** A huge decorative title that fades in, holds, fades out — then the
+ *  slide's real content begins. Returns a cancel; onDone fires once. */
 function intertitle(slide, text, onDone) {
-  const t = el('div', 'recap-intertitle type-display', text);
+  const t = el('div', 'recap-intertitle', text);
   slide.appendChild(t);
+  t.style.fontSize = `${fitTitleSize(text, Math.min(slide.clientWidth || 430, 430) - 80)}px`;
   const timers = [];
   let done = false;
   function finish() {

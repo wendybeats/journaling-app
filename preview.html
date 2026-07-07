@@ -726,7 +726,8 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   line-height: 1;
 }
 
-/* Intertitles — a large title fades in/out before a slide's content */
+/* Intertitles — a huge decorative title fades in/out before a slide's
+   content; sized in JS to fill the width minus 40px per side */
 .recap-intertitle {
   position: absolute;
   inset: 0;
@@ -734,10 +735,15 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 var(--space-screen-x);
+  padding: 0 40px;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--text-meta);
+  white-space: nowrap;
   opacity: 0;
   transition: opacity 400ms var(--motion-ease);
-  text-wrap: balance;
   pointer-events: none;
 }
 .recap-intertitle.on { opacity: 1; }
@@ -1988,7 +1994,7 @@ function openSearch() {
 const DOT_STAGGER_MS = 60;
 const STAT_STAGGER_MS = 180;
 const INTRO_MS = 4500;
-const STATS_MS = 6500;
+const STATS_MS = 6000;
 const TOPIC_MS = 4500;
 const TONE_MS = 4500;
 const INTERTITLE_IN_MS = 400;
@@ -2062,11 +2068,20 @@ function quoteNode(q) {
   return block;
 }
 
-/** A large title that fades in, holds, fades out — then the slide's real
- *  content begins. Returns a cancel function; onDone fires exactly once. */
+// Size an intertitle so the text fills the stage width minus 40px per side
+const titleMeter = document.createElement('canvas').getContext('2d');
+function fitTitleSize(text, maxWidth) {
+  titleMeter.font = 'italic 400 100px Newsreader, Georgia, serif';
+  const w = titleMeter.measureText(text).width;
+  return Math.max(24, Math.floor((100 * maxWidth) / w));
+}
+
+/** A huge decorative title that fades in, holds, fades out — then the
+ *  slide's real content begins. Returns a cancel; onDone fires once. */
 function intertitle(slide, text, onDone) {
-  const t = el('div', 'recap-intertitle type-display', text);
+  const t = el('div', 'recap-intertitle', text);
   slide.appendChild(t);
+  t.style.fontSize = `${fitTitleSize(text, Math.min(slide.clientWidth || 430, 430) - 80)}px`;
   const timers = [];
   let done = false;
   function finish() {

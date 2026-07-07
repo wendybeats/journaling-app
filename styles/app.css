@@ -562,7 +562,8 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   line-height: 1;
 }
 
-/* Intertitles — a large title fades in/out before a slide's content */
+/* Intertitles — a huge decorative title fades in/out before a slide's
+   content; sized in JS to fill the width minus 40px per side */
 .recap-intertitle {
   position: absolute;
   inset: 0;
@@ -570,10 +571,15 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 var(--space-screen-x);
+  padding: 0 40px;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--text-meta);
+  white-space: nowrap;
   opacity: 0;
   transition: opacity 400ms var(--motion-ease);
-  text-wrap: balance;
   pointer-events: none;
 }
 .recap-intertitle.on { opacity: 1; }
