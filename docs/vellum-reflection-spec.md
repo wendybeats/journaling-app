@@ -35,7 +35,15 @@
 - After dismissal: archived as an inverted card at that week's boundary in the Notebook scroll.
 
 ### 3.2 Monthly — *the recap*
-- **When:** 1st of the month, same delivery mechanics.
+- **When:** end of month; arrives on next open as a **full-screen five-slide
+  sequence** (not the inverted card): 1) circles + "Reflections – Your month"
+  with a 3s reverse countdown and a faint "Not interested"; 2) the month grid
+  drawing itself dot by dot, then month title / days written / words /
+  longest run animating in (5s bar); 3) recurring topics one at a time, word
+  + day count + two verbatim quotes (3s each); 4) tone centered large, with
+  "what seemed difficult" quotes entering below (3s); 5) "MONTH → NEXT" over
+  "Reflect & start anew", Continue to home. Slides with nothing honest to
+  show remove themselves.
 - **Content, in order:**
   1. Recurring topics (2–4, each quote-anchored, each with mention counts — `THE BOAT · 6 DAYS`)
   2. Overall tone — described in the user's own vocabulary ("your word was 'tired'; it appeared nine times"), never clinical labels

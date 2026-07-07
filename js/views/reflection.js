@@ -5,6 +5,7 @@
 
 import { fromKey, weekRangeLabel, weekdayName, monthName } from '../format.js';
 import { consentEligible, pendingWeekly, pendingMonthly, setConsent, markSeen } from '../reflect.js';
+import { showMonthlyRecap } from './recap.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -53,52 +54,16 @@ function weeklyContent(signal) {
   return frag;
 }
 
-function monthlyContent(signal) {
-  const frag = document.createDocumentFragment();
-  frag.appendChild(el('div', 'type-meta',
-    `${monthName(signal.month)} ${signal.year} · ${signal.days} ${signal.days === 1 ? 'day' : 'days'} · ${signal.words.toLocaleString()} words`));
-
-  if (!signal.sufficient) {
-    frag.appendChild(el('p', 'reflection-body', 'A quieter month on the page. The dots know the rest.'));
-  } else {
-    if (signal.topics.length) {
-      frag.appendChild(el('div', 'type-meta-small reflection-label', 'Recurring'));
-      const list = el('div', 'reflection-topics');
-      for (const t of signal.topics) {
-        const row = el('div', 'reflection-topic');
-        row.appendChild(el('span', 'reflection-topic-word', `“${t.word}”`));
-        row.appendChild(el('span', 'type-meta-small', `${t.days} days`));
-        list.appendChild(row);
-      }
-      frag.appendChild(list);
-      if (signal.topQuote) frag.appendChild(quoteBlock(signal.topQuote));
-    }
-
-    if (signal.tone) {
-      frag.appendChild(el('div', 'type-meta-small reflection-label', 'Tone'));
-      frag.appendChild(el('p', 'reflection-body',
-        `Your word was “${signal.tone.word}” — it appeared ${signal.tone.count} times.`));
-    }
-
-    if (signal.difficult.length) {
-      frag.appendChild(el('div', 'type-meta-small reflection-label', 'What seemed difficult'));
-      for (const q of signal.difficult) frag.appendChild(quoteBlock(q));
-    }
-
-    if (!signal.topics.length && !signal.tone && !signal.difficult.length) {
-      frag.appendChild(el('p', 'reflection-body',
-        'No single thread this month — the days each kept to themselves. The numbers below are the honest summary.'));
-    }
-  }
-
-  frag.appendChild(el('div', 'type-meta-small reflection-footer', `Longest run · ${signal.longestRun} ${signal.longestRun === 1 ? 'day' : 'days'}`));
-  return frag;
-}
-
 // --- Modal ---------------------------------------------------------------------
 
-/** Arrival + re-view moment. Dismissing archives it (idempotent, no re-rolls). */
+/** Arrival + re-view moment. Dismissing archives it (idempotent, no
+ *  re-rolls). Weekly is the inverted card; monthly is the full-screen
+ *  five-slide sequence. */
 export function showReflectionModal(signal) {
+  if (signal.kind === 'monthly') {
+    showMonthlyRecap(signal);
+    return;
+  }
   if (document.querySelector('.reflection-overlay')) return;
 
   const overlay = el('div', 'reflection-overlay');
@@ -108,7 +73,7 @@ export function showReflectionModal(signal) {
   close.type = 'button';
   close.setAttribute('aria-label', 'Close reflection');
 
-  card.append(close, signal.kind === 'weekly' ? weeklyContent(signal) : monthlyContent(signal));
+  card.append(close, weeklyContent(signal));
   overlay.appendChild(card);
 
   function dismiss() {
@@ -142,11 +107,9 @@ export function inlineReflection(signal) {
 function consentCard(onDecided) {
   const card = el('section', 'grid-card consent-card');
 
-  card.appendChild(el('div', 'type-meta', 'Reflections'));
-  card.appendChild(el('h2', 'type-title consent-title', 'Your week'));
+  card.appendChild(el('h2', 'type-title', 'Reflections – Your Week'));
   card.appendChild(el('p', 'type-written consent-body',
-    'Where is your mind? See what your words say about you this week.'));
-  card.appendChild(el('div', 'type-meta-small consent-privacy', 'Always private, for your eyes only'));
+    'Where is your mind? See what your words say about you this week. Always private, for your eyes only'));
 
   const actions = el('div', 'consent-actions type-meta');
   const yes = el('button', null, 'Yes, reflect');

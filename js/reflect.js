@@ -189,12 +189,23 @@ export function monthlySignal(year, month) {
     .slice(0, 3)
     .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
 
-  // One verbatim quote anchoring the top topic
-  let topQuote = null;
-  if (topics.length) {
+  // Two verbatim example quotes per topic — distinct sentences, distinct
+  // days where possible, and no sentence reused across topics
+  const usedText = new Set();
+  for (const topic of topics) {
+    topic.quotes = [];
+    const usedDays = new Set();
     for (const entry of all) {
-      const hit = sentences(entry.text).find((line) => tokenize(line).map(stem).includes(topics[0].stem));
-      if (hit) { topQuote = { text: hit, day: entry.day }; break; }
+      if (topic.quotes.length >= 2) break;
+      if (usedDays.has(entry.day)) continue;
+      const hit = sentences(entry.text).find(
+        (line) => tokenize(line).map(stem).includes(topic.stem) && !usedText.has(line),
+      );
+      if (hit) {
+        topic.quotes.push({ text: hit, day: entry.day });
+        usedDays.add(entry.day);
+        usedText.add(hit);
+      }
     }
   }
 
@@ -213,7 +224,7 @@ export function monthlySignal(year, month) {
   return {
     kind: 'monthly', id: `m-${year}-${String(month + 1).padStart(2, '0')}`,
     year, month, days: writtenDays.length, words, longestRun, sufficient,
-    topics, topQuote, tone, difficult,
+    topics, tone, difficult,
   };
 }
 
