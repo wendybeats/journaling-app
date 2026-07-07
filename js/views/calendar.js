@@ -2,11 +2,15 @@
 // a single day. Starts at the year matrices; tapping a month row morphs the
 // whole year into a stack of month cards (anchored to the tapped month);
 // tapping a month card expands it into weeks; large dots open the day.
+// The drill position is remembered for the session, so coming back from a
+// day page re-enters at the month the reader was on, not the year view.
 
 import { daysWithEntries } from '../store.js';
 import { yearMatrix, monthGridBody, weeksOfMonthBody, monthLabel, daysWrittenIn } from '../dots.js';
 import { flipDots, animateHeight } from '../flip.js';
 import { archiveHead, crumb } from './shared.js';
+
+let lastFocus = null; // { year, month } — where the reader last drilled to
 
 /**
  * A raised month card that toggles between its compact grid and its weekly
@@ -14,11 +18,11 @@ import { archiveHead, crumb } from './shared.js';
  * glide as the card stretches. `coordinator` keeps one card expanded at a
  * time — expanding a month collapses the previous in the same pass.
  */
-function monthBlock(canvas, year, month, coordinator = null) {
+function monthBlock(canvas, year, month, coordinator, { startExpanded = false, onExpand } = {}) {
   const card = document.createElement('section');
   card.className = 'grid-card month-block';
   card.dataset.flip = `card-${year}-${month}`;
-  let expanded = false;
+  let expanded = startExpanded;
 
   const header = document.createElement('header');
   const label = document.createElement('span');
@@ -30,8 +34,9 @@ function monthBlock(canvas, year, month, coordinator = null) {
   count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
   header.append(label, count);
 
-  let body = monthGridBody(year, month);
+  let body = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
   card.append(header, body);
+  card.classList.toggle('expanded', expanded);
 
   // Swap the body without a FLIP pass — callers wrap this in one
   function setExpandedRaw(next) {
@@ -46,6 +51,7 @@ function monthBlock(canvas, year, month, coordinator = null) {
   }
 
   const api = { collapseRaw: () => setExpandedRaw(false) };
+  if (startExpanded && coordinator) coordinator.current = api;
 
   function toggle() {
     flipDots(canvas, () => {
@@ -56,6 +62,7 @@ function monthBlock(canvas, year, month, coordinator = null) {
         coordinator.current = null;
       }
       setExpandedRaw(!expanded);
+      if (expanded) onExpand?.();
     });
   }
 
@@ -75,6 +82,7 @@ export function renderCalendar(root) {
   canvas.className = 'archive-canvas';
 
   function showYears() {
+    lastFocus = null; // zooming out is a deliberate reset
     canvas.innerHTML = '';
     const currentYear = new Date().getFullYear();
     const years = new Set([currentYear]);
@@ -85,29 +93,46 @@ export function renderCalendar(root) {
     }
   }
 
+  /** Build the twelve-card stack for a year; returns the selected card. */
+  function buildMonths(year, month, { expandSelected = false } = {}) {
+    canvas.innerHTML = '';
+    canvas.appendChild(crumb(String(year), () => flipDots(canvas, showYears)));
+    const coordinator = { current: null }; // one expanded month at a time
+    const stack = document.createElement('div');
+    stack.className = 'months-stack';
+    let selected = null;
+    for (let m = 0; m < 12; m++) {
+      const card = monthBlock(canvas, year, m, coordinator, {
+        startExpanded: expandSelected && m === month,
+        onExpand: () => { lastFocus = { year, month: m }; },
+      });
+      if (m === month) selected = card;
+      stack.appendChild(card);
+    }
+    canvas.appendChild(stack);
+    return selected;
+  }
+
   /** The tapped year's dots fly from matrix rows into twelve month cards,
    *  scrolled so the tapped month is in view. */
   function showMonths(year, month) {
+    lastFocus = { year, month };
     flipDots(canvas, () => {
-      canvas.innerHTML = '';
-      canvas.appendChild(crumb(String(year), () => flipDots(canvas, showYears)));
-      const coordinator = { current: null }; // one expanded month at a time
-      const stack = document.createElement('div');
-      stack.className = 'months-stack';
-      let selected = null;
-      for (let m = 0; m < 12; m++) {
-        const card = monthBlock(canvas, year, m, coordinator);
-        if (m === month) selected = card;
-        stack.appendChild(card);
-      }
-      canvas.appendChild(stack);
-      // Anchor the selected month inside the mutate, so the FLIP pass
-      // measures post-scroll positions and dots fly to where they land
-      selected?.scrollIntoView({ block: 'start' });
+      // Anchoring inside the mutate means the FLIP pass measures post-scroll
+      // positions, so dots fly to where they actually land on screen
+      buildMonths(year, month)?.scrollIntoView({ block: 'start' });
     });
   }
 
-  showYears();
+  if (lastFocus) {
+    // Returning (e.g. from a day page): re-enter at the remembered month,
+    // expanded to its weeks — near where the reader left off
+    const selected = buildMonths(lastFocus.year, lastFocus.month, { expandSelected: true });
+    requestAnimationFrame(() => selected?.scrollIntoView({ block: 'start' }));
+  } else {
+    showYears();
+  }
+
   root.appendChild(canvas);
   return {};
 }

@@ -22,14 +22,15 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 - **Voice capture** — the breathing-dot recorder, transcribing into the writing
   surface via the Web Speech API where the browser supports it (stands in for
   the on-device Speech framework).
-- **Archive → Log** — reverse-chronological reading view, two-line drop
-  cap per day.
+- **Archive → Notebook** — reverse-chronological reading view, two-line
+  drop cap per day.
 - **Archive → Calendar** — one morphing experience: year matrices → tap a
   month row → all twelve month cards (anchored to the tapped month) → tap a
   month → its weekly breakdown (one expanded at a time) → tap a large dot →
   that day's page. Dots physically travel between layouts (FLIP).
-- **Archive → Search** — full-screen overlay; the query starts huge and
-  shrinks to fit, results grouped by day, matches underlined.
+- **Archive → Find** — full-screen overlay, bar centered until you type;
+  the query starts huge and shrinks to fit, results grouped by day with
+  matches underlined.
 - **Dark mode** — token-level, follows the system, footer override.
 - Entries persist in `localStorage` (day-keyed plain text — the v2-ready
   corpus shape).

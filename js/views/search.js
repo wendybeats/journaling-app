@@ -28,11 +28,32 @@ export function openSearch() {
   const input = document.createElement('input');
   input.className = 'search-input';
   input.type = 'text';
-  input.placeholder = 'Search your log';
-  input.setAttribute('aria-label', 'Search your log');
+  input.placeholder = 'Search your notebook';
+  input.setAttribute('aria-label', 'Search your notebook');
+
+  const mid = document.createElement('div');
+  mid.className = 'search-mid';
+  mid.appendChild(input);
 
   const results = document.createElement('div');
   results.className = 'search-results archive';
+
+  // Empty state: the bar sits vertically centered; it rises to the top as
+  // soon as a query exists (and settles back when cleared)
+  function setCentered(on) {
+    if (overlay.classList.contains('centered') === on) return;
+    const before = input.getBoundingClientRect().top;
+    overlay.classList.toggle('centered', on);
+    const delta = before - input.getBoundingClientRect().top;
+    if (!delta) return;
+    input.style.transition = 'none';
+    input.style.transform = `translateY(${delta}px)`;
+    requestAnimationFrame(() => {
+      input.style.transition = 'transform var(--motion-base) var(--motion-ease)';
+      input.style.transform = '';
+      input.addEventListener('transitionend', () => { input.style.transition = ''; }, { once: true });
+    });
+  }
 
   function destroy() {
     document.removeEventListener('keydown', onKey);
@@ -125,12 +146,14 @@ export function openSearch() {
   let debounce = null;
   input.addEventListener('input', () => {
     fit();
+    setCentered(!input.value);
     clearTimeout(debounce);
     debounce = setTimeout(run, 160);
   });
 
-  inner.append(top, input, results);
+  inner.append(top, mid, results);
   overlay.appendChild(inner);
+  overlay.classList.add('centered');
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
   fit();

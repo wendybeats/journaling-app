@@ -511,7 +511,20 @@ footer button:hover { color: var(--text-heading); }
 .search-inner {
   max-width: 430px;
   margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
   padding: var(--space-md) var(--space-screen-x) var(--space-2xl);
+}
+
+/* Empty state: the bar floats at the vertical center of the blank screen */
+.search-overlay.centered .search-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* optical center: lift slightly above true center */
+  padding-bottom: 18vh;
 }
 
 .search-top {
@@ -534,6 +547,7 @@ footer button:hover { color: var(--text-heading); }
 .search-input {
   width: 100%;
   margin-top: var(--space-xl);
+  will-change: transform;
   border: none;
   background: none;
   outline: none;
@@ -1188,11 +1202,32 @@ function openSearch() {
   const input = document.createElement('input');
   input.className = 'search-input';
   input.type = 'text';
-  input.placeholder = 'Search your log';
-  input.setAttribute('aria-label', 'Search your log');
+  input.placeholder = 'Search your notebook';
+  input.setAttribute('aria-label', 'Search your notebook');
+
+  const mid = document.createElement('div');
+  mid.className = 'search-mid';
+  mid.appendChild(input);
 
   const results = document.createElement('div');
   results.className = 'search-results archive';
+
+  // Empty state: the bar sits vertically centered; it rises to the top as
+  // soon as a query exists (and settles back when cleared)
+  function setCentered(on) {
+    if (overlay.classList.contains('centered') === on) return;
+    const before = input.getBoundingClientRect().top;
+    overlay.classList.toggle('centered', on);
+    const delta = before - input.getBoundingClientRect().top;
+    if (!delta) return;
+    input.style.transition = 'none';
+    input.style.transform = `translateY(${delta}px)`;
+    requestAnimationFrame(() => {
+      input.style.transition = 'transform var(--motion-base) var(--motion-ease)';
+      input.style.transform = '';
+      input.addEventListener('transitionend', () => { input.style.transition = ''; }, { once: true });
+    });
+  }
 
   function destroy() {
     document.removeEventListener('keydown', onKey);
@@ -1285,12 +1320,14 @@ function openSearch() {
   let debounce = null;
   input.addEventListener('input', () => {
     fit();
+    setCentered(!input.value);
     clearTimeout(debounce);
     debounce = setTimeout(run, 160);
   });
 
-  inner.append(top, input, results);
+  inner.append(top, mid, results);
   overlay.appendChild(inner);
+  overlay.classList.add('centered');
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
   fit();
@@ -1298,11 +1335,11 @@ function openSearch() {
 }
 
 
-// Shared archive chrome: title + the Log / Calendar / Search row.
+// Shared archive chrome: title + the Notebook / Calendar / Find row.
 
 
 const TABS = [
-  ['Log', '#archive', 'archive'],
+  ['Notebook', '#archive', 'archive'],
   ['Calendar', '#archive/calendar', 'archive/calendar'],
 ];
 
@@ -1323,7 +1360,7 @@ function archiveHead(active) {
   }
   const search = document.createElement('a');
   search.href = '#search';
-  search.textContent = 'Search';
+  search.textContent = 'Find';
   search.addEventListener('click', (e) => {
     e.preventDefault();
     openSearch();
@@ -1573,7 +1610,11 @@ function renderArchive(root) {
 // a single day. Starts at the year matrices; tapping a month row morphs the
 // whole year into a stack of month cards (anchored to the tapped month);
 // tapping a month card expands it into weeks; large dots open the day.
+// The drill position is remembered for the session, so coming back from a
+// day page re-enters at the month the reader was on, not the year view.
 
+
+let lastFocus = null; // { year, month } — where the reader last drilled to
 
 /**
  * A raised month card that toggles between its compact grid and its weekly
@@ -1581,11 +1622,11 @@ function renderArchive(root) {
  * glide as the card stretches. `coordinator` keeps one card expanded at a
  * time — expanding a month collapses the previous in the same pass.
  */
-function monthBlock(canvas, year, month, coordinator = null) {
+function monthBlock(canvas, year, month, coordinator, { startExpanded = false, onExpand } = {}) {
   const card = document.createElement('section');
   card.className = 'grid-card month-block';
   card.dataset.flip = `card-${year}-${month}`;
-  let expanded = false;
+  let expanded = startExpanded;
 
   const header = document.createElement('header');
   const label = document.createElement('span');
@@ -1597,8 +1638,9 @@ function monthBlock(canvas, year, month, coordinator = null) {
   count.textContent = `${written} ${written === 1 ? 'day' : 'days'} written`;
   header.append(label, count);
 
-  let body = monthGridBody(year, month);
+  let body = expanded ? weeksOfMonthBody(year, month) : monthGridBody(year, month);
   card.append(header, body);
+  card.classList.toggle('expanded', expanded);
 
   // Swap the body without a FLIP pass — callers wrap this in one
   function setExpandedRaw(next) {
@@ -1613,6 +1655,7 @@ function monthBlock(canvas, year, month, coordinator = null) {
   }
 
   const api = { collapseRaw: () => setExpandedRaw(false) };
+  if (startExpanded && coordinator) coordinator.current = api;
 
   function toggle() {
     flipDots(canvas, () => {
@@ -1623,6 +1666,7 @@ function monthBlock(canvas, year, month, coordinator = null) {
         coordinator.current = null;
       }
       setExpandedRaw(!expanded);
+      if (expanded) onExpand?.();
     });
   }
 
@@ -1642,6 +1686,7 @@ function renderCalendar(root) {
   canvas.className = 'archive-canvas';
 
   function showYears() {
+    lastFocus = null; // zooming out is a deliberate reset
     canvas.innerHTML = '';
     const currentYear = new Date().getFullYear();
     const years = new Set([currentYear]);
@@ -1652,29 +1697,46 @@ function renderCalendar(root) {
     }
   }
 
+  /** Build the twelve-card stack for a year; returns the selected card. */
+  function buildMonths(year, month, { expandSelected = false } = {}) {
+    canvas.innerHTML = '';
+    canvas.appendChild(crumb(String(year), () => flipDots(canvas, showYears)));
+    const coordinator = { current: null }; // one expanded month at a time
+    const stack = document.createElement('div');
+    stack.className = 'months-stack';
+    let selected = null;
+    for (let m = 0; m < 12; m++) {
+      const card = monthBlock(canvas, year, m, coordinator, {
+        startExpanded: expandSelected && m === month,
+        onExpand: () => { lastFocus = { year, month: m }; },
+      });
+      if (m === month) selected = card;
+      stack.appendChild(card);
+    }
+    canvas.appendChild(stack);
+    return selected;
+  }
+
   /** The tapped year's dots fly from matrix rows into twelve month cards,
    *  scrolled so the tapped month is in view. */
   function showMonths(year, month) {
+    lastFocus = { year, month };
     flipDots(canvas, () => {
-      canvas.innerHTML = '';
-      canvas.appendChild(crumb(String(year), () => flipDots(canvas, showYears)));
-      const coordinator = { current: null }; // one expanded month at a time
-      const stack = document.createElement('div');
-      stack.className = 'months-stack';
-      let selected = null;
-      for (let m = 0; m < 12; m++) {
-        const card = monthBlock(canvas, year, m, coordinator);
-        if (m === month) selected = card;
-        stack.appendChild(card);
-      }
-      canvas.appendChild(stack);
-      // Anchor the selected month inside the mutate, so the FLIP pass
-      // measures post-scroll positions and dots fly to where they land
-      selected?.scrollIntoView({ block: 'start' });
+      // Anchoring inside the mutate means the FLIP pass measures post-scroll
+      // positions, so dots fly to where they actually land on screen
+      buildMonths(year, month)?.scrollIntoView({ block: 'start' });
     });
   }
 
-  showYears();
+  if (lastFocus) {
+    // Returning (e.g. from a day page): re-enter at the remembered month,
+    // expanded to its weeks — near where the reader left off
+    const selected = buildMonths(lastFocus.year, lastFocus.month, { expandSelected: true });
+    requestAnimationFrame(() => selected?.scrollIntoView({ block: 'start' }));
+  } else {
+    showYears();
+  }
+
   root.appendChild(canvas);
   return {};
 }

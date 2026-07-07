@@ -1,9 +1,9 @@
-// Shared archive chrome: title + the Log / Calendar / Search row.
+// Shared archive chrome: title + the Notebook / Calendar / Find row.
 
 import { openSearch } from './search.js';
 
 const TABS = [
-  ['Log', '#archive', 'archive'],
+  ['Notebook', '#archive', 'archive'],
   ['Calendar', '#archive/calendar', 'archive/calendar'],
 ];
 
@@ -24,7 +24,7 @@ export function archiveHead(active) {
   }
   const search = document.createElement('a');
   search.href = '#search';
-  search.textContent = 'Search';
+  search.textContent = 'Find';
   search.addEventListener('click', (e) => {
     e.preventDefault();
     openSearch();
