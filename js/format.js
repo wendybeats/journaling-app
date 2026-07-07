@@ -9,6 +9,11 @@ export function fromKey(key) {
   return new Date(y, m - 1, d);
 }
 
+/** "Tuesday" — bare weekday, used for quote stamps. */
+export function weekdayName(date) {
+  return DAYS[date.getDay()];
+}
+
 /** "Saturday, July 5" — the editorial day heading. */
 export function dayHeading(date) {
   return `${DAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}`;

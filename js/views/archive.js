@@ -3,6 +3,8 @@
 import { daysWithEntries, entriesFor } from '../store.js';
 import { fromKey, dayHeading, dayMetaRow, timeOfDay } from '../format.js';
 import { archiveHead } from './shared.js';
+import { archivedReflections } from '../reflect.js';
+import { inlineReflection } from './reflection.js';
 
 export function renderArchive(root) {
   root.appendChild(archiveHead('archive'));
@@ -19,7 +21,25 @@ export function renderArchive(root) {
   const container = document.createElement('div');
   container.className = 'archive';
 
+  // Archived reflections rest at their week boundary: above the last day
+  // of the week they mirror (list is newest-first)
+  const reflections = Object.values(archivedReflections())
+    .map((signal) => {
+      const end = fromKey(signal.startKey);
+      end.setDate(end.getDate() + 6);
+      const y = end.getFullYear();
+      const m = String(end.getMonth() + 1).padStart(2, '0');
+      const d = String(end.getDate()).padStart(2, '0');
+      return { signal, endKey: `${y}-${m}-${d}` };
+    })
+    .sort((a, b) => (a.endKey < b.endKey ? 1 : -1));
+  let refIdx = 0;
+
   for (const key of days) {
+    while (refIdx < reflections.length && reflections[refIdx].endKey >= key) {
+      container.appendChild(inlineReflection(reflections[refIdx].signal));
+      refIdx++;
+    }
     const date = fromKey(key);
     const dayEntries = entriesFor(key);
 

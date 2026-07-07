@@ -334,6 +334,111 @@ footer button:hover { color: var(--text-heading); }
 .archive-canvas .year-block:first-of-type { margin-top: 0; }
 .archive-canvas > .grid-card { margin-top: 0; }
 
+/* --- Reflection (inverted cards — the reserved treatment) ------------------- */
+
+.reflection-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-screen-x);
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--motion-ease);
+}
+.reflection-overlay.open { opacity: 1; }
+.reflection-overlay.leaving { opacity: 0; }
+
+.reflection-card {
+  background: var(--surface-inverted);
+  color: var(--text-on-inverted);
+  border-radius: var(--radius-card);
+  padding: calc(var(--space-card) + 6px);
+  max-width: 374px;
+  width: 100%;
+}
+
+.reflection-overlay .reflection-card {
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(24px);
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+.reflection-overlay.open .reflection-card { transform: none; }
+.reflection-overlay.leaving .reflection-card { transform: translateY(24px); }
+
+.reflection-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--text-meta);
+  padding: var(--space-xs);
+}
+
+.reflection-body {
+  font-family: var(--font-body);
+  font-size: var(--type-written-size);
+  line-height: var(--type-written-lh);
+  margin-top: var(--space-md);
+}
+
+.reflection-card blockquote {
+  margin-top: var(--space-md);
+  padding-left: var(--space-md);
+  border-left: var(--line-weight) solid var(--text-meta);
+}
+.reflection-card blockquote p {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--type-written-size);
+  line-height: 1.6;
+}
+.reflection-card blockquote footer { margin-top: var(--space-xs); }
+
+.reflection-closing {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: var(--type-written-size);
+  margin-top: var(--space-md);
+  color: var(--text-meta);
+}
+
+/* Archived form, resting in the Notebook scroll */
+.reflection-inline { margin: var(--space-2xl) 0; }
+
+/* --- Consent card (Today, once) ---------------------------------------------- */
+
+.consent-card { margin-top: var(--space-2xl); cursor: default; }
+
+.consent-body { margin-top: var(--space-sm); }
+
+.consent-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.consent-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  padding: 0;
+  color: var(--text-heading);
+}
+.consent-actions button:last-child { color: var(--text-meta); }
+.consent-actions button:hover { color: var(--text-written); }
+
 /* --- Search ------------------------------------------------------------------ */
 
 .search-overlay {

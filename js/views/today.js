@@ -5,6 +5,7 @@
 import { dayKey, entriesFor, addEntry, saveDraft, loadDraft } from '../store.js';
 import { dayHeading, dayMetaRow, timeOfDay } from '../format.js';
 import { voiceSupported, createRecorder } from '../voice.js';
+import { mountReflectionFlow } from './reflection.js';
 
 const IDLE_COMMIT_MS = 5000;
 
@@ -150,6 +151,7 @@ export function renderToday(root) {
   writing.appendChild(captureRow);
 
   root.append(heading, meta, rule, list, writing);
+  mountReflectionFlow(root);
 
   // Cursor ready — the app opens writable
   requestAnimationFrame(() => textarea.focus({ preventScroll: true }));

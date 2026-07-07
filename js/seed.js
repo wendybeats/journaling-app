@@ -2,6 +2,7 @@
 // archive and dot grids can be judged with real density. Dev tool only.
 
 import { dayKey, replaceAll } from './store.js';
+import { resetReflections, lastCompletedWeekStart } from './reflect.js';
 
 const SNIPPETS = [
   'Woke before the alarm again. There is a particular quality to the hour before anyone needs anything from me — I want to protect it better than I have been.',
@@ -54,14 +55,31 @@ export function seedDemoData() {
     for (let i = 0; i < count; i++) {
       const hour = i === 0 ? 6 + Math.floor(rand() * 4) : 12 + Math.floor(rand() * 10);
       const at = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, Math.floor(rand() * 60)).getTime();
-      data[key].push({
-        id: crypto.randomUUID(),
-        at,
-        text: SNIPPETS[Math.floor(rand() * SNIPPETS.length)],
-      });
+      // Real entries run a few paragraphs, not one line
+      const paras = 2 + Math.floor(rand() * 2);
+      const parts = [];
+      for (let pIdx = 0; pIdx < paras; pIdx++) {
+        parts.push(SNIPPETS[Math.floor(rand() * SNIPPETS.length)]);
+      }
+      data[key].push({ id: crypto.randomUUID(), at, text: [...new Set(parts)].join('\n\n') });
     }
     data[key].sort((a, b) => a.at - b.at);
   }
 
+  // Guarantee the last completed week exercises the reflection surfaces:
+  // at least 5 written days with substantive entries
+  const weekStart = lastCompletedWeekStart(today);
+  for (const offset of [0, 1, 2, 4, 5]) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + offset);
+    const key = dayKey(d);
+    if ((data[key]?.length ?? 0) > 0) continue;
+    const at = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7 + Math.floor(rand() * 3), Math.floor(rand() * 60)).getTime();
+    const parts = new Set();
+    while (parts.size < 3) parts.add(SNIPPETS[Math.floor(rand() * SNIPPETS.length)]);
+    data[key] = [{ id: crypto.randomUUID(), at, text: [...parts].join('\n\n') }];
+  }
+
   replaceAll(data);
+  resetReflections(); // demo starts with the consent moment fresh
 }

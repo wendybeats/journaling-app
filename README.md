@@ -31,6 +31,12 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 - **Archive → Find** — full-screen overlay, bar centered until you type;
   the query starts huge and shrinks to fit, results grouped by day with
   matches underlined.
+- **Weekly reflection (R1)** — consent card on Today (appears only once a
+  recap could exist), the arrival modal as the reserved inverted card, and
+  its archived form resting at the week boundary in the Notebook. Content
+  comes from a deterministic quote-first engine (no AI yet): a topic needs
+  ≥3 mentions, every quote is verbatim, thin weeks stay silent. See
+  [`docs/vellum-reflection-spec.md`](docs/vellum-reflection-spec.md).
 - **Dark mode** — token-level, follows the system, footer override.
 - Entries persist in `localStorage` (day-keyed plain text — the v2-ready
   corpus shape).

@@ -23,9 +23,10 @@ const css = tokens + '\n' + read('styles/app.css');
 
 // --- JS: strip module syntax, concatenate in dependency order ---
 const order = [
-  'js/store.js', 'js/format.js', 'js/dots.js', 'js/flip.js', 'js/voice.js',
-  'js/seed.js', 'js/views/search.js', 'js/views/shared.js', 'js/views/today.js',
-  'js/views/archive.js', 'js/views/calendar.js', 'js/views/day.js', 'js/main.js',
+  'js/store.js', 'js/format.js', 'js/reflect.js', 'js/dots.js', 'js/flip.js',
+  'js/voice.js', 'js/seed.js', 'js/views/search.js', 'js/views/reflection.js',
+  'js/views/shared.js', 'js/views/today.js', 'js/views/archive.js',
+  'js/views/calendar.js', 'js/views/day.js', 'js/main.js',
 ];
 const js = order
   .map((p) =>
@@ -65,6 +66,7 @@ function refreshSeedLabel() {
 seedBtn.addEventListener('click', () => {
   if (daysWithEntries().length) {
     replaceAll({});
+    resetReflections();
     storage.removeItem('vellum.draft.v1');
   } else {
     seedDemoData();
