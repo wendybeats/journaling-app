@@ -3,6 +3,7 @@
 
 import { dayKey, replaceAll } from './store.js';
 import { resetReflections, lastCompletedWeekStart } from './reflect.js';
+import { resetReminder } from './views/reminder.js';
 
 const SNIPPETS = [
   'Woke before the alarm again. There is a particular quality to the hour before anyone needs anything from me — I want to protect it better than I have been.',
@@ -82,4 +83,5 @@ export function seedDemoData() {
 
   replaceAll(data);
   resetReflections(); // demo starts with the consent moment fresh
+  resetReminder();
 }

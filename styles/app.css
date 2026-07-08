@@ -737,6 +737,91 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 .consent-actions button:last-child { color: var(--text-meta); }
 .consent-actions button:hover { color: var(--text-written); }
 
+/* --- Onboarding ---------------------------------------------------------------- */
+
+.footer-actions { display: flex; gap: var(--space-md); }
+
+.onboard-skip {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-screen-x);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-meta);
+  padding: var(--space-xs);
+}
+.onboard-skip:hover { color: var(--text-heading); }
+
+.onboard-body {
+  font-family: var(--font-body);
+  font-size: var(--type-written-size);
+  line-height: var(--type-written-lh);
+  color: var(--text-written);
+  max-width: 320px;
+}
+
+.onboard-grid-card {
+  width: 100%;
+  margin-top: var(--space-md);
+  cursor: default;
+}
+.onboard-grid-card .dot.filled { transition: transform var(--motion-fast) var(--motion-ease); }
+.onboard-grid-card .dot.filled.recap-pending { transform: scale(0); }
+
+.onboard-progress {
+  position: absolute;
+  bottom: calc(var(--space-2xl) + 34px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--dot-gap);
+}
+
+.onboard-begin { position: static; transform: none; margin-top: var(--space-lg); }
+
+/* Account moment */
+.account-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 320px;
+  margin-top: var(--space-md);
+}
+
+.account-btn {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: var(--radius-control);
+  border: var(--line-weight) solid var(--line-rule);
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-heading);
+  transition: border-color var(--motion-fast) var(--motion-ease);
+}
+.account-btn:hover { border-color: var(--text-meta); }
+.account-btn.primary {
+  background: var(--surface-inverted);
+  border-color: var(--surface-inverted);
+  color: var(--text-on-inverted);
+}
+
+.account-skip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-heading);
+  margin-top: var(--space-xl);
+  padding: 0;
+}
+.account-skip:hover { color: var(--text-written); }
+.account-skip-note { margin-top: var(--space-xs); }
+
 /* --- Search ------------------------------------------------------------------ */
 
 .search-overlay {

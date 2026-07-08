@@ -156,7 +156,7 @@ export function runSequence(makeBuilders, { onDismiss } = {}) {
     if (e.key === 'Escape') close(true);
   }
 
-  const builders = makeBuilders({ close, setControls });
+  const builders = makeBuilders({ close, setControls, jump: (i) => show(i) });
 
   let idx = -1;
   function advance() {

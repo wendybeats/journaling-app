@@ -4,6 +4,7 @@ import { renderToday } from './views/today.js';
 import { renderArchive } from './views/archive.js';
 import { renderCalendar } from './views/calendar.js';
 import { renderDay } from './views/day.js';
+import { isOnboarded, showOnboarding } from './views/onboarding.js';
 import { seedDemoData } from './seed.js';
 
 const MOTION_BASE = 260; // keep in sync with --motion-base
@@ -93,3 +94,7 @@ if (new URLSearchParams(location.search).has('seed')) {
 }
 
 navigate();
+
+// First launch: tutorial → account moment → Today (replay via footer)
+document.getElementById('intro-replay')?.addEventListener('click', () => showOnboarding());
+if (!isOnboarded()) showOnboarding();

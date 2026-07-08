@@ -901,6 +901,91 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 .consent-actions button:last-child { color: var(--text-meta); }
 .consent-actions button:hover { color: var(--text-written); }
 
+/* --- Onboarding ---------------------------------------------------------------- */
+
+.footer-actions { display: flex; gap: var(--space-md); }
+
+.onboard-skip {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-screen-x);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-meta);
+  padding: var(--space-xs);
+}
+.onboard-skip:hover { color: var(--text-heading); }
+
+.onboard-body {
+  font-family: var(--font-body);
+  font-size: var(--type-written-size);
+  line-height: var(--type-written-lh);
+  color: var(--text-written);
+  max-width: 320px;
+}
+
+.onboard-grid-card {
+  width: 100%;
+  margin-top: var(--space-md);
+  cursor: default;
+}
+.onboard-grid-card .dot.filled { transition: transform var(--motion-fast) var(--motion-ease); }
+.onboard-grid-card .dot.filled.recap-pending { transform: scale(0); }
+
+.onboard-progress {
+  position: absolute;
+  bottom: calc(var(--space-2xl) + 34px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--dot-gap);
+}
+
+.onboard-begin { position: static; transform: none; margin-top: var(--space-lg); }
+
+/* Account moment */
+.account-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 320px;
+  margin-top: var(--space-md);
+}
+
+.account-btn {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: var(--radius-control);
+  border: var(--line-weight) solid var(--line-rule);
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-heading);
+  transition: border-color var(--motion-fast) var(--motion-ease);
+}
+.account-btn:hover { border-color: var(--text-meta); }
+.account-btn.primary {
+  background: var(--surface-inverted);
+  border-color: var(--surface-inverted);
+  color: var(--text-on-inverted);
+}
+
+.account-skip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-heading);
+  margin-top: var(--space-xl);
+  padding: 0;
+}
+.account-skip:hover { color: var(--text-written); }
+.account-skip-note { margin-top: var(--space-xs); }
+
 /* --- Search ------------------------------------------------------------------ */
 
 .search-overlay {
@@ -1048,8 +1133,9 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   <main id="view"></main>
   <footer class="type-meta-small">
     <span>Vellum — preview</span>
-    <span style="display:flex; gap: var(--space-md);">
+    <span class="footer-actions">
       <button id="seed-toggle" type="button"></button>
+      <button id="intro-replay" type="button">Intro</button>
       <button id="theme-toggle" type="button"></button>
     </span>
   </footer>
@@ -1862,6 +1948,257 @@ function createRecorder({ onText, onStateChange, onError }) {
 }
 
 
+// Shared machinery for full-screen slide sequences (monthly recap, yearly
+// wrapped): the overlay/stage, tap-to-skip and hold-to-pause, the reverse
+// countdown bar, and the huge decorative intertitles.
+
+const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
+const INTERTITLE_IN_MS = 400;
+const INTERTITLE_HOLD_MS = 1200;
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function reducedMotion() {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function quoteNode(text, stamp) {
+  const block = el('blockquote', 'recap-quote');
+  block.appendChild(el('p', null, `“${text.replace(/[.?!]$/, '')}”`));
+  block.appendChild(el('footer', 'type-meta-small', stamp));
+  return block;
+}
+
+/** The reverse countdown bar: full → empty over `ms`, then onDone.
+ *  Pausable — a held finger stops time, release resumes what's left. */
+function countdownBar(ms, onDone) {
+  const bar = el('div', 'recap-bar');
+  const fill = el('div', 'recap-bar-fill');
+  bar.appendChild(fill);
+  let timer = null;
+  let startedAt = 0;
+  let remaining = ms;
+  let running = false;
+
+  function start() {
+    if (running || remaining <= 0) return;
+    running = true;
+    startedAt = performance.now();
+    timer = setTimeout(onDone, remaining);
+    // Next frame, so a just-frozen transform commits before re-animating
+    requestAnimationFrame(() => {
+      if (!running) return;
+      fill.style.transition = `transform ${remaining}ms linear`;
+      fill.style.transform = 'scaleX(0)';
+    });
+  }
+  function pause() {
+    if (!running) return;
+    running = false;
+    clearTimeout(timer);
+    remaining -= performance.now() - startedAt;
+    // Freeze in scaleX() form: a matrix() start can't interpolate to the
+    // singular scaleX(0) target, so the resume would jump instead of glide
+    const m = getComputedStyle(fill).transform;
+    const sx = m.startsWith('matrix(') ? parseFloat(m.slice(7)) : 1;
+    fill.style.transition = 'none';
+    fill.style.transform = `scaleX(${sx})`;
+  }
+  return {
+    el: bar,
+    start,
+    pause,
+    resume: start,
+    cancel() { running = false; clearTimeout(timer); },
+  };
+}
+
+// Size an intertitle so the text fills the stage width minus 40px per side
+const titleMeter = document.createElement('canvas').getContext('2d');
+function fitTitleSize(text, maxWidth) {
+  titleMeter.font = 'italic 400 100px Newsreader, Georgia, serif';
+  const w = titleMeter.measureText(text).width;
+  return Math.max(24, Math.floor((100 * maxWidth) / w));
+}
+
+/** A huge decorative title that fades in, holds, fades out — then the
+ *  slide's real content begins. Returns a cancel; onDone fires once. */
+function intertitle(slide, text, onDone) {
+  const t = el('div', 'recap-intertitle', text);
+  slide.appendChild(t);
+  t.style.fontSize = `${fitTitleSize(text, Math.min(slide.clientWidth || 430, 430) - 80)}px`;
+  const timers = [];
+  let done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    timers.forEach(clearTimeout);
+    t.remove();
+    onDone();
+  }
+  if (reducedMotion()) {
+    finish();
+    return () => {};
+  }
+  requestAnimationFrame(() => t.classList.add('on'));
+  timers.push(setTimeout(() => t.classList.remove('on'), INTERTITLE_IN_MS + INTERTITLE_HOLD_MS));
+  timers.push(setTimeout(finish, INTERTITLE_IN_MS * 2 + INTERTITLE_HOLD_MS));
+  return () => { timers.forEach(clearTimeout); t.remove(); done = true; };
+}
+
+/**
+ * Run a slide sequence. `makeBuilders(api)` returns an array of builder
+ * functions `(advance) => ({ slide, run })`; `api` exposes `close(seen)`
+ * and `setControls({skip, pause, resume})` to the builders. Tap skips,
+ * tap-and-hold pauses, Escape closes as seen.
+ */
+function runSequence(makeBuilders, { onDismiss } = {}) {
+  if (document.querySelector('.recap-overlay')) return;
+
+  const overlay = el('div', 'recap-overlay');
+  const stage = el('div', 'recap-stage');
+  overlay.appendChild(stage);
+
+  let cleanup = null;
+  let controls = null;
+  function setControls(c) {
+    controls = c;
+  }
+
+  // Tap advances; a held press pauses time until release
+  let holdTimer = null;
+  let holding = false;
+  overlay.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    e.preventDefault();
+    holding = false;
+    holdTimer = setTimeout(() => { holding = true; controls?.pause?.(); }, HOLD_MS);
+  });
+  overlay.addEventListener('pointerup', (e) => {
+    clearTimeout(holdTimer);
+    if (holding) {
+      holding = false;
+      controls?.resume?.();
+    } else if (!e.target.closest('button')) {
+      controls?.skip?.();
+    }
+  });
+  overlay.addEventListener('pointercancel', () => {
+    clearTimeout(holdTimer);
+    if (holding) { holding = false; controls?.resume?.(); }
+  });
+
+  function close(seen) {
+    cleanup?.();
+    document.removeEventListener('keydown', onKey);
+    document.body.style.overflow = '';
+    overlay.classList.add('leaving');
+    overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+    setTimeout(() => overlay.remove(), 400);
+    onDismiss?.(seen);
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') close(true);
+  }
+
+  const builders = makeBuilders({ close, setControls, jump: (i) => show(i) });
+
+  let idx = -1;
+  function advance() {
+    show(idx + 1);
+  }
+  function show(i) {
+    if (i >= builders.length) { close(true); return; }
+    cleanup?.();
+    cleanup = null;
+    const prev = stage.firstElementChild;
+    const { slide, run } = builders[i](advance);
+    slide.classList.add('recap-slide', 'enter');
+    stage.appendChild(slide);
+    void slide.offsetWidth;
+    slide.classList.remove('enter');
+    if (prev) {
+      prev.classList.add('exit');
+      setTimeout(() => prev.remove(), 400);
+    }
+    idx = i;
+    cleanup = run() ?? null;
+  }
+
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => overlay.classList.add('open'));
+  show(0);
+}
+
+
+// The reminder pre-prompt — the in-system card that precedes any system
+// permission dialog (docs/vellum-stage2-plan.md §3.1). Offered once the
+// user has written on two distinct days; a no is remembered and never
+// re-asked. Local notifications are iOS work — the prototype records the
+// decision only.
+
+
+const KEY = 'vellum.reminder.v1';
+
+function decision() {
+  try {
+    return storage.getItem(KEY);
+  } catch {
+    return 'no';
+  }
+}
+
+function resetReminder() {
+  storage.removeItem(KEY);
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+/** Mounted on Today, after the reflection flow — one quiet card at a time,
+ *  so it waits until the consent moment has been decided. */
+function mountReminderPrompt(root) {
+  if (decision() !== null) return;
+  if (daysWithEntries().length < 2) return; // they haven't felt the value yet
+  if (consentEligible()) return; // the consent card has this visit
+
+  const card = el('section', 'grid-card consent-card');
+  card.appendChild(el('h2', 'type-title', 'A morning nudge?'));
+  card.appendChild(el('p', 'type-written consent-body',
+    'Want a nudge each morning? One line, once a day. Never a streak, never a guilt trip.'));
+
+  const actions = el('div', 'consent-actions type-meta');
+  const yes = el('button', null, 'Yes, 8:00 AM');
+  yes.type = 'button';
+  const no = el('button', null, 'No thanks');
+  no.type = 'button';
+
+  yes.addEventListener('click', () => {
+    storage.setItem(KEY, 'yes');
+    card.remove();
+  });
+  no.addEventListener('click', () => {
+    storage.setItem(KEY, 'no');
+    card.remove();
+  });
+
+  actions.append(yes, no);
+  card.appendChild(actions);
+  root.appendChild(card);
+}
+
+
 // Demo seed — visiting ?seed fills the log with plausible past entries so the
 // archive and dot grids can be judged with real density. Dev tool only.
 
@@ -1944,6 +2281,7 @@ function seedDemoData() {
 
   replaceAll(data);
   resetReflections(); // demo starts with the consent moment fresh
+  resetReminder();
 }
 
 
@@ -2105,196 +2443,6 @@ function openSearch() {
   document.body.style.overflow = 'hidden';
   fit();
   requestAnimationFrame(() => input.focus());
-}
-
-
-// Shared machinery for full-screen slide sequences (monthly recap, yearly
-// wrapped): the overlay/stage, tap-to-skip and hold-to-pause, the reverse
-// countdown bar, and the huge decorative intertitles.
-
-const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
-const INTERTITLE_IN_MS = 400;
-const INTERTITLE_HOLD_MS = 1200;
-
-function el(tag, cls, text) {
-  const node = document.createElement(tag);
-  if (cls) node.className = cls;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
-function reducedMotion() {
-  return matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function quoteNode(text, stamp) {
-  const block = el('blockquote', 'recap-quote');
-  block.appendChild(el('p', null, `“${text.replace(/[.?!]$/, '')}”`));
-  block.appendChild(el('footer', 'type-meta-small', stamp));
-  return block;
-}
-
-/** The reverse countdown bar: full → empty over `ms`, then onDone.
- *  Pausable — a held finger stops time, release resumes what's left. */
-function countdownBar(ms, onDone) {
-  const bar = el('div', 'recap-bar');
-  const fill = el('div', 'recap-bar-fill');
-  bar.appendChild(fill);
-  let timer = null;
-  let startedAt = 0;
-  let remaining = ms;
-  let running = false;
-
-  function start() {
-    if (running || remaining <= 0) return;
-    running = true;
-    startedAt = performance.now();
-    timer = setTimeout(onDone, remaining);
-    // Next frame, so a just-frozen transform commits before re-animating
-    requestAnimationFrame(() => {
-      if (!running) return;
-      fill.style.transition = `transform ${remaining}ms linear`;
-      fill.style.transform = 'scaleX(0)';
-    });
-  }
-  function pause() {
-    if (!running) return;
-    running = false;
-    clearTimeout(timer);
-    remaining -= performance.now() - startedAt;
-    // Freeze in scaleX() form: a matrix() start can't interpolate to the
-    // singular scaleX(0) target, so the resume would jump instead of glide
-    const m = getComputedStyle(fill).transform;
-    const sx = m.startsWith('matrix(') ? parseFloat(m.slice(7)) : 1;
-    fill.style.transition = 'none';
-    fill.style.transform = `scaleX(${sx})`;
-  }
-  return {
-    el: bar,
-    start,
-    pause,
-    resume: start,
-    cancel() { running = false; clearTimeout(timer); },
-  };
-}
-
-// Size an intertitle so the text fills the stage width minus 40px per side
-const titleMeter = document.createElement('canvas').getContext('2d');
-function fitTitleSize(text, maxWidth) {
-  titleMeter.font = 'italic 400 100px Newsreader, Georgia, serif';
-  const w = titleMeter.measureText(text).width;
-  return Math.max(24, Math.floor((100 * maxWidth) / w));
-}
-
-/** A huge decorative title that fades in, holds, fades out — then the
- *  slide's real content begins. Returns a cancel; onDone fires once. */
-function intertitle(slide, text, onDone) {
-  const t = el('div', 'recap-intertitle', text);
-  slide.appendChild(t);
-  t.style.fontSize = `${fitTitleSize(text, Math.min(slide.clientWidth || 430, 430) - 80)}px`;
-  const timers = [];
-  let done = false;
-  function finish() {
-    if (done) return;
-    done = true;
-    timers.forEach(clearTimeout);
-    t.remove();
-    onDone();
-  }
-  if (reducedMotion()) {
-    finish();
-    return () => {};
-  }
-  requestAnimationFrame(() => t.classList.add('on'));
-  timers.push(setTimeout(() => t.classList.remove('on'), INTERTITLE_IN_MS + INTERTITLE_HOLD_MS));
-  timers.push(setTimeout(finish, INTERTITLE_IN_MS * 2 + INTERTITLE_HOLD_MS));
-  return () => { timers.forEach(clearTimeout); t.remove(); done = true; };
-}
-
-/**
- * Run a slide sequence. `makeBuilders(api)` returns an array of builder
- * functions `(advance) => ({ slide, run })`; `api` exposes `close(seen)`
- * and `setControls({skip, pause, resume})` to the builders. Tap skips,
- * tap-and-hold pauses, Escape closes as seen.
- */
-function runSequence(makeBuilders, { onDismiss } = {}) {
-  if (document.querySelector('.recap-overlay')) return;
-
-  const overlay = el('div', 'recap-overlay');
-  const stage = el('div', 'recap-stage');
-  overlay.appendChild(stage);
-
-  let cleanup = null;
-  let controls = null;
-  function setControls(c) {
-    controls = c;
-  }
-
-  // Tap advances; a held press pauses time until release
-  let holdTimer = null;
-  let holding = false;
-  overlay.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('button')) return;
-    e.preventDefault();
-    holding = false;
-    holdTimer = setTimeout(() => { holding = true; controls?.pause?.(); }, HOLD_MS);
-  });
-  overlay.addEventListener('pointerup', (e) => {
-    clearTimeout(holdTimer);
-    if (holding) {
-      holding = false;
-      controls?.resume?.();
-    } else if (!e.target.closest('button')) {
-      controls?.skip?.();
-    }
-  });
-  overlay.addEventListener('pointercancel', () => {
-    clearTimeout(holdTimer);
-    if (holding) { holding = false; controls?.resume?.(); }
-  });
-
-  function close(seen) {
-    cleanup?.();
-    document.removeEventListener('keydown', onKey);
-    document.body.style.overflow = '';
-    overlay.classList.add('leaving');
-    overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
-    setTimeout(() => overlay.remove(), 400);
-    onDismiss?.(seen);
-  }
-  function onKey(e) {
-    if (e.key === 'Escape') close(true);
-  }
-
-  const builders = makeBuilders({ close, setControls });
-
-  let idx = -1;
-  function advance() {
-    show(idx + 1);
-  }
-  function show(i) {
-    if (i >= builders.length) { close(true); return; }
-    cleanup?.();
-    cleanup = null;
-    const prev = stage.firstElementChild;
-    const { slide, run } = builders[i](advance);
-    slide.classList.add('recap-slide', 'enter');
-    stage.appendChild(slide);
-    void slide.offsetWidth;
-    slide.classList.remove('enter');
-    if (prev) {
-      prev.classList.add('exit');
-      setTimeout(() => prev.remove(), 400);
-    }
-    idx = i;
-    cleanup = run() ?? null;
-  }
-
-  document.addEventListener('keydown', onKey);
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => overlay.classList.add('open'));
-  show(0);
 }
 
 
@@ -2979,6 +3127,160 @@ function mountReflectionFlow(root) {
 }
 
 
+// First launch: the three-screen tutorial (why → what → go) followed by
+// the account moment ("Keep your notebook."). Shows exactly once; replay
+// lives in the footer. Copy and sequence per docs/vellum-stage2-plan.md.
+// Sign-in is mocked in the prototype — buttons record the chosen mode.
+
+
+const ONBOARDED_KEY = 'vellum.onboarded.v1';
+const ACCOUNT_KEY = 'vellum.account.v1';
+
+function isOnboarded() {
+  try {
+    return Boolean(storage.getItem(ONBOARDED_KEY));
+  } catch {
+    return true;
+  }
+}
+
+function markOnboarded() {
+  storage.setItem(ONBOARDED_KEY, '1');
+}
+
+function setAccountMode(mode) {
+  storage.setItem(ACCOUNT_KEY, mode);
+}
+
+/** Three literal Vellum dots as the page indicator — the habit metaphor,
+ *  taught silently before a word about it is read. */
+function progressDots(active) {
+  const row = el('div', 'onboard-progress');
+  for (let i = 0; i < 3; i++) {
+    const dot = el('span', 'dot');
+    if (i === active) dot.classList.add('filled');
+    row.appendChild(dot);
+  }
+  return row;
+}
+
+/** The one animated moment: a month of dots filling in, one by one. */
+function demoGrid() {
+  const card = el('section', 'grid-card onboard-grid-card');
+  const grid = el('div', 'dot-grid');
+  const filled = new Set([1, 3, 4, 8, 10, 11, 15, 17, 20, 22, 23, 26]);
+  const dots = [];
+  for (let i = 0; i < 28; i++) {
+    const cell = el('span', 'dot-cell');
+    const dot = el('span', 'dot');
+    if (filled.has(i)) {
+      dot.classList.add('filled', 'recap-pending');
+      dots.push(dot);
+    }
+    cell.appendChild(dot);
+    grid.appendChild(cell);
+  }
+  card.appendChild(grid);
+  return { card, dots };
+}
+
+function showOnboarding() {
+  runSequence(({ close, setControls, jump }) => {
+    const ACCOUNT_INDEX = 3;
+
+    function tutorialSlide(index, title, body, { extra, cta } = {}) {
+      return (advance) => {
+        const slide = el('div');
+
+        const skip = el('button', 'type-meta-small onboard-skip', 'Skip');
+        skip.type = 'button';
+        skip.addEventListener('click', () => jump(ACCOUNT_INDEX));
+        slide.appendChild(skip);
+
+        const center = el('div', 'recap-center');
+        center.appendChild(el('h1', 'type-display recap-big', title));
+        center.appendChild(el('p', 'onboard-body', body));
+        if (extra) center.appendChild(extra.card ?? extra);
+        if (cta) {
+          const btn = el('button', 'type-meta recap-continue onboard-begin', cta);
+          btn.type = 'button';
+          btn.addEventListener('click', advance);
+          center.appendChild(btn);
+        }
+        slide.appendChild(center);
+        slide.appendChild(progressDots(index));
+
+        return {
+          slide,
+          run() {
+            setControls({ skip: advance });
+            if (extra?.dots) {
+              const timers = [];
+              if (reducedMotion()) {
+                extra.dots.forEach((d) => d.classList.remove('recap-pending'));
+              } else {
+                extra.dots.forEach((d, i) => {
+                  timers.push(setTimeout(() => d.classList.remove('recap-pending'), 700 + i * 180));
+                });
+              }
+              return () => timers.forEach(clearTimeout);
+            }
+            return null;
+          },
+        };
+      };
+    }
+
+    function accountSlide() {
+      const slide = el('div');
+      const center = el('div', 'recap-center onboard-account');
+
+      center.appendChild(el('h1', 'type-display recap-big', 'Keep your notebook.'));
+      center.appendChild(el('p', 'onboard-body',
+        'Your writing stays in your private storage — no profile, no analytics, nothing read by anyone but you.'));
+
+      function providerButton(label, mode, primary) {
+        const btn = el('button', `account-btn${primary ? ' primary' : ''}`, label);
+        btn.type = 'button';
+        btn.addEventListener('click', () => { setAccountMode(mode); close(true); });
+        return btn;
+      }
+      const stack = el('div', 'account-stack');
+      stack.append(
+        providerButton('Continue with Apple', 'apple', true),
+        providerButton('Continue with Google', 'google', false),
+      );
+      center.appendChild(stack);
+
+      const skip = el('button', 'type-meta account-skip', 'Continue without an account →');
+      skip.type = 'button';
+      skip.addEventListener('click', () => { setAccountMode('local'); close(true); });
+      center.appendChild(skip);
+      center.appendChild(el('div', 'type-meta-small account-skip-note', 'Saved on this device only'));
+
+      slide.appendChild(center);
+      return { slide, run: () => (setControls(null), null) };
+    }
+
+    return [
+      tutorialSlide(0, 'Attention is a practice.',
+        'A few honest lines a day change how the day sits with you. Not therapy, not productivity — just noticing, kept somewhere quiet.'),
+      tutorialSlide(1, 'This is Vellum.',
+        'Open it, write or speak, close it. Each day you write, a dot fills in. That’s the whole system.',
+        { extra: demoGrid() }),
+      tutorialSlide(2, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),
+      accountSlide,
+    ];
+  }, {
+    onDismiss() {
+      markOnboarded();
+      // Land on Today, cursor ready
+      setTimeout(() => document.querySelector('.writing textarea')?.focus({ preventScroll: true }), 450);
+    },
+  });
+}
+
+
 // Shared archive chrome: title + the Notebook / Calendar / Find row.
 
 
@@ -3175,6 +3477,7 @@ function renderToday(root) {
 
   root.append(heading, meta, rule, list, writing);
   mountReflectionFlow(root);
+  mountReminderPrompt(root);
 
   // Cursor ready — the app opens writable
   requestAnimationFrame(() => textarea.focus({ preventScroll: true }));
@@ -3567,6 +3870,10 @@ if (new URLSearchParams(location.search).has('seed')) {
 }
 
 navigate();
+
+// First launch: tutorial → account moment → Today (replay via footer)
+document.getElementById('intro-replay')?.addEventListener('click', () => showOnboarding());
+if (!isOnboarded()) showOnboarding();
 
 // Preview-only: seed/clear demo data from the footer
 const seedBtn = document.getElementById('seed-toggle');
