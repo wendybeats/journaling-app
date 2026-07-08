@@ -145,7 +145,7 @@ export function showOnboarding() {
       tutorialSlide(1, 'This is Vellum.',
         'Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.',
         { extra: demoGrid() }),
-      tutorialSlide(2, 'It reads back.',
+      tutorialSlide(2, 'Reflect, if you wish.',
         'Each week, month, and year, Vellum can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
         { extra: circlesGlyph() }),
       tutorialSlide(3, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),

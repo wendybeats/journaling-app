@@ -88,7 +88,7 @@ reflection layer), swipe or tap to advance, mono `SKIP` top-right. Progress indi
 2. **What** — display heading: "This is Vellum."
    Body: "Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in."
    Visual: a live month grid, a handful of dots filling one by one (`motion.fast` cascade).
-3. **Reflections** — display heading: "It reads back."
+3. **Reflections** — display heading: "Reflect, if you wish."
    Body: "Each week, month, and year, Vellum can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours."
    Visual: the reflections circle motif (ring + near-opaque disc).
 4. **Go** — display heading: "Go forth."
