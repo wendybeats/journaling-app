@@ -781,6 +781,13 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 
 .onboard-begin { position: static; transform: none; margin-top: var(--space-lg); }
 
+.onboard-circles {
+  width: 130px;
+  height: 130px;
+  margin: var(--space-md) 0 0;
+}
+.onboard-circles .recap-circle-fill { transform: translate(18px, -13px); }
+
 /* Account moment */
 .account-stack {
   display: flex;

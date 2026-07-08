@@ -25,6 +25,9 @@ The PDP's non-goals (§4.5) say **"no accounts, no login"**, and §2 stakes the 
 | **B — Real accounts, Apple + Google** | AuthenticationServices + GoogleSignIn, entries synced to our backend (Supabase/Postgres w/ RLS or equivalent), client-side encryption | Sign in anywhere → notebook restores | **Yes** | Backend, sync engine, E2EE key management, account deletion flows, privacy-label changes |
 | **C — Ship A, add B later** | A now; the account layer only if/when a non-Apple platform (web/Android) exists to justify Google identity | Same as A now | Later | Defers the cost until it buys reach |
 
+**✅ DECIDED (July 8): Path A — Apple-native.** Recovery through the user's
+own iCloud; no account system, no server, positioning intact.
+
 Recommendation: **A (or C, same thing at this stage).** It delivers exactly the stated goal — "recover their notes if lost" — with zero new surfaces, zero server, and the privacy positioning intact. The "skip account" option in A becomes a single quiet toggle: iCloud sync on/off.
 
 The rest of §1 specs the **UX shell that works for any path**, plus path-B technical notes so nothing is foreclosed. **Decide A/B/C before building §1; the data model depends on it.**
@@ -77,14 +80,18 @@ One screen, appearing once — after the tutorial, before first landing on Today
 
 ### 2.1 Content (draft copy — final pass in situ)
 
-Three full-bleed pages, swipe or tap to advance, mono `SKIP` top-right. Progress indicator: **three Vellum dots**, the current page's dot filled — the habit metaphor, taught silently before a word about it is read.
+Four full-bleed pages (ceiling raised July 8 to teach permanence and the
+reflection layer), swipe or tap to advance, mono `SKIP` top-right. Progress indicator: **three Vellum dots**, the current page's dot filled — the habit metaphor, taught silently before a word about it is read.
 
 1. **Why** — display heading: "Attention is a practice."
    Body (serif, ≤3 sentences): "A few honest lines a day change how the day sits with you. Not therapy, not productivity — just noticing, kept somewhere quiet."
 2. **What** — display heading: "This is Vellum."
-   Body: "Open it, write or speak, close it. Each day you write, a dot fills in. That's the whole system."
-   Visual: a live month grid, a handful of dots filling one by one (`motion.fast` cascade) — the only animated moment in onboarding.
-3. **Go** — display heading: "Go forth."
+   Body: "Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in."
+   Visual: a live month grid, a handful of dots filling one by one (`motion.fast` cascade).
+3. **Reflections** — display heading: "It reads back."
+   Body: "Each week, month, and year, Vellum can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours."
+   Visual: the reflections circle motif (ring + near-opaque disc).
+4. **Go** — display heading: "Go forth."
    Body: one line — "Today's page is ready."
    CTA (the only button): **"Begin"** → lands on Today, cursor focused, keyboard up.
 
@@ -163,7 +170,7 @@ Path B's 8–12 nights are mostly invisible work (backend, encryption, sync edge
 
 | # | Item | Owner |
 |---|---|---|
-| 1 | **Path A / B / C** for accounts | Wendell |
+| 1 | ~~Path A / B / C~~ | ✅ **Path A** (July 8) |
 | 2 | Final tutorial copy pass | Wendell + build |
 | 3 | Reminder default time — 8:00 assumed | Wendell |
 | 4 | Do tutorial + account screens ship in the web prototype first? (Recommended: yes, they're cheap and visual) | Wendell |

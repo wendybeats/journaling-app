@@ -16,11 +16,12 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 
 ### What works
 
-- **Onboarding** — the three-screen tutorial (Attention is a practice /
-  This is Vellum with the dot-fill moment / Go forth) with dots as the
+- **Onboarding** — the four-screen tutorial (Attention is a practice /
+  This is Vellum with the dot-fill moment and the permanence rule /
+  It reads back — the reflections preview / Go forth) with dots as the
   page indicator, then the account moment ("Keep your notebook." —
-  Apple / Google mocked, "Continue without an account" as a first-class
-  skip). Shows once; replay via the footer's Intro.
+  Back up with iCloud per Path A, "Continue without an account" as a
+  first-class skip). Shows once; replay via the footer's Intro.
 - **Reminder pre-prompt** — the in-system card that precedes any
   permission dialog, offered after two written days; a no is never
   re-asked.
