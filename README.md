@@ -31,6 +31,11 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 - **Archive → Find** — full-screen overlay, bar centered until you type;
   the query starts huge and shrinks to fit, results grouped by day with
   matches underlined.
+- **Yearly wrapped (R3)** — from the Calendar year view ("Your year →",
+  consent required): the year matrix draws itself dot by dot, the big
+  numbers, the top five threads, the most-discussed reveal with its
+  first-ever mention, and "See you on the page." with a save-as-image of
+  the dots (dots and counts only — the writing never leaves).
 - **Reflections (R1+R2)** — consent card on Today (appears only once a
   recap could exist); weekly reflection and monthly recap arrive as the
   reserved inverted-card modal (one arrival per visit, monthly first);

@@ -782,6 +782,75 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 }
 .recap-difficult-label { margin-top: var(--space-lg); }
 
+/* Wrapped */
+.wrapped-matrix { width: 100%; margin-top: var(--space-sm); }
+.wrapped-matrix .dot.filled { transition: transform var(--motion-fast) var(--motion-ease); }
+.wrapped-matrix .dot.filled.recap-pending { transform: scale(0); }
+.wrapped-matrix .tappable-row { cursor: default; }
+
+.wrapped-stat { margin: var(--space-sm) 0; }
+.wrapped-stat .recap-stat-number { font-size: 44px; }
+
+.wrapped-topic {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 320px;
+}
+.wrapped-topic-rank { min-width: 18px; text-align: right; }
+.wrapped-topic-word {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--text-written);
+  flex: 1;
+  text-align: left;
+}
+
+.wrapped-reveal-word { font-size: 44px; }
+.wrapped-reveal-started { margin-top: var(--space-md); }
+
+.wrapped-save {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-meta);
+  margin-top: var(--space-lg);
+  padding: var(--space-xs);
+}
+.wrapped-save:hover { color: var(--text-heading); }
+
+.year-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.year-wrapped-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  padding: 0;
+}
+.year-wrapped-link:hover { color: var(--text-heading); }
+
+.wrapped-invite {
+  display: block;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: var(--space-2xl);
+  color: var(--text-heading);
+}
+
 /* Slide 5 — outro */
 .recap-big { text-wrap: balance; }
 .recap-continue {
@@ -1228,7 +1297,7 @@ const STOPWORDS = new Set(('the a an and or but if then than that this these tho
   // generic descriptors — true but never a thread worth mirroring
   'long short good great bad better best hard easy small little big first last much many made make come came back ' +
   'right different actually finally really quite maybe almost enough every another other instead though although ' +
-  'however anyway anymore toward towards besides without within').split(' '));
+  'however anyway anymore toward towards besides without within less least most fewer').split(' '));
 
 function tokenize(text) {
   return (text.toLowerCase().match(/[a-z']+/g) ?? [])
@@ -1408,6 +1477,63 @@ function monthlySignal(year, month) {
     kind: 'monthly', id: `m-${year}-${String(month + 1).padStart(2, '0')}`,
     year, month, days: writtenDays.length, words, longestRun, sufficient,
     topics, tone, difficult,
+  };
+}
+
+/** Stage 1 over one calendar year (through today if current). The wrapped:
+ *  top five topics, the most-discussed reveal with its first-ever mention,
+ *  and the deterministic counts. */
+function yearlySignal(year, now = new Date()) {
+  const end = year === now.getFullYear() ? new Date(now) : new Date(year, 11, 31);
+  const keys = [];
+  for (let d = new Date(year, 0, 1); d <= end; d.setDate(d.getDate() + 1)) {
+    keys.push(dayKey(d));
+  }
+  const writtenDays = keys.filter(hasEntries);
+  const all = writtenDays.flatMap((k) => entriesFor(k).map((e) => ({ ...e, day: k })));
+  const words = all.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
+  const entryCount = all.length;
+  const sufficient = writtenDays.length >= 30;
+
+  let longestRun = 0;
+  let run = 0;
+  for (const k of keys) {
+    run = hasEntries(k) ? run + 1 : 0;
+    longestRun = Math.max(longestRun, run);
+  }
+
+  // Top five topics — the yearly bar is the highest: >=6 mentions, >=4 days
+  const counts = new Map();
+  for (const entry of all) {
+    for (const raw of tokenize(entry.text)) {
+      const st = stem(raw);
+      const c = counts.get(st) ?? { count: 0, days: new Set(), display: raw };
+      c.count++;
+      c.days.add(entry.day);
+      counts.set(st, c);
+    }
+  }
+  const topics = [...counts.entries()]
+    .filter(([, c]) => c.count >= 6 && c.days.size >= 4)
+    .sort((a, b) => b[1].days.size - a[1].days.size || b[1].count - a[1].count)
+    .slice(0, 5)
+    .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
+
+  // The reveal: the most-discussed thing and its first-ever mention
+  let reveal = null;
+  if (sufficient && topics.length) {
+    const top = topics[0];
+    for (const entry of all) {
+      const hit = sentences(entry.text).find((line) => tokenize(line).map(stem).includes(top.stem));
+      if (hit) { reveal = { ...top, first: { text: hit, day: entry.day } }; break; }
+    }
+  }
+
+  return {
+    kind: 'yearly', id: `y-${year}`, year,
+    days: writtenDays.length, words, entries: entryCount, longestRun, sufficient,
+    topics: sufficient ? topics : [], reveal,
+    writtenKeys: new Set(writtenDays),
   };
 }
 
@@ -1982,24 +2108,13 @@ function openSearch() {
 }
 
 
-// Monthly recap — a full-screen slide sequence in the dot language:
-// arrival circles → the month drawing itself dot by dot with its numbers →
-// recurring ideas → your word → challenges → "Reflect & start anew".
-// Chapter slides open with an intertitle that fades in and out before the
-// content begins. Timed slides carry a reverse countdown bar; tap advances
-// early, tap-and-hold pauses time; slides with nothing honest to show
-// remove themselves.
+// Shared machinery for full-screen slide sequences (monthly recap, yearly
+// wrapped): the overlay/stage, tap-to-skip and hold-to-pause, the reverse
+// countdown bar, and the huge decorative intertitles.
 
-
-const DOT_STAGGER_MS = 60;
-const STAT_STAGGER_MS = 180;
-const INTRO_MS = 4500;
-const STATS_MS = 6000;
-const TOPIC_MS = 4500;
-const TONE_MS = 4500;
+const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
 const INTERTITLE_IN_MS = 400;
 const INTERTITLE_HOLD_MS = 1200;
-const HOLD_MS = 250; // press longer than this = hold (pause), shorter = tap (skip)
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -2008,13 +2123,15 @@ function el(tag, cls, text) {
   return node;
 }
 
-function dayStamp(key) {
-  const d = fromKey(key);
-  return `${monthName(d.getMonth())} ${d.getDate()}`;
-}
-
 function reducedMotion() {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function quoteNode(text, stamp) {
+  const block = el('blockquote', 'recap-quote');
+  block.appendChild(el('p', null, `“${text.replace(/[.?!]$/, '')}”`));
+  block.appendChild(el('footer', 'type-meta-small', stamp));
+  return block;
 }
 
 /** The reverse countdown bar: full → empty over `ms`, then onDone.
@@ -2061,13 +2178,6 @@ function countdownBar(ms, onDone) {
   };
 }
 
-function quoteNode(q) {
-  const block = el('blockquote', 'recap-quote');
-  block.appendChild(el('p', null, `“${q.text.replace(/[.?!]$/, '')}”`));
-  block.appendChild(el('footer', 'type-meta-small', dayStamp(q.day)));
-  return block;
-}
-
 // Size an intertitle so the text fills the stage width minus 40px per side
 const titleMeter = document.createElement('canvas').getContext('2d');
 function fitTitleSize(text, maxWidth) {
@@ -2101,7 +2211,13 @@ function intertitle(slide, text, onDone) {
   return () => { timers.forEach(clearTimeout); t.remove(); done = true; };
 }
 
-function showMonthlyRecap(signal, { onDone } = {}) {
+/**
+ * Run a slide sequence. `makeBuilders(api)` returns an array of builder
+ * functions `(advance) => ({ slide, run })`; `api` exposes `close(seen)`
+ * and `setControls({skip, pause, resume})` to the builders. Tap skips,
+ * tap-and-hold pauses, Escape closes as seen.
+ */
+function runSequence(makeBuilders, { onDismiss } = {}) {
   if (document.querySelector('.recap-overlay')) return;
 
   const overlay = el('div', 'recap-overlay');
@@ -2109,7 +2225,7 @@ function showMonthlyRecap(signal, { onDone } = {}) {
   overlay.appendChild(stage);
 
   let cleanup = null;
-  let controls = null; // { skip, pause, resume } for the current slide
+  let controls = null;
   function setControls(c) {
     controls = c;
   }
@@ -2144,247 +2260,13 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     overlay.classList.add('leaving');
     overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
     setTimeout(() => overlay.remove(), 400);
-    if (seen) markSeen(signal);
-    onDone?.();
+    onDismiss?.(seen);
   }
   function onKey(e) {
     if (e.key === 'Escape') close(true);
   }
 
-  // --- Slide 1: arrival ---
-  function introSlide(advance) {
-    const slide = el('div', 'recap-slide');
-    const center = el('div', 'recap-center');
-    const circles = el('div', 'recap-circles');
-    circles.append(el('div', 'recap-circle-ring'), el('div', 'recap-circle-fill'));
-    center.append(circles, el('h2', 'type-title', 'Reflections – Your month'));
-    slide.appendChild(center);
-
-    const skip = el('button', 'type-meta-small recap-skip', 'Not interested');
-    skip.type = 'button';
-    skip.addEventListener('click', () => close(true));
-
-    const bar = countdownBar(INTRO_MS, advance);
-    slide.append(bar.el, skip);
-    return {
-      slide,
-      run() {
-        bar.start();
-        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
-        return () => bar.cancel();
-      },
-    };
-  }
-
-  // --- Slide 2: the month, drawn dot by dot, then its numbers ---
-  function statsSlide(advance) {
-    const slide = el('div', 'recap-slide');
-    const center = el('div', 'recap-center recap-stats');
-
-    const title = el('h2', 'type-title recap-reveal', `${monthName(signal.month)} ${signal.year}`);
-    const grid = monthGridBody(signal.year, signal.month);
-    grid.classList.add('recap-grid');
-
-    const stats = [
-      [String(signal.days), 'days written'],
-      [signal.words.toLocaleString(), 'words'],
-      [String(signal.longestRun), 'longest run'],
-    ].map(([num, label]) => {
-      const col = el('div', 'recap-stat recap-reveal');
-      col.append(el('span', 'recap-stat-number', num), el('span', 'type-meta-small', label));
-      return col;
-    });
-    const statsRow = el('div', 'recap-stats-row');
-    statsRow.append(...stats);
-
-    center.append(title, grid, statsRow);
-    slide.appendChild(center);
-    const bar = countdownBar(STATS_MS, advance);
-    slide.appendChild(bar.el);
-
-    return {
-      slide,
-      run() {
-        setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
-        const timers = [];
-        const dots = [...slide.querySelectorAll('.dot.filled')];
-        for (const d of dots) d.classList.add('recap-pending');
-        const reveals = [title, ...stats];
-
-        if (reducedMotion()) {
-          dots.forEach((d) => d.classList.remove('recap-pending'));
-          reveals.forEach((r) => r.classList.add('on'));
-          bar.start();
-        } else {
-          dots.forEach((d, i) => {
-            timers.push(setTimeout(() => d.classList.remove('recap-pending'), 200 + i * DOT_STAGGER_MS));
-          });
-          const afterDots = 300 + dots.length * DOT_STAGGER_MS;
-          reveals.forEach((r, i) => {
-            timers.push(setTimeout(() => r.classList.add('on'), afterDots + i * STAT_STAGGER_MS));
-          });
-          timers.push(setTimeout(() => bar.start(), afterDots + reveals.length * STAT_STAGGER_MS));
-        }
-        return () => { timers.forEach(clearTimeout); bar.cancel(); };
-      },
-    };
-  }
-
-  // --- Slide 3: recurring topics, one at a time ---
-  function topicsSlide(advance) {
-    const slide = el('div', 'recap-slide');
-    const holder = el('div', 'recap-center recap-topic-holder');
-    slide.appendChild(holder);
-    const barHolder = el('div', 'recap-bar-holder');
-    slide.appendChild(barHolder);
-
-    return {
-      slide,
-      run() {
-        const timers = [];
-        let bar = null;
-        holder.style.visibility = 'hidden';
-
-        let started = false;
-        function startContent() {
-          if (started) return;
-          started = true;
-          holder.style.visibility = '';
-          showTopic(0);
-        }
-        const cancelInter = intertitle(slide, 'Recurring ideas', startContent);
-        setControls({ skip: () => { cancelInter(); startContent(); } });
-
-        function showTopic(i) {
-          if (i >= signal.topics.length) { advance(); return; }
-          timers.forEach(clearTimeout);
-          timers.length = 0;
-          bar?.cancel();
-          const topic = signal.topics[i];
-          holder.innerHTML = '';
-          barHolder.innerHTML = '';
-          setControls({
-            skip: () => showTopic(i + 1),
-            pause: () => bar?.pause(),
-            resume: () => bar?.resume(),
-          });
-
-          holder.appendChild(el('div', 'type-meta-small', `Recurring · ${i + 1} of ${signal.topics.length}`));
-          holder.appendChild(el('div', 'recap-topic-word', `“${topic.word}”`));
-          holder.appendChild(el('div', 'type-meta', `${topic.days} days`));
-
-          const quotes = topic.quotes.map(quoteNode);
-          for (const q of quotes) {
-            q.classList.add('recap-reveal');
-            holder.appendChild(q);
-          }
-
-          const enterMs = reducedMotion() ? 0 : 350;
-          quotes.forEach((q, qi) => {
-            timers.push(setTimeout(() => q.classList.add('on'), enterMs + qi * 250));
-          });
-          const settled = enterMs + quotes.length * 250;
-          timers.push(setTimeout(() => {
-            bar = countdownBar(TOPIC_MS, () => showTopic(i + 1));
-            barHolder.appendChild(bar.el);
-            bar.start();
-          }, settled));
-        }
-
-        return () => { cancelInter(); timers.forEach(clearTimeout); bar?.cancel(); };
-      },
-    };
-  }
-
-  // --- Slide 4: your word (tone) ---
-  function toneSlide(advance) {
-    const slide = el('div', 'recap-slide');
-    const center = el('div', 'recap-center');
-    const sentence = el('p', 'recap-tone recap-reveal',
-      `Your word was \u201c${signal.tone.word}\u201d \u2014 it appeared ${signal.tone.count} times.`);
-    center.appendChild(sentence);
-    slide.appendChild(center);
-    const bar = countdownBar(TONE_MS, advance);
-    slide.appendChild(bar.el);
-
-    return {
-      slide,
-      run() {
-        const timers = [];
-        let started = false;
-        function startContent() {
-          if (started) return;
-          started = true;
-          timers.push(setTimeout(() => sentence.classList.add('on'), 50));
-          timers.push(setTimeout(() => bar.start(), 450));
-          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
-        }
-        const cancelInter = intertitle(slide, 'Your Word', startContent);
-        setControls({ skip: () => { cancelInter(); startContent(); } });
-        return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
-      },
-    };
-  }
-
-  // --- Slide 5: challenges (what seemed difficult) ---
-  function challengesSlide(advance) {
-    const slide = el('div', 'recap-slide');
-    const center = el('div', 'recap-center');
-    const reveals = [];
-    const label = el('div', 'type-meta-small recap-reveal', 'What seemed difficult');
-    center.appendChild(label);
-    reveals.push(label);
-    for (const q of signal.difficult.slice(0, 2)) {
-      const node = quoteNode(q);
-      node.classList.add('recap-reveal');
-      center.appendChild(node);
-      reveals.push(node);
-    }
-    slide.appendChild(center);
-    const bar = countdownBar(TONE_MS, advance);
-    slide.appendChild(bar.el);
-
-    return {
-      slide,
-      run() {
-        const timers = [];
-        let started = false;
-        function startContent() {
-          if (started) return;
-          started = true;
-          reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 50 + i * 250)));
-          timers.push(setTimeout(() => bar.start(), 50 + reveals.length * 250));
-          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
-        }
-        const cancelInter = intertitle(slide, 'Challenges', startContent);
-        setControls({ skip: () => { cancelInter(); startContent(); } });
-        return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
-      },
-    };
-  }
-
-  // --- Slide 5: reflect & start anew ---
-  function outroSlide() {
-    const slide = el('div', 'recap-slide');
-    const center = el('div', 'recap-center');
-    const next = (signal.month + 1) % 12;
-    center.appendChild(el('div', 'type-meta', `${monthName(signal.month)} → ${monthName(next)}`));
-    center.appendChild(el('h1', 'type-display recap-big', 'Reflect & start anew'));
-    slide.appendChild(center);
-
-    const cta = el('button', 'type-meta recap-continue', 'Continue');
-    cta.type = 'button';
-    cta.addEventListener('click', () => close(true));
-    slide.appendChild(cta);
-    return { slide, run: () => (setControls(null), null) };
-  }
-
-  // Assemble — slides with nothing honest to show remove themselves
-  const builders = [introSlide, statsSlide];
-  if (signal.topics.length) builders.push(topicsSlide);
-  if (signal.tone) builders.push(toneSlide);
-  if (signal.difficult.length) builders.push(challengesSlide);
-  builders.push(outroSlide);
+  const builders = makeBuilders({ close, setControls });
 
   let idx = -1;
   function advance() {
@@ -2396,7 +2278,7 @@ function showMonthlyRecap(signal, { onDone } = {}) {
     cleanup = null;
     const prev = stage.firstElementChild;
     const { slide, run } = builders[i](advance);
-    slide.classList.add('enter');
+    slide.classList.add('recap-slide', 'enter');
     stage.appendChild(slide);
     void slide.offsetWidth;
     slide.classList.remove('enter');
@@ -2413,6 +2295,531 @@ function showMonthlyRecap(signal, { onDone } = {}) {
   document.body.style.overflow = 'hidden';
   requestAnimationFrame(() => overlay.classList.add('open'));
   show(0);
+}
+
+
+// Monthly recap — a full-screen slide sequence in the dot language:
+// arrival circles → the month drawing itself dot by dot with its numbers →
+// recurring ideas → your word → challenges → "Reflect & start anew".
+// Chapter slides open with a huge decorative intertitle. Built on the
+// shared sequence machinery (sequence.js); slides with nothing honest to
+// show remove themselves.
+
+
+const DOT_STAGGER_MS = 60;
+const STAT_STAGGER_MS = 180;
+const INTRO_MS = 4500;
+const STATS_MS = 6000;
+const TOPIC_MS = 4500;
+const TONE_MS = 4500;
+
+function dayStamp(key) {
+  const d = fromKey(key);
+  return `${monthName(d.getMonth())} ${d.getDate()}`;
+}
+
+function showMonthlyRecap(signal, { onDone } = {}) {
+  runSequence(({ close, setControls }) => {
+    // --- Slide 1: arrival ---
+    function introSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const circles = el('div', 'recap-circles');
+      circles.append(el('div', 'recap-circle-ring'), el('div', 'recap-circle-fill'));
+      center.append(circles, el('h2', 'type-title', 'Reflections – Your month'));
+      slide.appendChild(center);
+
+      const skip = el('button', 'type-meta-small recap-skip', 'Not interested');
+      skip.type = 'button';
+      skip.addEventListener('click', () => close(true));
+
+      const bar = countdownBar(INTRO_MS, advance);
+      slide.append(bar.el, skip);
+      return {
+        slide,
+        run() {
+          bar.start();
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          return () => bar.cancel();
+        },
+      };
+    }
+
+    // --- Slide 2: the month, drawn dot by dot, then its numbers ---
+    function statsSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center recap-stats');
+
+      const title = el('h2', 'type-title recap-reveal', `${monthName(signal.month)} ${signal.year}`);
+      const grid = monthGridBody(signal.year, signal.month);
+      grid.classList.add('recap-grid');
+
+      const stats = [
+        [String(signal.days), 'days written'],
+        [signal.words.toLocaleString(), 'words'],
+        [String(signal.longestRun), 'longest run'],
+      ].map(([num, label]) => {
+        const col = el('div', 'recap-stat recap-reveal');
+        col.append(el('span', 'recap-stat-number', num), el('span', 'type-meta-small', label));
+        return col;
+      });
+      const statsRow = el('div', 'recap-stats-row');
+      statsRow.append(...stats);
+
+      center.append(title, grid, statsRow);
+      slide.appendChild(center);
+      const bar = countdownBar(STATS_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          const timers = [];
+          const dots = [...slide.querySelectorAll('.dot.filled')];
+          for (const d of dots) d.classList.add('recap-pending');
+          const reveals = [title, ...stats];
+
+          if (reducedMotion()) {
+            dots.forEach((d) => d.classList.remove('recap-pending'));
+            reveals.forEach((r) => r.classList.add('on'));
+            bar.start();
+          } else {
+            dots.forEach((d, i) => {
+              timers.push(setTimeout(() => d.classList.remove('recap-pending'), 200 + i * DOT_STAGGER_MS));
+            });
+            const afterDots = 300 + dots.length * DOT_STAGGER_MS;
+            reveals.forEach((r, i) => {
+              timers.push(setTimeout(() => r.classList.add('on'), afterDots + i * STAT_STAGGER_MS));
+            });
+            timers.push(setTimeout(() => bar.start(), afterDots + reveals.length * STAT_STAGGER_MS));
+          }
+          return () => { timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 3: recurring ideas, one topic at a time ---
+    function topicsSlide(advance) {
+      const slide = el('div');
+      const holder = el('div', 'recap-center recap-topic-holder');
+      slide.appendChild(holder);
+      const barHolder = el('div', 'recap-bar-holder');
+      slide.appendChild(barHolder);
+
+      return {
+        slide,
+        run() {
+          const timers = [];
+          let bar = null;
+          holder.style.visibility = 'hidden';
+
+          let started = false;
+          function startContent() {
+            if (started) return;
+            started = true;
+            holder.style.visibility = '';
+            showTopic(0);
+          }
+          const cancelInter = intertitle(slide, 'Recurring ideas', startContent);
+          setControls({ skip: () => { cancelInter(); startContent(); } });
+
+          function showTopic(i) {
+            if (i >= signal.topics.length) { advance(); return; }
+            timers.forEach(clearTimeout);
+            timers.length = 0;
+            bar?.cancel();
+            const topic = signal.topics[i];
+            holder.innerHTML = '';
+            barHolder.innerHTML = '';
+            setControls({
+              skip: () => showTopic(i + 1),
+              pause: () => bar?.pause(),
+              resume: () => bar?.resume(),
+            });
+
+            holder.appendChild(el('div', 'type-meta-small', `Recurring · ${i + 1} of ${signal.topics.length}`));
+            holder.appendChild(el('div', 'recap-topic-word', `“${topic.word}”`));
+            holder.appendChild(el('div', 'type-meta', `${topic.days} days`));
+
+            const quotes = topic.quotes.map((q) => quoteNode(q.text, dayStamp(q.day)));
+            for (const q of quotes) {
+              q.classList.add('recap-reveal');
+              holder.appendChild(q);
+            }
+
+            const enterMs = reducedMotion() ? 0 : 350;
+            quotes.forEach((q, qi) => {
+              timers.push(setTimeout(() => q.classList.add('on'), enterMs + qi * 250));
+            });
+            const settled = enterMs + quotes.length * 250;
+            timers.push(setTimeout(() => {
+              bar = countdownBar(TOPIC_MS, () => showTopic(i + 1));
+              barHolder.appendChild(bar.el);
+              bar.start();
+            }, settled));
+          }
+
+          return () => { cancelInter(); timers.forEach(clearTimeout); bar?.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 4: your word (tone) ---
+    function toneSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const sentence = el('p', 'recap-tone recap-reveal',
+        `Your word was “${signal.tone.word}” — it appeared ${signal.tone.count} times.`);
+      center.appendChild(sentence);
+      slide.appendChild(center);
+      const bar = countdownBar(TONE_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          const timers = [];
+          let started = false;
+          function startContent() {
+            if (started) return;
+            started = true;
+            timers.push(setTimeout(() => sentence.classList.add('on'), 50));
+            timers.push(setTimeout(() => bar.start(), 450));
+            setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          }
+          const cancelInter = intertitle(slide, 'Your Word', startContent);
+          setControls({ skip: () => { cancelInter(); startContent(); } });
+          return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 5: challenges (what seemed difficult) ---
+    function challengesSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const reveals = [];
+      const label = el('div', 'type-meta-small recap-reveal', 'What seemed difficult');
+      center.appendChild(label);
+      reveals.push(label);
+      for (const q of signal.difficult.slice(0, 2)) {
+        const node = quoteNode(q.text, dayStamp(q.day));
+        node.classList.add('recap-reveal');
+        center.appendChild(node);
+        reveals.push(node);
+      }
+      slide.appendChild(center);
+      const bar = countdownBar(TONE_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          const timers = [];
+          let started = false;
+          function startContent() {
+            if (started) return;
+            started = true;
+            reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 50 + i * 250)));
+            timers.push(setTimeout(() => bar.start(), 50 + reveals.length * 250));
+            setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          }
+          const cancelInter = intertitle(slide, 'Challenges', startContent);
+          setControls({ skip: () => { cancelInter(); startContent(); } });
+          return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 6: reflect & start anew ---
+    function outroSlide() {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const next = (signal.month + 1) % 12;
+      center.appendChild(el('div', 'type-meta', `${monthName(signal.month)} → ${monthName(next)}`));
+      center.appendChild(el('h1', 'type-display recap-big', 'Reflect & start anew'));
+      slide.appendChild(center);
+
+      const cta = el('button', 'type-meta recap-continue', 'Continue');
+      cta.type = 'button';
+      cta.addEventListener('click', () => close(true));
+      slide.appendChild(cta);
+      return { slide, run: () => (setControls(null), null) };
+    }
+
+    // Slides with nothing honest to show remove themselves
+    const builders = [introSlide, statsSlide];
+    if (signal.topics.length) builders.push(topicsSlide);
+    if (signal.tone) builders.push(toneSlide);
+    if (signal.difficult.length) builders.push(challengesSlide);
+    builders.push(outroSlide);
+    return builders;
+  }, {
+    onDismiss(seen) {
+      if (seen) markSeen(signal);
+      onDone?.();
+    },
+  });
+}
+
+
+// Yearly wrapped — the retention payoff as a slide sequence: the year
+// matrix drawing itself dot by dot, the big numbers, the top five topics,
+// the most-discussed reveal with its first-ever mention, and "See you on
+// the page" with a save-as-image of the dots (dots and counts only — the
+// writing never leaves). Built on the shared sequence machinery.
+
+
+const MATRIX_DOT_STAGGER_MS = 14;
+const MATRIX_MS = 6000;
+const STATS_MS = 6000;
+const TOPICS_MS = 6000;
+const REVEAL_MS = 7000;
+
+function fullStamp(key) {
+  const d = fromKey(key);
+  return `${monthName(d.getMonth())} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+/** Share image: the dot matrix + counts, monochrome, 1080×1350. Dots and
+ *  numbers only — never text content. */
+function shareImage(signal, dark) {
+  const W = 1080;
+  const H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = dark ? '#161514' : '#E8E6E1';
+  const ink = dark ? '#E8E6E1' : '#1A1A1A';
+  const faint = dark ? '#6B6862' : '#C9C6BF';
+  const meta = dark ? '#6B6862' : '#A9A6A0';
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Matrix: 12 rows × 31 columns
+  const left = 120;
+  const top = 260;
+  const cell = (W - left * 2) / 30;
+  const rowGap = 46;
+  const now = new Date();
+  for (let m = 0; m < 12; m++) {
+    const daysInMonth = new Date(signal.year, m + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(signal.year, m, d);
+      if (date > now) continue;
+      const key = `${signal.year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const written = signal.writtenKeys.has(key);
+      ctx.fillStyle = written ? ink : faint;
+      ctx.beginPath();
+      ctx.arc(left + (d - 1) * cell, top + m * rowGap, written ? 9 : 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.fillStyle = meta;
+  ctx.font = '400 34px "Fragment Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(`V E L L U M   ·   ${signal.year}`, W / 2, 150);
+
+  ctx.fillStyle = ink;
+  ctx.font = '500 84px "Instrument Sans", sans-serif';
+  ctx.fillText(String(signal.days), W / 2 - 300, 1080);
+  ctx.fillText(signal.words.toLocaleString(), W / 2, 1080);
+  ctx.fillText(String(signal.longestRun), W / 2 + 300, 1080);
+  ctx.fillStyle = meta;
+  ctx.font = '400 26px "Fragment Mono", monospace';
+  ctx.fillText('DAYS', W / 2 - 300, 1130);
+  ctx.fillText('WORDS', W / 2, 1130);
+  ctx.fillText('LONGEST RUN', W / 2 + 300, 1130);
+
+  return canvas.toDataURL('image/png');
+}
+
+function showWrapped(signal, { onDone } = {}) {
+  runSequence(({ close, setControls }) => {
+    // --- Slide 1: the year draws itself ---
+    function matrixSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const title = el('h2', 'type-title recap-reveal', String(signal.year));
+      const matrix = yearMatrix(signal.year);
+      matrix.classList.add('wrapped-matrix');
+      matrix.querySelector('.year-label').remove(); // the slide title carries the year
+      center.append(title, matrix);
+      slide.appendChild(center);
+      const bar = countdownBar(MATRIX_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          const timers = [];
+          const dots = [...matrix.querySelectorAll('.dot.filled')];
+          for (const d of dots) d.classList.add('recap-pending');
+          if (reducedMotion()) {
+            dots.forEach((d) => d.classList.remove('recap-pending'));
+            title.classList.add('on');
+            bar.start();
+          } else {
+            dots.forEach((d, i) => {
+              timers.push(setTimeout(() => d.classList.remove('recap-pending'), 300 + i * MATRIX_DOT_STAGGER_MS));
+            });
+            const afterDots = 400 + dots.length * MATRIX_DOT_STAGGER_MS;
+            timers.push(setTimeout(() => title.classList.add('on'), afterDots));
+            timers.push(setTimeout(() => bar.start(), afterDots + 300));
+          }
+          return () => { timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 2: the numbers ---
+    function statsSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const stats = [
+        [String(signal.days), 'days written'],
+        [signal.words.toLocaleString(), 'words'],
+        [String(signal.longestRun), 'longest run'],
+      ].map(([num, label]) => {
+        const col = el('div', 'recap-stat recap-reveal wrapped-stat');
+        col.append(el('span', 'recap-stat-number', num), el('span', 'type-meta-small', label));
+        return col;
+      });
+      center.append(...stats);
+      slide.appendChild(center);
+      const bar = countdownBar(STATS_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          const timers = [];
+          stats.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 200 + i * 350)));
+          timers.push(setTimeout(() => bar.start(), 200 + stats.length * 350));
+          return () => { timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 3: top five topics ---
+    function topicsSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const rows = signal.topics.map((t, i) => {
+        const row = el('div', 'wrapped-topic recap-reveal');
+        row.append(
+          el('span', 'type-meta-small wrapped-topic-rank', String(i + 1)),
+          el('span', 'wrapped-topic-word', `“${t.word}”`),
+          el('span', 'type-meta-small', `${t.days} days`),
+        );
+        return row;
+      });
+      center.append(...rows);
+      slide.appendChild(center);
+      const bar = countdownBar(TOPICS_MS, advance);
+      slide.appendChild(bar.el);
+
+      return {
+        slide,
+        run() {
+          const timers = [];
+          let started = false;
+          function startContent() {
+            if (started) return;
+            started = true;
+            rows.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 50 + i * 300)));
+            timers.push(setTimeout(() => bar.start(), 50 + rows.length * 300));
+            setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          }
+          const cancelInter = intertitle(slide, 'Five threads', startContent);
+          setControls({ skip: () => { cancelInter(); startContent(); } });
+          return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 4: the reveal ---
+    function revealSlide(advance) {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      const word = el('div', 'recap-topic-word wrapped-reveal-word recap-reveal', `“${signal.reveal.word}”`);
+      const count = el('div', 'type-meta recap-reveal', `${signal.reveal.days} days · ${signal.reveal.mentions} mentions`);
+      const started = el('div', 'type-meta-small recap-reveal wrapped-reveal-started',
+        `It started on ${fullStamp(signal.reveal.first.day)}`);
+      const quote = quoteNode(signal.reveal.first.text, '');
+      quote.classList.add('recap-reveal');
+      quote.querySelector('footer').remove();
+      center.append(word, count, started, quote);
+      slide.appendChild(center);
+      const bar = countdownBar(REVEAL_MS, advance);
+      slide.appendChild(bar.el);
+
+      const reveals = [word, count, started, quote];
+      return {
+        slide,
+        run() {
+          const timers = [];
+          let began = false;
+          function startContent() {
+            if (began) return;
+            began = true;
+            reveals.forEach((r, i) => timers.push(setTimeout(() => r.classList.add('on'), 50 + i * 400)));
+            timers.push(setTimeout(() => bar.start(), 50 + reveals.length * 400));
+            setControls({ skip: advance, pause: bar.pause, resume: bar.resume });
+          }
+          const cancelInter = intertitle(slide, 'Most discussed', startContent);
+          setControls({ skip: () => { cancelInter(); startContent(); } });
+          return () => { cancelInter(); timers.forEach(clearTimeout); bar.cancel(); };
+        },
+      };
+    }
+
+    // --- Slide 5: see you on the page ---
+    function outroSlide() {
+      const slide = el('div');
+      const center = el('div', 'recap-center');
+      center.appendChild(el('div', 'type-meta', String(signal.year)));
+      center.appendChild(el('h1', 'type-display recap-big', 'See you on the page.'));
+
+      const save = el('button', 'type-meta-small wrapped-save', 'Save your year');
+      save.type = 'button';
+      save.addEventListener('click', () => {
+        const dark = matchMedia('(prefers-color-scheme: dark)').matches
+          && document.documentElement.dataset.theme !== 'light'
+          || document.documentElement.dataset.theme === 'dark';
+        const a = document.createElement('a');
+        a.href = shareImage(signal, dark);
+        a.download = `vellum-${signal.year}.png`;
+        a.click();
+      });
+      center.appendChild(save);
+      slide.appendChild(center);
+
+      const cta = el('button', 'type-meta recap-continue', 'Continue');
+      cta.type = 'button';
+      cta.addEventListener('click', () => close(true));
+      slide.appendChild(cta);
+      return { slide, run: () => (setControls(null), null) };
+    }
+
+    // Thin years: matrix + counts only, one honest shape
+    const builders = [matrixSlide, statsSlide];
+    if (signal.topics.length) builders.push(topicsSlide);
+    if (signal.reveal) builders.push(revealSlide);
+    builders.push(outroSlide);
+    return builders;
+  }, {
+    onDismiss() {
+      onDone?.();
+    },
+  });
 }
 
 
@@ -2556,6 +2963,19 @@ function mountReflectionFlow(root) {
   }
   const signal = pendingMonthly() ?? pendingWeekly();
   if (signal) setTimeout(() => showReflectionModal(signal), 600);
+
+  // January: the year is ready (spec §3.3) — a single quiet line
+  const now = new Date();
+  if (consentStatus() === 'yes' && now.getMonth() === 0) {
+    const lastYear = yearlySignal(now.getFullYear() - 1);
+    if (lastYear.days > 0) {
+      const line = el('button', 'type-meta wrapped-invite');
+      line.type = 'button';
+      line.textContent = 'Your year is ready →';
+      line.addEventListener('click', () => showWrapped(lastYear));
+      root.appendChild(line);
+    }
+  }
 }
 
 
@@ -2937,7 +3357,22 @@ function renderCalendar(root) {
     for (const key of daysWithEntries()) years.add(Number(key.slice(0, 4)));
     // Newest first; every year with data renders — density is not capped
     for (const year of [...years].sort((a, b) => b - a)) {
-      canvas.appendChild(yearMatrix(year, { onMonthTap: showMonths }));
+      const block = yearMatrix(year, { onMonthTap: showMonths });
+      // The wrapped replays from here (reflections consent required)
+      if (consentStatus() === 'yes') {
+        const label = block.querySelector('.year-label');
+        label.classList.add('year-label-row');
+        const replay = document.createElement('button');
+        replay.type = 'button';
+        replay.className = 'type-meta-small year-wrapped-link';
+        replay.textContent = 'Your year →';
+        replay.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showWrapped(yearlySignal(year));
+        });
+        label.appendChild(replay);
+      }
+      canvas.appendChild(block);
     }
   }
 

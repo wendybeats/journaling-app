@@ -4,8 +4,9 @@
 // the mirror rule — observations, the user's own words, no advice.
 
 import { fromKey, weekRangeLabel, weekdayName, monthName } from '../format.js';
-import { consentEligible, pendingWeekly, pendingMonthly, setConsent, markSeen } from '../reflect.js';
+import { consentEligible, consentStatus, pendingWeekly, pendingMonthly, setConsent, markSeen, yearlySignal } from '../reflect.js';
 import { showMonthlyRecap } from './recap.js';
+import { showWrapped } from './wrapped.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -141,4 +142,17 @@ export function mountReflectionFlow(root) {
   }
   const signal = pendingMonthly() ?? pendingWeekly();
   if (signal) setTimeout(() => showReflectionModal(signal), 600);
+
+  // January: the year is ready (spec §3.3) — a single quiet line
+  const now = new Date();
+  if (consentStatus() === 'yes' && now.getMonth() === 0) {
+    const lastYear = yearlySignal(now.getFullYear() - 1);
+    if (lastYear.days > 0) {
+      const line = el('button', 'type-meta wrapped-invite');
+      line.type = 'button';
+      line.textContent = 'Your year is ready →';
+      line.addEventListener('click', () => showWrapped(lastYear));
+      root.appendChild(line);
+    }
+  }
 }

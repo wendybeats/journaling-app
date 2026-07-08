@@ -64,7 +64,7 @@ const STOPWORDS = new Set(('the a an and or but if then than that this these tho
   // generic descriptors — true but never a thread worth mirroring
   'long short good great bad better best hard easy small little big first last much many made make come came back ' +
   'right different actually finally really quite maybe almost enough every another other instead though although ' +
-  'however anyway anymore toward towards besides without within').split(' '));
+  'however anyway anymore toward towards besides without within less least most fewer').split(' '));
 
 function tokenize(text) {
   return (text.toLowerCase().match(/[a-z']+/g) ?? [])
@@ -244,6 +244,63 @@ export function monthlySignal(year, month) {
     kind: 'monthly', id: `m-${year}-${String(month + 1).padStart(2, '0')}`,
     year, month, days: writtenDays.length, words, longestRun, sufficient,
     topics, tone, difficult,
+  };
+}
+
+/** Stage 1 over one calendar year (through today if current). The wrapped:
+ *  top five topics, the most-discussed reveal with its first-ever mention,
+ *  and the deterministic counts. */
+export function yearlySignal(year, now = new Date()) {
+  const end = year === now.getFullYear() ? new Date(now) : new Date(year, 11, 31);
+  const keys = [];
+  for (let d = new Date(year, 0, 1); d <= end; d.setDate(d.getDate() + 1)) {
+    keys.push(dayKey(d));
+  }
+  const writtenDays = keys.filter(hasEntries);
+  const all = writtenDays.flatMap((k) => entriesFor(k).map((e) => ({ ...e, day: k })));
+  const words = all.reduce((n, e) => n + e.text.split(/\s+/).filter(Boolean).length, 0);
+  const entryCount = all.length;
+  const sufficient = writtenDays.length >= 30;
+
+  let longestRun = 0;
+  let run = 0;
+  for (const k of keys) {
+    run = hasEntries(k) ? run + 1 : 0;
+    longestRun = Math.max(longestRun, run);
+  }
+
+  // Top five topics — the yearly bar is the highest: >=6 mentions, >=4 days
+  const counts = new Map();
+  for (const entry of all) {
+    for (const raw of tokenize(entry.text)) {
+      const st = stem(raw);
+      const c = counts.get(st) ?? { count: 0, days: new Set(), display: raw };
+      c.count++;
+      c.days.add(entry.day);
+      counts.set(st, c);
+    }
+  }
+  const topics = [...counts.entries()]
+    .filter(([, c]) => c.count >= 6 && c.days.size >= 4)
+    .sort((a, b) => b[1].days.size - a[1].days.size || b[1].count - a[1].count)
+    .slice(0, 5)
+    .map(([st, c]) => ({ stem: st, word: c.display, mentions: c.count, days: c.days.size }));
+
+  // The reveal: the most-discussed thing and its first-ever mention
+  let reveal = null;
+  if (sufficient && topics.length) {
+    const top = topics[0];
+    for (const entry of all) {
+      const hit = sentences(entry.text).find((line) => tokenize(line).map(stem).includes(top.stem));
+      if (hit) { reveal = { ...top, first: { text: hit, day: entry.day } }; break; }
+    }
+  }
+
+  return {
+    kind: 'yearly', id: `y-${year}`, year,
+    days: writtenDays.length, words, entries: entryCount, longestRun, sufficient,
+    topics: sufficient ? topics : [], reveal,
+    writtenKeys: new Set(writtenDays),
   };
 }
 

@@ -9,6 +9,8 @@ import { daysWithEntries } from '../store.js';
 import { yearMatrix, monthGridBody, weeksOfMonthBody, monthLabel, daysWrittenIn } from '../dots.js';
 import { flipDots, animateHeight } from '../flip.js';
 import { archiveHead, crumb } from './shared.js';
+import { consentStatus, yearlySignal } from '../reflect.js';
+import { showWrapped } from './wrapped.js';
 
 let lastFocus = null; // { year, month } — where the reader last drilled to
 
@@ -89,7 +91,22 @@ export function renderCalendar(root) {
     for (const key of daysWithEntries()) years.add(Number(key.slice(0, 4)));
     // Newest first; every year with data renders — density is not capped
     for (const year of [...years].sort((a, b) => b - a)) {
-      canvas.appendChild(yearMatrix(year, { onMonthTap: showMonths }));
+      const block = yearMatrix(year, { onMonthTap: showMonths });
+      // The wrapped replays from here (reflections consent required)
+      if (consentStatus() === 'yes') {
+        const label = block.querySelector('.year-label');
+        label.classList.add('year-label-row');
+        const replay = document.createElement('button');
+        replay.type = 'button';
+        replay.className = 'type-meta-small year-wrapped-link';
+        replay.textContent = 'Your year →';
+        replay.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showWrapped(yearlySignal(year));
+        });
+        label.appendChild(replay);
+      }
+      canvas.appendChild(block);
     }
   }
 
