@@ -99,7 +99,8 @@ reflection layer), swipe or tap to advance, mono `SKIP` top-right. Progress indi
 
 - Shows exactly once (`onboarded` flag). Replayable from Settings ("Show the introduction again") — never re-triggered otherwise.
 - Sequence on first launch: tutorial → account screen (§1) → **trial moment** → Today.
-- **Trial moment (added July 8):** "A week on us." — every feature free for
+- **Trial moment (added July 8):** "A week on me." (first person — the comms
+  speak personally, maker to writer) — every feature free for
   seven days, then the subscription (placeholder $29.99/yr), hard paywall,
   no freemium, no skip. One primary button ("Start my free week"), terms in
   mono-small, "Restore purchase" beneath. iOS: StoreKit 2 auto-renewing

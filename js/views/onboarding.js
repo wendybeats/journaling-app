@@ -1,5 +1,5 @@
 // First launch: the four-screen tutorial, the account moment ("Keep your
-// notebook."), then the trial moment ("A week on us.") — Vellum is paid,
+// notebook."), then the trial moment ("A week on me.") — Vellum is paid,
 // one week free, no freemium. Shows exactly once; replay lives in the
 // footer. iCloud/StoreKit are mocked in the prototype — buttons record
 // the chosen state. Copy and sequence per docs/vellum-stage2-plan.md.
@@ -147,7 +147,7 @@ export function showOnboarding() {
       const slide = el('div');
       const center = el('div', 'recap-center onboard-account');
 
-      center.appendChild(el('h1', 'type-display recap-big', 'A week on us.'));
+      center.appendChild(el('h1', 'type-display recap-big', 'A week on me.'));
       center.appendChild(el('p', 'onboard-body',
         'Every page, every reflection, free for seven days. After that, Vellum is $29.99 a year — about the price of one good paper notebook.'));
 

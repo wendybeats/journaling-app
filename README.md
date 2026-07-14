@@ -21,7 +21,7 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
   Reflect, if you wish — the reflections preview / Go forth) with dots as the
   page indicator, then the account moment ("Keep your notebook." —
   Back up with iCloud per Path A, "Continue without an account" as a
-  first-class skip), then the trial moment ("A week on us." — 7-day
+  first-class skip), then the trial moment ("A week on me." — 7-day
   trial, hard paywall, no freemium). Shows once; replay via the footer's
   Intro.
 - **Reminder pre-prompt** — the in-system card that precedes any

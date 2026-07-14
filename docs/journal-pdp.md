@@ -151,7 +151,7 @@ Not in scope for v1, but v1 architecture must not foreclose it.
 
 ## 8. Business & Constraints
 
-- **Monetization:** ✅ **Decided (July 8, 2026): paid subscription with a 7-day free trial, hard paywall, no freemium.** The trial moment ("A week on us.") sits at the end of onboarding; nothing works without starting the trial. Price points are placeholders ($29.99/yr in the prototype) until the pre-submission pricing pass. The subscription carries the reflections' ongoing AI cost.
+- **Monetization:** ✅ **Decided (July 8, 2026): paid subscription with a 7-day free trial, hard paywall, no freemium.** The trial moment ("A week on me." — personal, first-person comms) sits at the end of onboarding; nothing works without starting the trial. Price points are placeholders ($29.99/yr in the prototype) until the pre-submission pricing pass. The subscription carries the reflections' ongoing AI cost.
 - **⚠️ Non-compete check (do this early):** the Mode contractor non-compete has been treated as covering consumer apps in the fractional-positioning context. Before investing serious hours, confirm whether it restricts *building and shipping your own consumer app* or only *client work* in the category. This is a 30-minute contract read that de-risks the whole project.
 - **Solo build:** scope must fit nights/weekends alongside Mode, Doss, and the portfolio build. V1 as specced is deliberately shippable by one person; scope creep is the primary schedule risk.
 - **App Store:** journaling category is crowded; differentiation is design + privacy + restraint, which must come through in screenshots and listing copy.
