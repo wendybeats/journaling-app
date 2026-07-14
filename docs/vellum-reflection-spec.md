@@ -86,9 +86,12 @@
 - **Wrapped:** its own paged overlay, launched from a single quiet mono line on Today during January ("YOUR YEAR IS READY →"), replayable from the Calendar year view.
 - Excluded from Find, excluded from entry counts, never a dot — dots are for writing.
 
-## 7. Monetization note (flag, not decision)
+## 7. Monetization note
 
-The PDP leaves pricing open; the natural seam here is: journal one-time / reflections subscription (they carry the ongoing API cost). No design work depends on this yet, but the consent moment should be written so a paywall could sit *behind* it without rewording ("YES, REFLECT" → plan sheet). Decide pre-submission per PDP §8.
+✅ Decided (July 8): the whole app is a paid subscription — 7-day free
+trial, hard paywall, no freemium. Reflections are included in the one
+subscription (no separate AI tier); the trial moment lives at the end of
+onboarding. Price points are placeholders until submission.
 
 ## 8. Build plan
 

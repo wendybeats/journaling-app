@@ -151,7 +151,7 @@ Not in scope for v1, but v1 architecture must not foreclose it.
 
 ## 8. Business & Constraints
 
-- **Monetization:** open question. Likely candidates: one-time purchase (fits the anti-subscription-fatigue positioning) vs. modest subscription (fits ongoing AI costs in v2). A plausible split: paid app or one-time unlock for the journal; subscription only for the v2 AI layer. Decide before App Store submission, not before building.
+- **Monetization:** ✅ **Decided (July 8, 2026): paid subscription with a 7-day free trial, hard paywall, no freemium.** The trial moment ("A week on us.") sits at the end of onboarding; nothing works without starting the trial. Price points are placeholders ($29.99/yr in the prototype) until the pre-submission pricing pass. The subscription carries the reflections' ongoing AI cost.
 - **⚠️ Non-compete check (do this early):** the Mode contractor non-compete has been treated as covering consumer apps in the fractional-positioning context. Before investing serious hours, confirm whether it restricts *building and shipping your own consumer app* or only *client work* in the category. This is a 30-minute contract read that de-risks the whole project.
 - **Solo build:** scope must fit nights/weekends alongside Mode, Doss, and the portfolio build. V1 as specced is deliberately shippable by one person; scope creep is the primary schedule risk.
 - **App Store:** journaling category is crowded; differentiation is design + privacy + restraint, which must come through in screenshots and listing copy.
@@ -160,19 +160,19 @@ Not in scope for v1, but v1 architecture must not foreclose it.
 
 | # | Item | Owner | Notes |
 |---|------|-------|-------|
-| 1 | ~~Product name~~ | ✅ Vellum | Working name locked; check App Store + trademark availability before launch |
+| 1 | ~~Product name~~ | ✅ Vellum (placeholder) | Treat as placeholder throughout; final name + trademark/App Store check later (July 8) |
 | 2 | ~~Upload design references~~ | ✅ Done | thedot.space + editorial site — synthesized in §5 |
-| 3 | Non-compete contract read | Wendell | Gate before heavy investment |
-| 4 | Transcription spike: Speech framework vs WhisperKit | Build | Quality/latency test with real morning-voice audio |
+| 3 | Non-compete contract read | Wendell | Deferred (July 8) — do before serious iOS investment |
+| 4 | ~~Transcription spike~~ | Fast follow | Voice capture moved out of launch scope (July 8); spike happens with the v1.1 fast follow |
 | 5 | ~~Habit visualization concept~~ | ✅ Resolved | Dot grid — each dot a day, filled = written (§5.2) |
-| 6 | Monetization model | Wendell | Decide pre-submission |
+| 6 | ~~Monetization model~~ | ✅ Decided | 7-day trial → paid subscription, no freemium (July 8); price points at submission |
 | 7 | Search in v1 vs v1.1 | Build | Cost-driven decision |
 
 ## 10. Definition of Done (V1)
 
 V1 ships when:
 - Cold open → writable in under 1 second on target hardware
-- Text + voice capture both feel effortless; transcription accuracy acceptable for groggy morning speech
+- Text capture feels effortless (voice capture is a v1.1 fast follow; the prototype's design for it stands)
 - iCloud sync is invisible and reliable across two devices
 - The archive is genuinely pleasurable to scroll after 30 days of real personal use
 - **The founder uses it every day and would keep using it if no one else ever downloaded it**

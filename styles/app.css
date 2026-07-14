@@ -829,6 +829,17 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 .account-skip:hover { color: var(--text-written); }
 .account-skip-note { margin-top: var(--space-xs); }
 
+.trial-terms { margin-top: var(--space-sm); }
+.trial-restore {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-meta);
+  margin-top: var(--space-xl);
+  padding: var(--space-xs);
+}
+.trial-restore:hover { color: var(--text-heading); }
+
 /* --- Search ------------------------------------------------------------------ */
 
 .search-overlay {

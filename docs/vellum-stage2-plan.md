@@ -98,7 +98,13 @@ reflection layer), swipe or tap to advance, mono `SKIP` top-right. Progress indi
 ### 2.2 Rules
 
 - Shows exactly once (`onboarded` flag). Replayable from Settings ("Show the introduction again") — never re-triggered otherwise.
-- Sequence on first launch: tutorial → account screen (§1) → Today.
+- Sequence on first launch: tutorial → account screen (§1) → **trial moment** → Today.
+- **Trial moment (added July 8):** "A week on us." — every feature free for
+  seven days, then the subscription (placeholder $29.99/yr), hard paywall,
+  no freemium, no skip. One primary button ("Start my free week"), terms in
+  mono-small, "Restore purchase" beneath. iOS: StoreKit 2 auto-renewing
+  subscription with a 7-day introductory offer — the trial converts
+  automatically; no separate expiry paywall needed.
 - No feature tour, no permission requests, no tips. Three screens is a ceiling, not a target.
 - Respect Reduce Motion: dot-fill cascade becomes a static filled grid.
 

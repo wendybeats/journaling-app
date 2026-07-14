@@ -18,19 +18,21 @@ build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly
 
 - **Onboarding** — the four-screen tutorial (Attention is a practice /
   This is Vellum with the dot-fill moment and the permanence rule /
-  It reads back — the reflections preview / Go forth) with dots as the
+  Reflect, if you wish — the reflections preview / Go forth) with dots as the
   page indicator, then the account moment ("Keep your notebook." —
   Back up with iCloud per Path A, "Continue without an account" as a
-  first-class skip). Shows once; replay via the footer's Intro.
+  first-class skip), then the trial moment ("A week on us." — 7-day
+  trial, hard paywall, no freemium). Shows once; replay via the footer's
+  Intro.
 - **Reminder pre-prompt** — the in-system card that precedes any
   permission dialog, offered after two written days; a no is never
   re-asked.
 - **Today** — the blank page as home screen: date heading, mono meta row,
   cursor ready on load. Entries auto-commit (idle / blur / ⌘↩) with the
   180 ms settle; a faint `SAVED 9:41 AM` is the only acknowledgment.
-- **Voice capture** — the breathing-dot recorder, transcribing into the writing
-  surface via the Web Speech API where the browser supports it (stands in for
-  the on-device Speech framework).
+- **Voice capture** *(v1.1 fast follow — designed here, ships post-launch)* —
+  the breathing-dot recorder, transcribing into the writing surface via the
+  Web Speech API where the browser supports it.
 - **Archive → Notebook** — reverse-chronological reading view, two-line
   drop cap per day.
 - **Archive → Calendar** — one morphing experience: year matrices → tap a

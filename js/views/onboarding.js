@@ -1,12 +1,14 @@
-// First launch: the three-screen tutorial (why → what → go) followed by
-// the account moment ("Keep your notebook."). Shows exactly once; replay
-// lives in the footer. Copy and sequence per docs/vellum-stage2-plan.md.
-// Sign-in is mocked in the prototype — buttons record the chosen mode.
+// First launch: the four-screen tutorial, the account moment ("Keep your
+// notebook."), then the trial moment ("A week on us.") — Vellum is paid,
+// one week free, no freemium. Shows exactly once; replay lives in the
+// footer. iCloud/StoreKit are mocked in the prototype — buttons record
+// the chosen state. Copy and sequence per docs/vellum-stage2-plan.md.
 
 import { el, reducedMotion, runSequence } from './sequence.js';
 
 const ONBOARDED_KEY = 'vellum.onboarded.v1';
 const ACCOUNT_KEY = 'vellum.account.v1';
+const TRIAL_KEY = 'vellum.trial.v1';
 
 export function isOnboarded() {
   try {
@@ -112,7 +114,7 @@ export function showOnboarding() {
       };
     }
 
-    function accountSlide() {
+    function accountSlide(advance) {
       const slide = el('div');
       const center = el('div', 'recap-center onboard-account');
 
@@ -124,16 +126,51 @@ export function showOnboarding() {
       // account system, no server. One button.
       const backup = el('button', 'account-btn primary', 'Back up with iCloud');
       backup.type = 'button';
-      backup.addEventListener('click', () => { setAccountMode('icloud'); close(true); });
+      backup.addEventListener('click', () => { setAccountMode('icloud'); advance(); });
       const stack = el('div', 'account-stack');
       stack.append(backup);
       center.appendChild(stack);
 
       const skip = el('button', 'type-meta account-skip', 'Continue without an account →');
       skip.type = 'button';
-      skip.addEventListener('click', () => { setAccountMode('local'); close(true); });
+      skip.addEventListener('click', () => { setAccountMode('local'); advance(); });
       center.appendChild(skip);
       center.appendChild(el('div', 'type-meta-small account-skip-note', 'Saved on this device only'));
+
+      slide.appendChild(center);
+      return { slide, run: () => (setControls(null), null) };
+    }
+
+    // The trial moment — paid with one free week, no freemium, no skip.
+    // Prices are placeholders until the pre-submission pricing pass.
+    function trialSlide() {
+      const slide = el('div');
+      const center = el('div', 'recap-center onboard-account');
+
+      center.appendChild(el('h1', 'type-display recap-big', 'A week on us.'));
+      center.appendChild(el('p', 'onboard-body',
+        'Every page, every reflection, free for seven days. After that, Vellum is $29.99 a year — about the price of one good paper notebook.'));
+
+      const start = el('button', 'account-btn primary', 'Start my free week');
+      start.type = 'button';
+      start.addEventListener('click', () => {
+        localStorage.setItem(TRIAL_KEY, JSON.stringify({ startedAt: Date.now() }));
+        close(true);
+      });
+      const stack = el('div', 'account-stack');
+      stack.append(start);
+      center.appendChild(stack);
+
+      center.appendChild(el('div', 'type-meta-small trial-terms',
+        '$29.99/year after trial · cancel anytime'));
+
+      const restore = el('button', 'type-meta-small trial-restore', 'Restore purchase');
+      restore.type = 'button';
+      restore.addEventListener('click', () => {
+        localStorage.setItem(TRIAL_KEY, JSON.stringify({ restored: true }));
+        close(true);
+      });
+      center.appendChild(restore);
 
       slide.appendChild(center);
       return { slide, run: () => (setControls(null), null) };
@@ -150,6 +187,7 @@ export function showOnboarding() {
         { extra: circlesGlyph() }),
       tutorialSlide(3, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),
       accountSlide,
+      trialSlide,
     ];
   }, {
     onDismiss() {
