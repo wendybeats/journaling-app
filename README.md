@@ -11,8 +11,12 @@ thinking over time — see [`docs/journal-pdp.md`](docs/journal-pdp.md).
 A **high-fidelity web prototype** of the V1 core loop. It is the living design
 spec: every color, size, spacing, and motion value resolves to the Stage 0
 token sheet ([`docs/vellum-design-tokens.md`](docs/vellum-design-tokens.md)),
-mirrored 1:1 in [`styles/tokens.css`](styles/tokens.css). The eventual native
-build is SwiftUI (iOS 17+, SwiftData + CloudKit) and ports these tokens directly.
+mirrored 1:1 in [`styles/tokens.css`](styles/tokens.css).
+
+The **native SwiftUI port** (iOS 17+, SwiftData + CloudKit) now lives in
+[`ios/`](ios/README.md) — round 1 covers the token sheet, type registers,
+data layer, Today, the archive, onboarding, the reminder, and the StoreKit 2
+trial gate. Generate the Xcode project with `xcodegen` (see `ios/README.md`).
 
 ### What works
 
@@ -84,6 +88,7 @@ styles/     tokens.css (the token sheet) · app.css (components)
 js/         store, views (today / archive / year), dots, voice, seed
 fonts/      self-hosted OFL fonts — Newsreader (body serif),
             Instrument Sans (grotesk stand-in for Söhne), Fragment Mono (meta)
+ios/        the SwiftUI port (XcodeGen project — see ios/README.md)
 ```
 
 ### Governing constraints

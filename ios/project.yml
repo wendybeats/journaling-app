@@ -1,0 +1,44 @@
+# Vellum — XcodeGen project spec.
+# Generate the Xcode project with:  brew install xcodegen && cd ios && xcodegen
+# The .xcodeproj is generated, never committed.
+
+name: Vellum
+options:
+  bundleIdPrefix: com.wendellbarton
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+targets:
+  Vellum:
+    type: application
+    platform: iOS
+    sources:
+      - path: Vellum
+    info:
+      path: Vellum/Info.plist
+      properties:
+        CFBundleDisplayName: Vellum            # placeholder name, like everything named Vellum
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        UIAppFonts:      # resources copy flat into the bundle root
+          - Newsreader.ttf
+          - Newsreader-Italic.ttf
+          - InstrumentSans.ttf
+          - FragmentMono-Regular.ttf
+    entitlements:
+      path: Vellum/Vellum.entitlements
+      properties:
+        com.apple.developer.icloud-services: [CloudKit]
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.wendellbarton.vellum
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wendellbarton.vellum
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"            # iPhone-first, like the PDP
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
