@@ -27,6 +27,19 @@ struct TodayView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                // The crumb — a bare word in the mono register, like the web
+                // prototype's .crumb. No capsule, no chrome.
+                HStack {
+                    Spacer()
+                    NavigationLink {
+                        ArchiveView()
+                    } label: {
+                        Text("Archive").typeMeta()
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.top, Tokens.Space.sm)
+
                 Text(DayFormat.dayHeading(now))
                     .typeDisplay()
                     .padding(.top, Tokens.Space.xl)
@@ -63,16 +76,7 @@ struct TodayView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.Surface.page)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    ArchiveView()
-                } label: {
-                    Text("Archive").typeMeta()
-                }
-            }
-        }
-        .toolbarBackground(Tokens.Surface.page, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             adoptStaleDraft()
             refresh()

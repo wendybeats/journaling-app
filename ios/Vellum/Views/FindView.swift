@@ -10,6 +10,7 @@ import SwiftData
 struct FindView: View {
     @Environment(\.modelContext) private var context
     @State private var query = ""
+    @State private var openDay: String? = nil
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -36,15 +37,24 @@ struct FindView: View {
                         if results.isEmpty {
                             Text("Nothing found.").typeMeta()
                         }
+                        // Every result clicks through to its day's page.
                         ForEach(results, id: \.day) { group in
-                            VStack(alignment: .leading, spacing: Tokens.Space.sm) {
-                                Text(DayFormat.dayMetaDate(DayFormat.date(fromKey: group.day)))
-                                    .typeMeta()
-                                ForEach(Array(group.snippets.enumerated()), id: \.offset) { _, snippet in
-                                    Text(highlighted(snippet))
-                                        .typeWritten()
+                            Button {
+                                openDay = group.day
+                            } label: {
+                                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                                    Text(DayFormat.dayMetaDate(DayFormat.date(fromKey: group.day)))
+                                        .typeMeta()
+                                    ForEach(Array(group.snippets.enumerated()), id: \.offset) { _, snippet in
+                                        Text(highlighted(snippet))
+                                            .typeWritten()
+                                            .multilineTextAlignment(.leading)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, Tokens.Space.screenX)
@@ -54,6 +64,9 @@ struct FindView: View {
             }
         }
         .background(Tokens.Surface.page)
+        .navigationDestination(item: $openDay) { key in
+            DayPageView(key: key)
+        }
         .onAppear { focused = true }
     }
 

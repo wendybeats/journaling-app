@@ -182,6 +182,7 @@ struct CalendarView: View {
 /// A past day, read-only — the page as it was.
 struct DayPageView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     let key: String
 
     var body: some View {
@@ -190,6 +191,15 @@ struct DayPageView: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Button { dismiss() } label: {
+                        Text("← Back").typeMeta()
+                    }
+                    .buttonStyle(.plain)
+                    Spacer()
+                }
+                .padding(.top, Tokens.Space.sm)
+
                 Text(DayFormat.dayHeading(date))
                     .typeDisplay()
                     .padding(.top, Tokens.Space.xl)
@@ -212,6 +222,7 @@ struct DayPageView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Tokens.Surface.page)
-        .toolbarBackground(Tokens.Surface.page, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationBarBackButtonHidden(true)
     }
 }
