@@ -101,7 +101,7 @@ onboarding. Price points are placeholders until submission.
 | R2 | Monthly recap + thresholds/fallback states, mocked | Web prototype |
 | R3 | Yearly wrapped paged sequence, mocked (matrix animation is the star) | Web prototype |
 | R4 | Stage-1 deterministic signal extraction (real, runs on seed corpus) | Web prototype JS → ports to Swift |
-| R5 | Claude API integration behind dev flag; structured output + quote validation; judge real output vs mocks | Web prototype |
+| R5 | Claude API integration behind dev flag; structured output + quote validation; judge real output vs mocks. **Post-launch (decided July 24): V1 ships the deterministic engine on device only — no backend exists until R5.** | Web prototype |
 | R6 | SwiftUI port alongside the rest of the app | iOS |
 
 Mock content rule for R1–R3: write the mocks *from the actual seed entries*, obeying every rule in §5 by hand — the mocks are the spec for the model.
