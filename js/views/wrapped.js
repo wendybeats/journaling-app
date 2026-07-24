@@ -233,7 +233,7 @@ export function showWrapped(signal, { onDone } = {}) {
           || document.documentElement.dataset.theme === 'dark';
         const a = document.createElement('a');
         a.href = shareImage(signal, dark);
-        a.download = `vellum-${signal.year}.png`;
+        a.download = `endpaper-${signal.year}.png`;
         a.click();
       });
       center.appendChild(save);

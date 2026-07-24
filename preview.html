@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vellum</title>
+<title>Endpaper</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <style>
 /* ==========================================================================
-   Vellum — Design Tokens (Stage 0)
-   Source of truth: docs/vellum-design-tokens.md
+   Endpaper — Design Tokens (Stage 0)
+   Source of truth: docs/endpaper-design-tokens.md
    Rule: components never reference raw hex or raw point sizes — only the
    semantic custom properties defined here.
    ========================================================================== */
@@ -163,7 +163,7 @@
 }
 
 /* ==========================================================================
-   Vellum — app styles
+   Endpaper — app styles
    Components reference semantic tokens only (see styles/tokens.css).
    ========================================================================== */
 
@@ -1142,7 +1142,7 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 <body>
 <div class="shell">
   <header class="chrome">
-    <a class="wordmark" href="#today">Vellum</a>
+    <a class="wordmark" href="#today">Endpaper</a>
     <nav class="type-meta">
       <a href="#today" data-route="today">Today</a>
       <a href="#archive" data-route="archive">Archive</a>
@@ -1150,7 +1150,7 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
   </header>
   <main id="view"></main>
   <footer class="type-meta-small">
-    <span>Vellum — preview</span>
+    <span>Endpaper — preview</span>
     <span class="footer-actions">
       <button id="seed-toggle" type="button"></button>
       <button id="intro-replay" type="button">Intro</button>
@@ -1162,7 +1162,7 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 
 const storage = (() => {
   try {
-    const t = '__vellum_probe__';
+    const t = '__endpaper_probe__';
     storage.setItem(t, t);
     storage.removeItem(t);
     return storage;
@@ -1175,13 +1175,13 @@ const storage = (() => {
     };
   }
 })();
-const storedTheme = storage.getItem('vellum.theme');
+const storedTheme = storage.getItem('endpaper.theme');
 if (storedTheme) document.documentElement.dataset.theme = storedTheme;
 // Entry storage — plain text, day-keyed, timestamped (the v2-ready corpus shape).
 // storage stands in for SwiftData in the prototype.
 
-const ENTRIES_KEY = 'vellum.entries.v1';
-const DRAFT_KEY = 'vellum.draft.v1';
+const ENTRIES_KEY = 'endpaper.entries.v1';
+const DRAFT_KEY = 'endpaper.draft.v1';
 
 function load() {
   try {
@@ -1337,14 +1337,14 @@ function monthAbbr(m) {
 
 
 // Reflection engine (R1+R2) — a deterministic stand-in for the two-stage
-// pipeline in docs/vellum-reflection-spec.md. It only surfaces what the
+// pipeline in docs/endpaper-reflection-spec.md. It only surfaces what the
 // entries literally contain: topics need repeated mentions, every quote is
 // a verbatim sentence, tone words must be the user's own, difficulty needs
 // explicit textual evidence, and thin periods get silence (weekly) or the
 // honest quiet variant (monthly) — never a reach.
 
 
-const STATE_KEY = 'vellum.reflection.v1';
+const STATE_KEY = 'endpaper.reflection.v1';
 
 function load() {
   try {
@@ -2157,13 +2157,13 @@ function runSequence(makeBuilders, { onDismiss } = {}) {
 
 
 // The reminder pre-prompt — the in-system card that precedes any system
-// permission dialog (docs/vellum-stage2-plan.md §3.1). Offered once the
+// permission dialog (docs/endpaper-stage2-plan.md §3.1). Offered once the
 // user has written on two distinct days; a no is remembered and never
 // re-asked. Local notifications are iOS work — the prototype records the
 // decision only.
 
 
-const KEY = 'vellum.reminder.v1';
+const KEY = 'endpaper.reminder.v1';
 
 function decision() {
   try {
@@ -2962,7 +2962,7 @@ function showWrapped(signal, { onDone } = {}) {
           || document.documentElement.dataset.theme === 'dark';
         const a = document.createElement('a');
         a.href = shareImage(signal, dark);
-        a.download = `vellum-${signal.year}.png`;
+        a.download = `endpaper-${signal.year}.png`;
         a.click();
       });
       center.appendChild(save);
@@ -3146,15 +3146,15 @@ function mountReflectionFlow(root) {
 
 
 // First launch: the four-screen tutorial, the account moment ("Keep your
-// notebook."), then the trial moment ("A week on me.") — Vellum is paid,
+// notebook."), then the trial moment ("A week on me.") — Endpaper is paid,
 // one week free, no freemium. Shows exactly once; replay lives in the
 // footer. iCloud/StoreKit are mocked in the prototype — buttons record
-// the chosen state. Copy and sequence per docs/vellum-stage2-plan.md.
+// the chosen state. Copy and sequence per docs/endpaper-stage2-plan.md.
 
 
-const ONBOARDED_KEY = 'vellum.onboarded.v1';
-const ACCOUNT_KEY = 'vellum.account.v1';
-const TRIAL_KEY = 'vellum.trial.v1';
+const ONBOARDED_KEY = 'endpaper.onboarded.v1';
+const ACCOUNT_KEY = 'endpaper.account.v1';
+const TRIAL_KEY = 'endpaper.trial.v1';
 
 function isOnboarded() {
   try {
@@ -3174,7 +3174,7 @@ function setAccountMode(mode) {
 
 const TUTORIAL_PAGES = 4;
 
-/** Literal Vellum dots as the page indicator — the habit metaphor,
+/** Literal Endpaper dots as the page indicator — the habit metaphor,
  *  taught silently before a word about it is read. */
 function progressDots(active) {
   const row = el('div', 'onboard-progress');
@@ -3295,7 +3295,7 @@ function showOnboarding() {
 
       center.appendChild(el('h1', 'type-display recap-big', 'A week on me.'));
       center.appendChild(el('p', 'onboard-body',
-        'Every page, every reflection, free for seven days. After that, Vellum is $29.99 a year — about the price of one good paper notebook.'));
+        'Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.'));
 
       const start = el('button', 'account-btn primary', 'Start my free week');
       start.type = 'button';
@@ -3325,11 +3325,11 @@ function showOnboarding() {
     return [
       tutorialSlide(0, 'Attention is a practice.',
         'A few honest lines a day change how the day sits with you. Not therapy, not productivity — just noticing, kept somewhere quiet.'),
-      tutorialSlide(1, 'This is Vellum.',
+      tutorialSlide(1, 'This is Endpaper.',
         'Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.',
         { extra: demoGrid() }),
       tutorialSlide(2, 'Reflect, if you wish.',
-        'Each week, month, and year, Vellum can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
+        'Each week, month, and year, Endpaper can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
         { extra: circlesGlyph() }),
       tutorialSlide(3, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),
       accountSlide,
@@ -3921,7 +3921,7 @@ function refreshToggleLabel() {
 toggle.addEventListener('click', () => {
   const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  storage.setItem('vellum.theme', next);
+  storage.setItem('endpaper.theme', next);
   refreshToggleLabel();
 });
 refreshToggleLabel();
@@ -3948,7 +3948,7 @@ seedBtn.addEventListener('click', () => {
   if (daysWithEntries().length) {
     replaceAll({});
     resetReflections();
-    storage.removeItem('vellum.draft.v1');
+    storage.removeItem('endpaper.draft.v1');
   } else {
     seedDemoData();
   }

@@ -1,11 +1,11 @@
-# Vellum — iOS (SwiftUI port)
+# Endpaper — iOS (SwiftUI port)
 
 The native build the web prototype was always specifying: SwiftUI,
 iOS 17+, SwiftData + CloudKit (Path A — the user's own iCloud is the
 account; no server, no login). Every color, size, spacing, and motion value
-resolves to `Vellum/Support/Tokens.swift`, a 1:1 port of
+resolves to `Endpaper/Support/Tokens.swift`, a 1:1 port of
 `../styles/tokens.css`, which itself mirrors
-[`../docs/vellum-design-tokens.md`](../docs/vellum-design-tokens.md).
+[`../docs/endpaper-design-tokens.md`](../docs/endpaper-design-tokens.md).
 
 ## Build
 
@@ -14,18 +14,18 @@ The Xcode project is generated, never committed:
 ```sh
 brew install xcodegen
 cd ios
-xcodegen          # → Vellum.xcodeproj
-open Vellum.xcodeproj
+xcodegen          # → Endpaper.xcodeproj
+open Endpaper.xcodeproj
 ```
 
 Then in Xcode: set your development team (Signing & Capabilities), and to
 exercise the real trial/purchase flow, set the scheme's StoreKit
-configuration to `Vellum.storekit`. Without it the trial gate falls back to
+configuration to `Endpaper.storekit`. Without it the trial gate falls back to
 a locally stamped 7-day window (the same mock the web prototype uses).
 
 CloudKit ("Back up with iCloud") needs the iCloud capability active on your
 team's app ID — the entitlements file already names
-`iCloud.com.wendellbarton.vellum`. "Continue without an account" runs the
+`iCloud.com.wendellbarton.endpaper`. "Continue without an account" runs the
 store local-only; no capability required.
 
 ## What's here (port round 1)
@@ -53,7 +53,7 @@ store local-only; no capability required.
   dialog only ever follows a yes; one-shot re-armed notifications that skip
   days already written; the four-line copy pool.
 - **Trial gate** — StoreKit 2 (`TrialGate`), yearly product with a 7-day
-  free introductory offer, `Vellum.storekit` test configuration.
+  free introductory offer, `Endpaper.storekit` test configuration.
 
 ## Round 2: the reflection layer (ported)
 
@@ -63,7 +63,7 @@ store local-only; no capability required.
   Swift's sort isn't stable, so rankings carry explicit alphabetical
   tiebreaks — both engines are deterministic; ties may order differently.)
 - `Reflect/ReflectionStore.swift` — consent/seen/archived state under the
-  same `vellum.reflection.v1` key; pending-arrival logic (one per visit,
+  same `endpaper.reflection.v1` key; pending-arrival logic (one per visit,
   monthly wins); the SwiftData → corpus bridge.
 - `Reflect/SlideSequence.swift` — the timed-slide machinery: reverse
   countdown bar, tap to skip, touch-and-hold (250 ms) to pause,

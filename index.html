@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Vellum</title>
+  <title>Endpaper</title>
   <meta name="description" content="The journal that is just a journal.">
   <link rel="stylesheet" href="styles/tokens.css">
   <link rel="stylesheet" href="styles/app.css">
   <script>
     // Apply stored theme before first paint to avoid a flash
-    const t = localStorage.getItem('vellum.theme');
+    const t = localStorage.getItem('endpaper.theme');
     if (t) document.documentElement.dataset.theme = t;
   </script>
 </head>
 <body>
   <div class="shell">
     <header class="chrome">
-      <a class="wordmark" href="#today">Vellum</a>
+      <a class="wordmark" href="#today">Endpaper</a>
       <nav class="type-meta">
         <a href="#today" data-route="today">Today</a>
         <a href="#archive" data-route="archive">Archive</a>
@@ -24,7 +24,7 @@
     </header>
     <main id="view"></main>
     <footer class="type-meta-small">
-      <span>Vellum — prototype</span>
+      <span>Endpaper — prototype</span>
       <span class="footer-actions">
         <button id="intro-replay" type="button">Intro</button>
         <button id="theme-toggle" type="button"></button>

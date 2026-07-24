@@ -1,4 +1,4 @@
-// Assembles the Vellum prototype into one self-contained HTML file that runs
+// Assembles the Endpaper prototype into one self-contained HTML file that runs
 // from a double-click (file://), no server needed: inline CSS, data-URI fonts,
 // concatenated JS, safe-storage shim, and a preview-only seed/clear control.
 //
@@ -42,7 +42,7 @@ const js = order
 const shim = `
 const storage = (() => {
   try {
-    const t = '__vellum_probe__';
+    const t = '__endpaper_probe__';
     localStorage.setItem(t, t);
     localStorage.removeItem(t);
     return localStorage;
@@ -55,7 +55,7 @@ const storage = (() => {
     };
   }
 })();
-const storedTheme = storage.getItem('vellum.theme');
+const storedTheme = storage.getItem('endpaper.theme');
 if (storedTheme) document.documentElement.dataset.theme = storedTheme;
 `;
 
@@ -69,7 +69,7 @@ seedBtn.addEventListener('click', () => {
   if (daysWithEntries().length) {
     replaceAll({});
     resetReflections();
-    storage.removeItem('vellum.draft.v1');
+    storage.removeItem('endpaper.draft.v1');
   } else {
     seedDemoData();
   }
@@ -86,7 +86,7 @@ const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vellum</title>
+<title>Endpaper</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <style>
 ${css}
@@ -95,7 +95,7 @@ ${css}
 <body>
 <div class="shell">
   <header class="chrome">
-    <a class="wordmark" href="#today">Vellum</a>
+    <a class="wordmark" href="#today">Endpaper</a>
     <nav class="type-meta">
       <a href="#today" data-route="today">Today</a>
       <a href="#archive" data-route="archive">Archive</a>
@@ -103,7 +103,7 @@ ${css}
   </header>
   <main id="view"></main>
   <footer class="type-meta-small">
-    <span>Vellum — preview</span>
+    <span>Endpaper — preview</span>
     <span class="footer-actions">
       <button id="seed-toggle" type="button"></button>
       <button id="intro-replay" type="button">Intro</button>

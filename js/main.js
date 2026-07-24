@@ -81,7 +81,7 @@ function refreshToggleLabel() {
 toggle.addEventListener('click', () => {
   const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  localStorage.setItem('vellum.theme', next);
+  localStorage.setItem('endpaper.theme', next);
   refreshToggleLabel();
 });
 refreshToggleLabel();

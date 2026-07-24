@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Vellum — Design Tokens (Stage 0)
-   Source of truth: docs/vellum-design-tokens.md
+   Endpaper — Design Tokens (Stage 0)
+   Source of truth: docs/endpaper-design-tokens.md
    Rule: components never reference raw hex or raw point sizes — only the
    semantic custom properties defined here.
    ========================================================================== */

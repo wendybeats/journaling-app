@@ -1,8 +1,8 @@
-# Vellum — XcodeGen project spec.
+# Endpaper — XcodeGen project spec.
 # Generate the Xcode project with:  brew install xcodegen && cd ios && xcodegen
 # The .xcodeproj is generated, never committed.
 
-name: Vellum
+name: Endpaper
 options:
   bundleIdPrefix: com.wendellbarton
   deploymentTarget:
@@ -10,15 +10,15 @@ options:
   createIntermediateGroups: true
 
 targets:
-  Vellum:
+  Endpaper:
     type: application
     platform: iOS
     sources:
-      - path: Vellum
+      - path: Endpaper
     info:
-      path: Vellum/Info.plist
+      path: Endpaper/Info.plist
       properties:
-        CFBundleDisplayName: Vellum            # placeholder name, like everything named Vellum
+        CFBundleDisplayName: Endpaper            # decided July 24 (pending trademark screen)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
@@ -28,14 +28,14 @@ targets:
           - InstrumentSans.ttf
           - FragmentMono-Regular.ttf
     entitlements:
-      path: Vellum/Vellum.entitlements
+      path: Endpaper/Endpaper.entitlements
       properties:
         com.apple.developer.icloud-services: [CloudKit]
         com.apple.developer.icloud-container-identifiers:
-          - iCloud.com.wendellbarton.vellum
+          - iCloud.com.wendellbarton.endpaper
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.wendellbarton.vellum
+        PRODUCT_BUNDLE_IDENTIFIER: com.wendellbarton.endpaper
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_STYLE: Automatic

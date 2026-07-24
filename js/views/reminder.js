@@ -1,5 +1,5 @@
 // The reminder pre-prompt — the in-system card that precedes any system
-// permission dialog (docs/vellum-stage2-plan.md §3.1). Offered once the
+// permission dialog (docs/endpaper-stage2-plan.md §3.1). Offered once the
 // user has written on two distinct days; a no is remembered and never
 // re-asked. Local notifications are iOS work — the prototype records the
 // decision only.
@@ -7,7 +7,7 @@
 import { daysWithEntries } from '../store.js';
 import { consentEligible } from '../reflect.js';
 
-const KEY = 'vellum.reminder.v1';
+const KEY = 'endpaper.reminder.v1';
 
 function decision() {
   try {

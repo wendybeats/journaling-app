@@ -1,4 +1,4 @@
-# Product Definition Plan — Vellum
+# Product Definition Plan — Endpaper
 
 **Version:** 0.4 — Named; Stage 0 tokens drafted
 **Date:** July 5, 2026
@@ -160,7 +160,7 @@ Not in scope for v1, but v1 architecture must not foreclose it.
 
 | # | Item | Owner | Notes |
 |---|------|-------|-------|
-| 1 | ~~Product name~~ | ✅ Vellum (placeholder) | Treat as placeholder throughout; final name + trademark/App Store check later (July 8) |
+| 1 | ~~Product name~~ | ✅ **Endpaper** (decided July 24, after two research rounds — see launch plan §2; formerly working title "Vellum") | Registrar check on endpaper.com/.app + formal trademark screen before TestFlight |
 | 2 | ~~Upload design references~~ | ✅ Done | thedot.space + editorial site — synthesized in §5 |
 | 3 | Non-compete contract read | Wendell | Deferred (July 8) — do before serious iOS investment |
 | 4 | ~~Transcription spike~~ | Fast follow | Voice capture moved out of launch scope (July 8); spike happens with the v1.1 fast follow |

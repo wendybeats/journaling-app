@@ -1,14 +1,14 @@
 // First launch: the four-screen tutorial, the account moment ("Keep your
-// notebook."), then the trial moment ("A week on me.") — Vellum is paid,
+// notebook."), then the trial moment ("A week on me.") — Endpaper is paid,
 // one week free, no freemium. Shows exactly once; replay lives in the
 // footer. iCloud/StoreKit are mocked in the prototype — buttons record
-// the chosen state. Copy and sequence per docs/vellum-stage2-plan.md.
+// the chosen state. Copy and sequence per docs/endpaper-stage2-plan.md.
 
 import { el, reducedMotion, runSequence } from './sequence.js';
 
-const ONBOARDED_KEY = 'vellum.onboarded.v1';
-const ACCOUNT_KEY = 'vellum.account.v1';
-const TRIAL_KEY = 'vellum.trial.v1';
+const ONBOARDED_KEY = 'endpaper.onboarded.v1';
+const ACCOUNT_KEY = 'endpaper.account.v1';
+const TRIAL_KEY = 'endpaper.trial.v1';
 
 export function isOnboarded() {
   try {
@@ -28,7 +28,7 @@ function setAccountMode(mode) {
 
 const TUTORIAL_PAGES = 4;
 
-/** Literal Vellum dots as the page indicator — the habit metaphor,
+/** Literal Endpaper dots as the page indicator — the habit metaphor,
  *  taught silently before a word about it is read. */
 function progressDots(active) {
   const row = el('div', 'onboard-progress');
@@ -149,7 +149,7 @@ export function showOnboarding() {
 
       center.appendChild(el('h1', 'type-display recap-big', 'A week on me.'));
       center.appendChild(el('p', 'onboard-body',
-        'Every page, every reflection, free for seven days. After that, Vellum is $29.99 a year — about the price of one good paper notebook.'));
+        'Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.'));
 
       const start = el('button', 'account-btn primary', 'Start my free week');
       start.type = 'button';
@@ -179,11 +179,11 @@ export function showOnboarding() {
     return [
       tutorialSlide(0, 'Attention is a practice.',
         'A few honest lines a day change how the day sits with you. Not therapy, not productivity — just noticing, kept somewhere quiet.'),
-      tutorialSlide(1, 'This is Vellum.',
+      tutorialSlide(1, 'This is Endpaper.',
         'Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.',
         { extra: demoGrid() }),
       tutorialSlide(2, 'Reflect, if you wish.',
-        'Each week, month, and year, Vellum can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
+        'Each week, month, and year, Endpaper can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
         { extra: circlesGlyph() }),
       tutorialSlide(3, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),
       accountSlide,

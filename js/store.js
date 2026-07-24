@@ -1,8 +1,8 @@
 // Entry storage — plain text, day-keyed, timestamped (the v2-ready corpus shape).
 // localStorage stands in for SwiftData in the prototype.
 
-const ENTRIES_KEY = 'vellum.entries.v1';
-const DRAFT_KEY = 'vellum.draft.v1';
+const ENTRIES_KEY = 'endpaper.entries.v1';
+const DRAFT_KEY = 'endpaper.draft.v1';
 
 function load() {
   try {

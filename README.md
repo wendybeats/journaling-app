@@ -1,4 +1,4 @@
-# Vellum
+# Endpaper
 
 *The journal that is just a journal.*
 
@@ -10,7 +10,7 @@ thinking over time — see [`docs/journal-pdp.md`](docs/journal-pdp.md).
 
 A **high-fidelity web prototype** of the V1 core loop. It is the living design
 spec: every color, size, spacing, and motion value resolves to the Stage 0
-token sheet ([`docs/vellum-design-tokens.md`](docs/vellum-design-tokens.md)),
+token sheet ([`docs/endpaper-design-tokens.md`](docs/endpaper-design-tokens.md)),
 mirrored 1:1 in [`styles/tokens.css`](styles/tokens.css).
 
 The **native SwiftUI port** (iOS 17+, SwiftData + CloudKit) now lives in
@@ -21,7 +21,7 @@ trial gate. Generate the Xcode project with `xcodegen` (see `ios/README.md`).
 ### What works
 
 - **Onboarding** — the four-screen tutorial (Attention is a practice /
-  This is Vellum with the dot-fill moment and the permanence rule /
+  This is Endpaper with the dot-fill moment and the permanence rule /
   Reflect, if you wish — the reflections preview / Go forth) with dots as the
   page indicator, then the account moment ("Keep your notebook." —
   Back up with iCloud per Path A, "Continue without an account" as a
@@ -60,7 +60,7 @@ trial gate. Generate the Xcode project with `xcodegen` (see `ios/README.md`).
   quote is verbatim, tone words must be the user's own, difficulty needs
   explicit textual evidence, thin weeks stay silent and thin months get
   the honest quiet variant. See
-  [`docs/vellum-reflection-spec.md`](docs/vellum-reflection-spec.md).
+  [`docs/endpaper-reflection-spec.md`](docs/endpaper-reflection-spec.md).
 - **Dark mode** — token-level, follows the system, footer override.
 - Entries persist in `localStorage` (day-keyed plain text — the v2-ready
   corpus shape).

@@ -1,5 +1,5 @@
 // Reflection engine (R1+R2) — a deterministic stand-in for the two-stage
-// pipeline in docs/vellum-reflection-spec.md. It only surfaces what the
+// pipeline in docs/endpaper-reflection-spec.md. It only surfaces what the
 // entries literally contain: topics need repeated mentions, every quote is
 // a verbatim sentence, tone words must be the user's own, difficulty needs
 // explicit textual evidence, and thin periods get silence (weekly) or the
@@ -7,7 +7,7 @@
 
 import { dayKey, entriesFor, hasEntries } from './store.js';
 
-const STATE_KEY = 'vellum.reflection.v1';
+const STATE_KEY = 'endpaper.reflection.v1';
 
 function load() {
   try {
