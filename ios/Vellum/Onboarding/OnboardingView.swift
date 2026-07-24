@@ -10,6 +10,11 @@ import UIKit
 private let tutorialPages = 4
 
 struct OnboardingView: View {
+    /// Replay mode (Settings → "Show the introduction again"): the same
+    /// sequence, but nothing writes — no account change, no trial re-stamp.
+    var replay = false
+    var onReplayDone: (() -> Void)? = nil
+
     @AppStorage(AppKeys.onboarded) private var onboarded = false
     @AppStorage(AppKeys.account) private var accountMode = ""
     @AppStorage(AppKeys.trial) private var trialStamp = ""
@@ -55,13 +60,17 @@ struct OnboardingView: View {
                     )
                 case 4:
                     AccountSlide { mode in
-                        accountMode = mode.rawValue
+                        if !replay { accountMode = mode.rawValue }
                         advance()
                     }
                 default:
-                    TrialSlide { restored in
-                        trialStamp = restored ? "restored" : ISO8601DateFormatter().string(from: .now)
-                        onboarded = true
+                    TrialSlide(live: !replay) { restored in
+                        if replay {
+                            onReplayDone?()
+                        } else {
+                            trialStamp = restored ? "restored" : ISO8601DateFormatter().string(from: .now)
+                            onboarded = true
+                        }
                     }
                 }
             }
@@ -247,6 +256,7 @@ private struct AccountSlide: View {
 // Prices are placeholders until the pre-submission pricing pass.
 
 private struct TrialSlide: View {
+    var live = true                       // false in replay: no StoreKit, no stamps
     var start: (_ restored: Bool) -> Void
 
     var body: some View {
@@ -261,7 +271,7 @@ private struct TrialSlide: View {
 
             Button {
                 Task {
-                    await TrialGate.shared.startTrial()
+                    if live { await TrialGate.shared.startTrial() }
                     start(false)
                 }
             } label: {
@@ -278,7 +288,7 @@ private struct TrialSlide: View {
 
             Button {
                 Task {
-                    await TrialGate.shared.restore()
+                    if live { await TrialGate.shared.restore() }
                     start(true)
                 }
             } label: {

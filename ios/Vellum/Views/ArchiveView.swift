@@ -25,6 +25,12 @@ struct ArchiveView: View {
                 }
                 .buttonStyle(.plain)
                 Spacer()
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    Text("Settings").typeMeta()
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, Tokens.Space.screenX)
             .padding(.top, Tokens.Space.sm)

@@ -69,8 +69,22 @@ and the domain — so it lands **before TestFlight**, not before code.
    | **Pressed** | Strongest permanence metaphor (pressed flowers, letterpress — a mark that can't be unmade). One syllable, zero tech odor. No journaling/notes collision found — App Store "Pressed" is juice, dry cleaning, yoga. | pressed.com is Pressed Juicery (different class but owns search results); would live on pressed.app/.ink |
    | **Octavo** | Bookish, pronounceable, and octavo.com is openly for sale on BrandBucket — the ideal domain is actually buyable. | Octavo Reader + octavo.app (both reading apps) mean non-empty App Store search; lawyer should eye the overlap |
 
-   Next: Wendell picks a direction → registrar check on the exact domains →
-   formal trademark search → rename pass.
+   **Round 2 (July 24, Wendell's candidates):** Tetradi (тетрадь — the
+   ordinary Russian word for a school exercise book; register invisible to
+   non-Russian speakers but conceptually perfect), Pica, Glossa.
+
+   | | Verdict | Evidence |
+   |---|---|---|
+   | **Tetradi** | **Viable — the ownability pick.** No iOS app or notable software found on the exact string; tetradi.com looks like a for-sale landing page (likely buyable, unverified). "Tetrad" (no i) collides (CMU causal-inference tool) but the -i insulates it. Trade-off: the humble-notebook meaning is a private pleasure, not a market signal — to browsers it's an abstract coinage. | search round 2 |
+   | Pica | Out — four exact-name iOS apps, the popular pica npm library, and the eating-disorder homonym owns general web search. | search round 2 |
+   | Glossa | Out — multiple exact-name AI/language iOS apps, salon SaaS, and the linguistics journal; reads "language," not "paper." | search round 2 |
+
+   **Standing ranked shortlist: 1) Endpaper (legibility pick — the only
+   name across both rounds with a papery register AND an empty collision
+   field; and at 8 letters it's shorter than "Commonplace"), 2) Tetradi
+   (ownability pick — could own the word outright), 3) Octavo, 4) Pressed.**
+   Next: Wendell picks → registrar check on the exact domains → formal
+   trademark search → rename pass.
 3. **On decision:** bundle ID `com.wendellbarton.<name>`, iCloud container
    `iCloud.com.wendellbarton.<name>`, rename pass through code and docs.
    (Do this *before* any TestFlight build ships — migrating a CloudKit

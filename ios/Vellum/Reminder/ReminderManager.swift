@@ -44,12 +44,27 @@ enum ReminderManager {
 
     // MARK: - Scheduling
 
+    /// The user-chosen reminder time (Settings), defaulting to 8:00.
+    static var chosenTime: (hour: Int, minute: Int) {
+        let d = UserDefaults.standard
+        let hour = d.object(forKey: AppKeys.reminderHour) as? Int ?? defaultHour
+        let minute = d.object(forKey: AppKeys.reminderMinute) as? Int ?? 0
+        return (hour, minute)
+    }
+
+    static func setChosenTime(hour: Int, minute: Int) {
+        UserDefaults.standard.set(hour, forKey: AppKeys.reminderHour)
+        UserDefaults.standard.set(minute, forKey: AppKeys.reminderMinute)
+    }
+
     /// One-shot, always re-armed. The spec's choreography ("on every entry
     /// commit and on foreground, re-arm") maps to a single non-repeating
     /// trigger aimed at the next morning that should actually fire: today's
-    /// 8:00 if it's still ahead and today is unwritten, otherwise tomorrow's.
-    /// A repeating calendar trigger can't skip a single day; this can.
-    static func rearm(in context: ModelContext, hour: Int = defaultHour, minute: Int = 0) async {
+    /// chosen time if it's still ahead and today is unwritten, otherwise
+    /// tomorrow's. A repeating calendar trigger can't skip a single day;
+    /// this can.
+    static func rearm(in context: ModelContext) async {
+        let (hour, minute) = chosenTime
         guard UserDefaults.standard.string(forKey: AppKeys.reminder) == "yes" else { return }
 
         let center = UNUserNotificationCenter.current()
@@ -75,5 +90,24 @@ enum ReminderManager {
     /// the page now has writing, this re-aims it at tomorrow.
     static func suppressTodayIfWritten(in context: ModelContext) {
         Task { await rearm(in: context) }
+    }
+
+    // MARK: - Settings surface
+
+    static var enabled: Bool {
+        UserDefaults.standard.string(forKey: AppKeys.reminder) == "yes"
+    }
+
+    /// The Settings toggle. Turning on asks for permission if needed (a
+    /// changed mind is the one sanctioned re-ask); turning off cancels the
+    /// pending notification but remembers the answer.
+    static func setEnabled(_ on: Bool, in context: ModelContext) async {
+        UserDefaults.standard.set(on ? "yes" : "no", forKey: AppKeys.reminder)
+        if on {
+            await accepted(in: context)
+        } else {
+            UNUserNotificationCenter.current()
+                .removePendingNotificationRequests(withIdentifiers: [requestID])
+        }
     }
 }

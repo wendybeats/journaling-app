@@ -11,6 +11,8 @@ enum AppKeys {
     static let draft = "vellum.draft.v1"            // uncommitted writing survives relaunch
     static let draftDay = "vellum.draft.day.v1"
     static let reminder = "vellum.reminder.v1"      // "yes" | "no" — the pre-prompt answer
+    static let reminderHour = "vellum.reminder.hour.v1"     // Int, default 8
+    static let reminderMinute = "vellum.reminder.minute.v1" // Int, default 0
     static let reflection = "vellum.reflection.v1"  // consent state (round 2 port)
 }
 

@@ -6,17 +6,22 @@ import SwiftUI
 
 struct RootView: View {
     @AppStorage(AppKeys.onboarded) private var onboarded = false
+    @ObservedObject private var gate = TrialGate.shared
 
     var body: some View {
         ZStack {
             Tokens.Surface.page.ignoresSafeArea()
-            if onboarded {
+            if !onboarded {
+                OnboardingView()
+            } else if !gate.withinTrialOrSubscribed {
+                // The hard paywall: trial over, no subscription. The
+                // notebook waits untouched behind it.
+                PaywallView()
+            } else {
                 NavigationStack {
                     TodayView()
                 }
                 .tint(Tokens.Text.written)   // no accent color, by design
-            } else {
-                OnboardingView()
             }
         }
         .animation(Tokens.Motion.base, value: onboarded)
