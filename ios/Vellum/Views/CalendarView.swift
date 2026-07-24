@@ -37,14 +37,32 @@ struct CalendarView: View {
         .navigationDestination(item: $navigateDay) { key in
             DayPageView(key: key)
         }
+        .fullScreenCover(item: $wrappedSignal) { signal in
+            WrappedView(signal: signal) { wrappedSignal = nil }
+        }
         .onAppear(perform: load)
     }
+
+    @State private var wrappedSignal: YearlySignal? = nil
 
     // MARK: - Year register (twelve compact matrices)
 
     private func yearSection(_ year: Int) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            Text(String(year)).typeMeta()
+            HStack {
+                Text(String(year)).typeMeta()
+                Spacer()
+                // The wrapped, replayable from the year view (spec §6)
+                if ReflectionStore.shared.consent == "yes" {
+                    Button {
+                        let corpus = ReflectionStore.corpus(from: context)
+                        wrappedSignal = Reflect.yearlySignal(year: year, corpus: corpus)
+                    } label: {
+                        Text("Your year →").typeMetaSmall()
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
 
             let columns = Array(repeating: GridItem(.flexible(), spacing: Tokens.Space.md, alignment: .topLeading), count: 3)
             LazyVGrid(columns: columns, alignment: .leading, spacing: Tokens.Space.lg) {

@@ -56,6 +56,21 @@ and the domain — so it lands **before TestFlight**, not before code.
    quiet, permanence: e.g. Quire, Flyleaf, Margin, Deckle, Foolscap,
    Octavo, Onionskin, Kept…) → App Store + domain + USPTO quick-check →
    shortlist of 3 → Wendell picks.
+
+   **✅ Research run July 24 (18 candidates, web-verified).** Most of the
+   register is taken: Foolscap (foolscap.app is nearly this exact product),
+   Daybook, Commonplace, Kept, Folio, Flyleaf, Quire, Colophon,
+   Marginalia — all have direct or near-direct App Store collisions in
+   journaling/notes. Survivors, shortlisted:
+
+   | | Case | Caveat |
+   |---|---|---|
+   | **Endpaper** | The quiet decorative leaf inside a hardcover — ornament that serves the book, exactly the design stance. No iOS app or notable software found with the name. | endpaper.com possibly parked (unverified); formal trademark search still needed |
+   | **Pressed** | Strongest permanence metaphor (pressed flowers, letterpress — a mark that can't be unmade). One syllable, zero tech odor. No journaling/notes collision found — App Store "Pressed" is juice, dry cleaning, yoga. | pressed.com is Pressed Juicery (different class but owns search results); would live on pressed.app/.ink |
+   | **Octavo** | Bookish, pronounceable, and octavo.com is openly for sale on BrandBucket — the ideal domain is actually buyable. | Octavo Reader + octavo.app (both reading apps) mean non-empty App Store search; lawyer should eye the overlap |
+
+   Next: Wendell picks a direction → registrar check on the exact domains →
+   formal trademark search → rename pass.
 3. **On decision:** bundle ID `com.wendellbarton.<name>`, iCloud container
    `iCloud.com.wendellbarton.<name>`, rename pass through code and docs.
    (Do this *before* any TestFlight build ships — migrating a CloudKit

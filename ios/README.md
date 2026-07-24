@@ -55,12 +55,31 @@ store local-only; no capability required.
 - **Trial gate** — StoreKit 2 (`TrialGate`), yearly product with a 7-day
   free introductory offer, `Vellum.storekit` test configuration.
 
+## Round 2: the reflection layer (ported)
+
+- `Reflect/Reflect.swift` — the deterministic engine, a line-faithful port
+  of `../js/reflect.js`: same thresholds, stopwords, tone vocabulary,
+  difficulty markers, and quote-dedupe passes. (One deliberate deviation:
+  Swift's sort isn't stable, so rankings carry explicit alphabetical
+  tiebreaks — both engines are deterministic; ties may order differently.)
+- `Reflect/ReflectionStore.swift` — consent/seen/archived state under the
+  same `vellum.reflection.v1` key; pending-arrival logic (one per visit,
+  monthly wins); the SwiftData → corpus bridge.
+- `Reflect/SlideSequence.swift` — the timed-slide machinery: reverse
+  countdown bar, tap to skip, touch-and-hold (250 ms) to pause,
+  fit-to-width decorative intertitles.
+- `Reflect/RecapView.swift` + `WrappedView.swift` — the monthly and yearly
+  sequences (month grid drawing itself, topics/tone/challenges, the year
+  matrix, five threads, the reveal, save-your-year share image — dots and
+  counts only).
+- `Reflect/ReflectionViews.swift` — consent card on Today, the weekly
+  inverted card, condensed archived cards resting at period boundaries in
+  the Notebook (tap to reopen).
+
 ## Not yet ported (next rounds)
 
-- The reflection layer: consent card, weekly modal, monthly recap and
-  yearly wrapped sequences, and the deterministic engine
-  (`../js/reflect.js` → Swift; it's pure logic and ports mechanically).
-- Settings (reminder time, backup toggle, replay intro).
+- Settings (reminder time, backup toggle, replay intro, export).
+- The trial-expiry paywall screen (gate exists in `TrialGate`).
 - Voice capture (v1.1 fast follow, per the PDP).
 - Face ID lock.
 

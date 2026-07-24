@@ -7,20 +7,40 @@
 import SwiftUI
 import SwiftData
 
+/// One scroll item: a written day, or an archived reflection resting at its
+/// period boundary (between the period's last day and the next period).
+private enum NotebookItem: Identifiable {
+    case day(String)
+    case reflection(ArchivedReflection)
+
+    var id: String {
+        switch self {
+        case .day(let key): return "d-\(key)"
+        case .reflection(let r): return "r-\(r.id)"
+        }
+    }
+}
+
 struct NotebookView: View {
     @Environment(\.modelContext) private var context
-    @State private var days: [String] = []
+    @State private var items: [NotebookItem] = []
+    @State private var presented: PresentedReflection? = nil
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: Tokens.Space.xxl) {
-                if days.isEmpty {
+                if items.isEmpty {
                     Text("Nothing here yet. The page is waiting.")
                         .typeWritten()
                         .padding(.top, Tokens.Space.xl)
                 }
-                ForEach(days, id: \.self) { key in
-                    NotebookDay(key: key, entries: EntryStore.entries(forDay: key, in: context))
+                ForEach(items) { item in
+                    switch item {
+                    case .day(let key):
+                        NotebookDay(key: key, entries: EntryStore.entries(forDay: key, in: context))
+                    case .reflection(let reflection):
+                        InlineReflectionRow(reflection: reflection) { open(reflection) }
+                    }
                 }
             }
             .padding(.horizontal, Tokens.Space.screenX)
@@ -29,7 +49,50 @@ struct NotebookView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Tokens.Surface.page)
-        .onAppear { days = EntryStore.daysWithEntries(in: context) }
+        .fullScreenCover(item: $presented) { item in
+            reflectionCover(item)
+        }
+        .onAppear(perform: load)
+    }
+
+    private func load() {
+        // Merge days (newest first) with archived reflections at their
+        // period boundaries: a reflection sorts by its boundary day and
+        // wins the tie so it rests just above that day.
+        var sortable: [(key: String, tie: Int, item: NotebookItem)] = []
+        for key in EntryStore.daysWithEntries(in: context) {
+            sortable.append((key, 0, .day(key)))
+        }
+        for reflection in ReflectionStore.shared.archived() {
+            sortable.append((reflection.boundaryKey(), 1, .reflection(reflection)))
+        }
+        items = sortable
+            .sorted { ($0.key, $0.tie) > ($1.key, $1.tie) }
+            .map(\.item)
+    }
+
+    /// Tapping the condensed card reopens the full moment (idempotent —
+    /// no re-rolls; the archived signal is shown as stored).
+    private func open(_ reflection: ArchivedReflection) {
+        switch reflection {
+        case .weekly(let signal):
+            presented = .weekly(signal)
+        case .monthly(let signal):
+            let corpus = ReflectionStore.corpus(from: context)
+            presented = .monthly(signal, writtenDays: writtenDayNumbers(of: signal, corpus: corpus))
+        }
+    }
+
+    @ViewBuilder
+    private func reflectionCover(_ item: PresentedReflection) -> some View {
+        switch item {
+        case .weekly(let signal):
+            WeeklyCardView(signal: signal) { presented = nil }
+        case .monthly(let signal, let writtenDays):
+            RecapView(signal: signal, writtenDays: writtenDays) { presented = nil }
+        case .yearly(let signal):
+            WrappedView(signal: signal) { presented = nil }
+        }
     }
 }
 

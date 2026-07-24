@@ -141,9 +141,13 @@ enum DebugSeed {
     }
 
     /// Debug-only escape hatch — the app itself has no delete path, by design.
+    /// Also resets reflection + reminder state so the consent card and
+    /// pre-prompt choreography can be exercised again.
     static func clear(in context: ModelContext) {
         try? context.delete(model: Entry.self)
         try? context.save()
+        ReflectionStore.shared.resetAll()
+        UserDefaults.standard.removeObject(forKey: AppKeys.reminder)
     }
 }
 #endif

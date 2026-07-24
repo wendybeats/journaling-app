@@ -15,6 +15,7 @@ struct TodayView: View {
     @AppStorage(AppKeys.draftDay) private var draftDay = ""
 
     @State private var todayEntries: [Entry] = []
+    @State private var reminderOffer = false
     @State private var settlingID: UUID?
     @State private var ack = ""
     @State private var ackVisible = false
@@ -66,7 +67,13 @@ struct TodayView: View {
                 writingSurface
                     .padding(.top, todayEntries.isEmpty ? Tokens.Space.md : Tokens.Space.lg)
 
-                if ReminderManager.shouldOfferPrompt(in: context) {
+                // Consent card / arrivals / January invite (reflection.js flow)
+                ReflectionFlowHost()
+                    .padding(.top, Tokens.Space.xl)
+
+                // The reminder pre-prompt defers to the consent card — never
+                // two asks on one page.
+                if reminderOffer {
                     ReminderCard()
                         .padding(.top, Tokens.Space.xl)
                 }
@@ -80,6 +87,8 @@ struct TodayView: View {
         .onAppear {
             adoptStaleDraft()
             refresh()
+            reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
+                && !ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
             // Cursor ready — the app opens writable
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { writingFocused = true }
         }
