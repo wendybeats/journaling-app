@@ -158,6 +158,8 @@ all of D).
 - [ ] Name decided; bundle ID, container, domain, and all copy renamed
 - [ ] Reflections: weekly/monthly/wrapped land on device, thresholds honest,
       Swift engine agrees with the JS engine on the seed corpus
+      *(harness built July 24 — `tools/parity/` + `EndpaperTests`, run with ⌘U;
+      271-day fixed corpus, 19 reference signals committed)*
 - [ ] Settings complete; export produces a readable archive of real data
 - [ ] Trial → paywall → subscribe → restore all pass in sandbox
 - [ ] Two-device iCloud test passes; signed-out state degrades quietly

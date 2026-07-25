@@ -1,0 +1,1146 @@
+{
+ "anchor": "2026-07-24",
+ "weekly": [
+  {
+   "id": "w-2026-07-12",
+   "startKey": "2026-07-12",
+   "days": 6,
+   "words": 1609,
+   "sufficient": true,
+   "topic": {
+    "word": "tired",
+    "mentions": 23,
+    "days": 6
+   },
+   "quotes": [
+    {
+     "text": "Good tired.",
+     "day": "2026-07-12"
+    },
+    {
+     "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+     "day": "2026-07-14"
+    }
+   ]
+  },
+  {
+   "id": "w-2026-07-05",
+   "startKey": "2026-07-05",
+   "days": 7,
+   "words": 1909,
+   "sufficient": true,
+   "topic": {
+    "word": "morning",
+    "mentions": 11,
+    "days": 7
+   },
+   "quotes": [
+    {
+     "text": "Meetings ate the morning.",
+     "day": "2026-07-05"
+    },
+    {
+     "text": "First cold morning.",
+     "day": "2026-07-08"
+    }
+   ]
+  },
+  {
+   "id": "w-2026-06-28",
+   "startKey": "2026-06-28",
+   "days": 6,
+   "words": 2113,
+   "sufficient": true,
+   "topic": {
+    "word": "boat",
+    "mentions": 29,
+    "days": 6
+   },
+   "quotes": [
+    {
+     "text": "The boat again.",
+     "day": "2026-06-28"
+    },
+    {
+     "text": "Ordered the paint for the boat.",
+     "day": "2026-06-29"
+    },
+    {
+     "text": "The kind that makes the house feel like a boat.",
+     "day": "2026-06-30"
+    }
+   ]
+  },
+  {
+   "id": "w-2026-06-21",
+   "startKey": "2026-06-21",
+   "days": 6,
+   "words": 1636,
+   "sufficient": true,
+   "topic": {
+    "word": "hill",
+    "mentions": 24,
+    "days": 6
+   },
+   "quotes": [
+    {
+     "text": "New shoes, same hill.",
+     "day": "2026-06-21"
+    },
+    {
+     "text": "The hill is undefeated.",
+     "day": "2026-06-22"
+    }
+   ]
+  }
+ ],
+ "monthly": [
+  {
+   "id": "m-2025-07",
+   "year": 2025,
+   "month": 7,
+   "days": 4,
+   "words": 961,
+   "longestRun": 2,
+   "sufficient": false,
+   "tone": {
+    "word": "tired",
+    "count": 12
+   },
+   "topics": [
+    {
+     "stem": "corner",
+     "word": "corner",
+     "mentions": 12,
+     "days": 3,
+     "quotes": [
+      {
+       "text": "The project turned a corner today.",
+       "day": "2025-07-25"
+      },
+      {
+       "text": "Small corner, but a corner.",
+       "day": "2025-07-30"
+      }
+     ]
+    },
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 8,
+     "days": 3,
+     "quotes": [
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2025-07-25"
+      },
+      {
+       "text": "She told the story about the lake house again and I let her.",
+       "day": "2025-07-30"
+      }
+     ]
+    },
+    {
+     "stem": "hour",
+     "word": "hours",
+     "mentions": 7,
+     "days": 3,
+     "quotes": [
+      {
+       "text": "Three hours felt like twenty minutes.",
+       "day": "2025-07-24"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2025-07-30"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2025-07-24"
+    },
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-07-25"
+    }
+   ]
+  },
+  {
+   "id": "m-2025-08",
+   "year": 2025,
+   "month": 8,
+   "days": 24,
+   "words": 6374,
+   "longestRun": 13,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 68
+   },
+   "topics": [
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 78,
+     "days": 23,
+     "quotes": [
+      {
+       "text": "The kids were loud and the house felt full in the good way.",
+       "day": "2025-08-01"
+      },
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2025-08-02"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 50,
+     "days": 23,
+     "quotes": [
+      {
+       "text": "Dinner with June.",
+       "day": "2025-08-01"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2025-08-02"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 55,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2025-08-01"
+      },
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2025-08-02"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Short fuse.",
+     "day": "2025-08-01"
+    },
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-08-01"
+    }
+   ]
+  },
+  {
+   "id": "m-2025-09",
+   "year": 2025,
+   "month": 9,
+   "days": 28,
+   "words": 7073,
+   "longestRun": 13,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 68
+   },
+   "topics": [
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 72,
+     "days": 26,
+     "quotes": [
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2025-09-01"
+      },
+      {
+       "text": "The kids were loud and the house felt full in the good way.",
+       "day": "2025-09-04"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 64,
+     "days": 26,
+     "quotes": [
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2025-09-02"
+      },
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2025-09-04"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 41,
+     "days": 24,
+     "quotes": [
+      {
+       "text": "Dinner with June.",
+       "day": "2025-09-01"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2025-09-02"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-09-01"
+    },
+    {
+     "text": "Short fuse.",
+     "day": "2025-09-02"
+    }
+   ]
+  },
+  {
+   "id": "m-2025-10",
+   "year": 2025,
+   "month": 10,
+   "days": 22,
+   "words": 5890,
+   "longestRun": 7,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 66
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 74,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2025-10-01"
+      },
+      {
+       "text": "The boat again.",
+       "day": "2025-10-02"
+      }
+     ]
+    },
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 50,
+     "days": 19,
+     "quotes": [
+      {
+       "text": "The kids were loud and the house felt full in the good way.",
+       "day": "2025-10-01"
+      },
+      {
+       "text": "She told the story about the lake house again and I let her.",
+       "day": "2025-10-04"
+      }
+     ]
+    },
+    {
+     "stem": "morning",
+     "word": "morning",
+     "mentions": 39,
+     "days": 19,
+     "quotes": [
+      {
+       "text": "First cold morning.",
+       "day": "2025-10-01"
+      },
+      {
+       "text": "Meetings ate the morning.",
+       "day": "2025-10-03"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2025-10-01"
+    },
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-10-02"
+    }
+   ]
+  },
+  {
+   "id": "m-2025-11",
+   "year": 2025,
+   "month": 11,
+   "days": 19,
+   "words": 5126,
+   "longestRun": 6,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 62
+   },
+   "topics": [
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 51,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2025-11-02"
+      },
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2025-11-05"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 39,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2025-11-02"
+      },
+      {
+       "text": "Dinner with June.",
+       "day": "2025-11-03"
+      }
+     ]
+    },
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 71,
+     "days": 17,
+     "quotes": [
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2025-11-02"
+      },
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2025-11-05"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-11-02"
+    },
+    {
+     "text": "Short fuse.",
+     "day": "2025-11-02"
+    }
+   ]
+  },
+  {
+   "id": "m-2025-12",
+   "year": 2025,
+   "month": 12,
+   "days": 24,
+   "words": 6400,
+   "longestRun": 16,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 59
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 105,
+     "days": 23,
+     "quotes": [
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2025-12-01"
+      },
+      {
+       "text": "The boat again.",
+       "day": "2025-12-02"
+      }
+     ]
+    },
+    {
+     "stem": "didn",
+     "word": "didn",
+     "mentions": 48,
+     "days": 22,
+     "quotes": [
+      {
+       "text": "We talked about moving and didn't decide anything.",
+       "day": "2025-12-01"
+      },
+      {
+       "text": "Didn't check my phone once.",
+       "day": "2025-12-02"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 52,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "Dinner with June.",
+       "day": "2025-12-01"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2025-12-03"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2025-12-02"
+    },
+    {
+     "text": "Short fuse.",
+     "day": "2025-12-02"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-01",
+   "year": 2026,
+   "month": 1,
+   "days": 16,
+   "words": 4313,
+   "longestRun": 8,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 54
+   },
+   "topics": [
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 35,
+     "days": 15,
+     "quotes": [
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2026-01-01"
+      },
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2026-01-02"
+      }
+     ]
+    },
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 51,
+     "days": 14,
+     "quotes": [
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2026-01-01"
+      },
+      {
+       "text": "The boat again.",
+       "day": "2026-01-02"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 27,
+     "days": 13,
+     "quotes": [
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2026-01-01"
+      },
+      {
+       "text": "Dinner with June.",
+       "day": "2026-01-02"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Short fuse.",
+     "day": "2026-01-02"
+    },
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-01-02"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-02",
+   "year": 2026,
+   "month": 2,
+   "days": 20,
+   "words": 5049,
+   "longestRun": 8,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 41
+   },
+   "topics": [
+    {
+     "stem": "didn",
+     "word": "didn",
+     "mentions": 38,
+     "days": 19,
+     "quotes": [
+      {
+       "text": "We talked about moving and didn't decide anything.",
+       "day": "2026-02-03"
+      },
+      {
+       "text": "Didn't check my phone once.",
+       "day": "2026-02-04"
+      }
+     ]
+    },
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 56,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "The boat again.",
+       "day": "2026-02-03"
+      },
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2026-02-04"
+      }
+     ]
+    },
+    {
+     "stem": "light",
+     "word": "light",
+     "mentions": 36,
+     "days": 17,
+     "quotes": [
+      {
+       "text": "The light on the kitchen wall at six was worth writing down.",
+       "day": "2026-02-03"
+      },
+      {
+       "text": "Read on the porch until the light went.",
+       "day": "2026-02-04"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Short fuse.",
+     "day": "2026-02-03"
+    },
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2026-02-04"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-03",
+   "year": 2026,
+   "month": 3,
+   "days": 26,
+   "words": 7348,
+   "longestRun": 18,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 64
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 93,
+     "days": 25,
+     "quotes": [
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2026-03-02"
+      },
+      {
+       "text": "The boat again.",
+       "day": "2026-03-03"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 81,
+     "days": 24,
+     "quotes": [
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2026-03-02"
+      },
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2026-03-03"
+      }
+     ]
+    },
+    {
+     "stem": "didn",
+     "word": "didn",
+     "mentions": 52,
+     "days": 24,
+     "quotes": [
+      {
+       "text": "We talked about moving and didn't decide anything.",
+       "day": "2026-03-02"
+      },
+      {
+       "text": "Didn't check my phone once.",
+       "day": "2026-03-06"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-03-02"
+    },
+    {
+     "text": "Short fuse.",
+     "day": "2026-03-04"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-04",
+   "year": 2026,
+   "month": 4,
+   "days": 23,
+   "words": 6556,
+   "longestRun": 9,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 65
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 101,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "The boat again.",
+       "day": "2026-04-01"
+      },
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2026-04-02"
+      }
+     ]
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 55,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2026-04-01"
+      },
+      {
+       "text": "Dinner with June.",
+       "day": "2026-04-02"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 55,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2026-04-01"
+      },
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2026-04-04"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Short fuse.",
+     "day": "2026-04-01"
+    },
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-04-01"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-05",
+   "year": 2026,
+   "month": 5,
+   "days": 24,
+   "words": 7568,
+   "longestRun": 7,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 98
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 118,
+     "days": 23,
+     "quotes": [
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2026-05-01"
+      },
+      {
+       "text": "The boat again.",
+       "day": "2026-05-05"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 65,
+     "days": 22,
+     "quotes": [
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2026-05-01"
+      },
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2026-05-06"
+      }
+     ]
+    },
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 54,
+     "days": 21,
+     "quotes": [
+      {
+       "text": "The kids were loud and the house felt full in the good way.",
+       "day": "2026-05-02"
+      },
+      {
+       "text": "She told the story about the lake house again and I let her.",
+       "day": "2026-05-05"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-05-01"
+    },
+    {
+     "text": "Short fuse.",
+     "day": "2026-05-01"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-06",
+   "year": 2026,
+   "month": 6,
+   "days": 20,
+   "words": 5436,
+   "longestRun": 12,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 61
+   },
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 69,
+     "days": 19,
+     "quotes": [
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2026-06-04"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2026-06-05"
+      }
+     ]
+    },
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 46,
+     "days": 19,
+     "quotes": [
+      {
+       "text": "She told the story about the lake house again and I let her.",
+       "day": "2026-06-04"
+      },
+      {
+       "text": "The kind that makes the house feel like a boat.",
+       "day": "2026-06-05"
+      }
+     ]
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 49,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "Tired, but the honest kind of tired that comes from doing the thing.",
+       "day": "2026-06-04"
+      },
+      {
+       "text": "Nothing happened today, which is its own kind of thing to notice.",
+       "day": "2026-06-05"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-06-04"
+    },
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2026-06-05"
+    }
+   ]
+  },
+  {
+   "id": "m-2026-07",
+   "year": 2026,
+   "month": 7,
+   "days": 21,
+   "words": 6105,
+   "longestRun": 11,
+   "sufficient": true,
+   "tone": {
+    "word": "tired",
+    "count": 69
+   },
+   "topics": [
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 49,
+     "days": 20,
+     "quotes": [
+      {
+       "text": "The kids were loud and the house felt full in the good way.",
+       "day": "2026-07-02"
+      },
+      {
+       "text": "She told the story about the lake house again and I let her.",
+       "day": "2026-07-03"
+      }
+     ]
+    },
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 75,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "Ordered the paint for the boat.",
+       "day": "2026-07-02"
+      },
+      {
+       "text": "Spent an hour on the boat after dinner.",
+       "day": "2026-07-03"
+      }
+     ]
+    },
+    {
+     "stem": "project",
+     "word": "project",
+     "mentions": 49,
+     "days": 18,
+     "quotes": [
+      {
+       "text": "Long day at the studio and the project is still fighting me.",
+       "day": "2026-07-02"
+      },
+      {
+       "text": "The project turned a corner today.",
+       "day": "2026-07-03"
+      }
+     ]
+    }
+   ],
+   "difficult": [
+    {
+     "text": "Long day at the studio and the project is still fighting me.",
+     "day": "2026-07-02"
+    },
+    {
+     "text": "Trying not to inspect it too hard.",
+     "day": "2026-07-02"
+    }
+   ]
+  }
+ ],
+ "yearly": [
+  {
+   "id": "y-2025",
+   "year": 2025,
+   "days": 121,
+   "words": 31824,
+   "entries": 648,
+   "longestRun": 16,
+   "sufficient": true,
+   "topics": [
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 332,
+     "days": 108
+    },
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 419,
+     "days": 105
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 298,
+     "days": 105
+    },
+    {
+     "stem": "dinner",
+     "word": "dinner",
+     "mentions": 222,
+     "days": 105
+    },
+    {
+     "stem": "tired",
+     "word": "tired",
+     "mentions": 335,
+     "days": 102
+    }
+   ],
+   "reveal": {
+    "stem": "house",
+    "first": {
+     "text": "The kind that makes the house feel like a boat.",
+     "day": "2025-07-25"
+    }
+   }
+  },
+  {
+   "id": "y-2026",
+   "year": 2026,
+   "days": 150,
+   "words": 42375,
+   "entries": 840,
+   "longestRun": 18,
+   "sufficient": true,
+   "topics": [
+    {
+     "stem": "boat",
+     "word": "boat",
+     "mentions": 563,
+     "days": 138
+    },
+    {
+     "stem": "kind",
+     "word": "kind",
+     "mentions": 380,
+     "days": 133
+    },
+    {
+     "stem": "tired",
+     "word": "tired",
+     "mentions": 452,
+     "days": 128
+    },
+    {
+     "stem": "house",
+     "word": "house",
+     "mentions": 370,
+     "days": 128
+    },
+    {
+     "stem": "didn",
+     "word": "didn",
+     "mentions": 259,
+     "days": 126
+    }
+   ],
+   "reveal": {
+    "stem": "boat",
+    "first": {
+     "text": "Ordered the paint for the boat.",
+     "day": "2026-01-01"
+    }
+   }
+  }
+ ]
+}

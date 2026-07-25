@@ -43,3 +43,17 @@ targets:
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"            # iPhone-first, like the PDP
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+
+  # Engine parity: the Swift engine must agree with the JS reference
+  # engine over the shared corpus (tools/parity). Run with ⌘U.
+  EndpaperTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+      - path: ../tools/parity/corpus.json
+        buildPhase: resources
+      - path: ../tools/parity/expected.json
+        buildPhase: resources
+    dependencies:
+      - target: Endpaper
