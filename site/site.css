@@ -1,0 +1,361 @@
+/* ==========================================================================
+   endpaper.space — the landing page.
+   Layout/copy/type from the Figma rough (Website page); colors from the
+   Stage 0 token sheet. No shadows, no icons beyond the badge, no accent.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('fonts/InstrumentSans.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Newsreader';
+  src: url('fonts/Newsreader.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Newsreader';
+  src: url('fonts/Newsreader-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fragment Mono';
+  src: url('fonts/FragmentMono.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --bone: #E8E6E1;
+  --bone-raised: #EFEDE8;
+  --ink: #1A1A1A;
+  --ink-soft: #262320;
+  --bone-soft: #DEDAD3;
+  --graphite: #4A4843;
+  --stone: #A9A6A0;
+  --hairline: #C9C6BF;
+  --stone-dk: #6B6862;
+  --hairline-dk: #332F2B;
+
+  --font-heading: 'Instrument Sans', system-ui, sans-serif;
+  --font-body: 'Newsreader', Georgia, serif;
+  --font-meta: 'Fragment Mono', ui-monospace, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bone);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+
+header.site {
+  padding: 28px 0;
+}
+.wordmark {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.wordmark .soft { color: var(--graphite); }
+
+/* --- Type ------------------------------------------------------------------- */
+
+h1, h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.08;
+}
+h1 { font-size: clamp(40px, 7vw, 72px); }
+h2 { font-size: clamp(34px, 5.5vw, 56px); }
+.serif-i {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.kicker {
+  font-family: var(--font-meta);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stone);
+  line-height: 1.6;
+}
+
+.lede {
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+/* --- Sections --------------------------------------------------------------- */
+
+section { position: relative; }
+
+.hero, .closing {
+  text-align: center;
+  padding: 96px 0 140px;
+}
+.hero .kicker, .closing .kicker { margin-top: 22px; }
+.hero h1, .closing h2 { max-width: 15ch; margin: 28px auto 0; }
+
+.deep {
+  background: var(--ink);
+  color: var(--bone-raised);
+  padding: 140px 0 120px;
+  margin-top: 90px;
+}
+.deep h1, .deep h2 { color: var(--bone-raised); }
+.deep .kicker { color: var(--stone-dk); }
+.deep .lede { color: var(--bone-soft); }
+
+/* the dot that sinks into the ink — the seam between worlds */
+.seam-dot {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.deep-intro { text-align: center; }
+.deep-intro h2 { margin: 0 auto; }
+.deep-intro .lede { max-width: 42ch; margin: 26px auto 0; }
+
+/* feature rows */
+.feature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  padding: 120px 0 0;
+}
+.feature.flip .copy { order: 2; }
+.feature.flip .art { order: 1; }
+.feature h2 { font-size: clamp(30px, 4vw, 44px); }
+.feature ul { list-style: none; margin-top: 34px; display: grid; gap: 22px; }
+.feature li {
+  position: relative;
+  padding-left: 26px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--bone-soft);
+}
+.feature li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.62em;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--bone-raised);
+}
+.art { display: flex; justify-content: center; }
+
+.only-human {
+  text-align: center;
+  padding: 160px 0 40px;
+}
+.only-human .lede { max-width: 40ch; margin: 26px auto 0; }
+
+.closing { padding-top: 150px; }
+
+/* --- The App Store badge (black, official style) ----------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 44px;
+  padding: 12px 22px 12px 18px;
+  background: var(--ink);
+  color: var(--bone-raised);
+  border-radius: 12px;
+  border: 1px solid var(--ink);
+  text-decoration: none;
+  text-align: left;
+  transition: opacity 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.badge:hover { opacity: 0.85; }
+.badge svg { width: 24px; height: 28px; fill: var(--bone-raised); }
+.badge .small {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.badge .big {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+/* on the ink section, the badge inverts to keep one-color discipline */
+.deep .badge {
+  background: var(--bone-raised);
+  color: var(--ink);
+  border-color: var(--bone-raised);
+}
+.deep .badge svg { fill: var(--ink); }
+
+/* --- Living graphics --------------------------------------------------------- */
+
+.dot { border-radius: 50%; }
+
+/* hero + closing: one dot, breathing */
+.breathe {
+  width: 14px; height: 14px;
+  margin: 0 auto;
+  background: var(--ink);
+  animation: breathe 3.6s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.35); }
+}
+
+/* week register: seven dots, filling one day at a time (site.js) */
+.week-reg { display: flex; align-items: center; gap: 18px; }
+.week-reg .dot {
+  width: 36px; height: 36px;
+  background: var(--hairline-dk);
+  transition: background 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.week-reg .dot.filled { background: var(--bone-raised); }
+.week-reg .dot.today { transform: scale(1.22); }
+
+/* month matrix: draws itself on scroll, then recurring days pulse (site.js) */
+.matrix { display: grid; grid-template-columns: repeat(7, 14px); gap: 14px; }
+.matrix .dot {
+  width: 14px; height: 14px;
+  background: var(--hairline-dk);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 500ms, transform 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              background 500ms;
+}
+.matrix .dot.on { opacity: 1; transform: scale(1); }
+.matrix .dot.lit { background: var(--bone-raised); }
+.matrix .dot.echo { animation: echo 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; }
+@keyframes echo {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+}
+
+/* only human: the reflections motif, drifting */
+.motif { position: relative; width: 150px; height: 76px; margin: 56px auto 0; }
+.motif .ring, .motif .disc {
+  position: absolute; top: 6px;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+}
+.motif .ring {
+  border: 1px solid var(--bone-raised);
+  left: 8px;
+  animation: drift-l 7s ease-in-out infinite;
+}
+.motif .disc {
+  background: var(--bone-raised);
+  opacity: 0.88;
+  right: 8px;
+  animation: drift-r 7s ease-in-out infinite;
+}
+@keyframes drift-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
+@keyframes drift-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-18px); } }
+
+/* --- Footer ------------------------------------------------------------------ */
+
+footer.site {
+  background: var(--ink);
+  padding: 44px 0 56px;
+}
+footer.site .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid var(--hairline-dk);
+  padding-top: 34px;
+}
+footer.site .links { display: flex; gap: 28px; }
+footer.site a, footer.site span {
+  font-family: var(--font-meta);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stone-dk);
+  text-decoration: none;
+}
+footer.site a:hover { color: var(--bone-soft); }
+
+/* --- Legal pages ------------------------------------------------------------- */
+
+.legal {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 44px 28px 96px;
+}
+.legal h1 { font-size: 34px; margin-bottom: 8px; }
+.legal .kicker { margin-bottom: 44px; }
+.legal h2 {
+  font-size: 21px;
+  margin: 44px 0 12px;
+}
+.legal p, .legal li {
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+.legal ul { padding-left: 22px; }
+.legal a { color: var(--graphite); }
+
+/* --- Small screens ----------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .feature { grid-template-columns: 1fr; gap: 44px; padding-top: 96px; }
+  .feature.flip .copy { order: 1; }
+  .feature.flip .art { order: 2; }
+  .art { justify-content: flex-start; }
+  .hero, .closing { padding: 64px 0 110px; }
+  .deep { padding: 110px 0 96px; }
+}
+
+/* --- Reduce motion ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe, .motif .ring, .motif .disc, .matrix .dot.echo { animation: none; }
+  .matrix .dot { opacity: 1; transform: none; transition: none; }
+  .week-reg .dot { transition: none; }
+}
