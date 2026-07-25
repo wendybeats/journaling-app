@@ -79,11 +79,16 @@ and the domain — so it lands **before TestFlight**, not before code.
    | Pica | Out — four exact-name iOS apps, the popular pica npm library, and the eating-disorder homonym owns general web search. | search round 2 |
    | Glossa | Out — multiple exact-name AI/language iOS apps, salon SaaS, and the linguistics journal; reads "language," not "paper." | search round 2 |
 
-   **✅ Decided July 24: Endpaper** (the legibility pick — the only name
-   across both rounds with a papery register AND an empty collision field).
-   Runners-up recorded in case the trademark screen forces a fallback:
-   Tetradi (ownability pick), Octavo, Pressed. Remaining: registrar check
-   on endpaper.com/.app → formal trademark search.
+   **✅ Decided July 24: Endpaper.** Domain landscape checked by Wendell
+   the same day: endpaper.com/.app/.ink all taken — notably endpaper.app
+   is an AI book-writing service (same name, writing category; a trademark
+   screen should look hard at it) and endpaper.ink is a fountain-pen ink
+   brand. **Domain decided: `endpaper.space`** ($2, available, and echoes
+   thedot.space — the PDP's structural design reference). App Store search
+   for "Endpaper" remains empty, which is the collision that matters most
+   for an iOS product. Runners-up stay on file in case the trademark
+   screen forces a fallback: Tetradi (ownability pick), Octavo, Pressed.
+   Remaining: register endpaper.space → formal trademark search.
 3. **On decision:** bundle ID `com.wendellbarton.<name>`, iCloud container
    `iCloud.com.wendellbarton.<name>`, rename pass through code and docs.
    (Do this *before* any TestFlight build ships — migrating a CloudKit
@@ -102,10 +107,11 @@ The no-backend architecture makes this unusually short:
    subscriptions).
 3. **App Privacy label** in App Store Connect: **"Data Not Collected"** —
    worth designing the App Store listing around.
-4. **Landing page.** One static page at the product's domain: the pitch,
-   support email, privacy policy, terms. Required (App Store wants support
-   + privacy URLs); also where the name lives publicly. The web prototype's
-   design system makes this an afternoon.
+4. **Landing page.** One static page at **endpaper.space**: the pitch,
+   support email (e.g. hello@endpaper.space), privacy policy, terms.
+   Required (App Store wants support + privacy URLs); also where the name
+   lives publicly. The web prototype's design system makes this an
+   afternoon.
 
 ## 4. Workstream D — App Store plumbing
 
