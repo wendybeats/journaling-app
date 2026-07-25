@@ -35,9 +35,9 @@ Stage 2 plan's units.
 | A2 | **Settings** | The sparse screen the Stage 2 plan already defines: reminder toggle + time, "Back up your notebook" (iCloud on/off + sync status meta line), "Show the introduction again," export (A3), licenses/about. | 2 |
 | A3 | **Export** | "Your writing is yours" needs a door: one button producing a plain-text/Markdown archive of the whole notebook via the share sheet. Cheap, and the single biggest trust signal in Settings. | 1 |
 | A4 | **Paywall wiring** | Real product in App Store Connect, `TrialGate` pointed at it, the trial-expiry gate (hard paywall screen when neither trial nor subscription is live), restore flow, sandbox testing. The StoreKit 2 scaffold from port round 1 is most of this. | 2 |
-| A5 | **CloudKit hardening** | Two-device sync test (write on one, appears on other; same-window sessions merge, not fork). iCloud signed-out / storage-full / managed-device states surface as one quiet meta line in Settings, never on the page. Deploy schema to the production CloudKit environment. | 2 |
-| A6 | **QA pass** | Dynamic Type (XL check per Stage 2 DoD), VoiceOver labels (dots need spoken meaning: "July 5, written"), Reduce Motion (all sequences degrade to static), dark mode sweep, keyboard/scroll edge cases, fresh-install and upgrade paths. | 2–3 |
-| A7 | **Face ID lock** | Optional app lock (LocalAuthentication, one Settings toggle). Small, and it belongs in a private journal. | 1 |
+| A5 | **CloudKit hardening** | ◐ Status surface built (quiet meta line in Settings via ubiquityIdentityToken — signed-out/absent states degrade politely). Remaining: two-device sync test on real hardware (write on one, appears on other; same-window sessions merge, not fork), production schema deploy. | 2 |
+| A6 | **QA pass** | ◐ Code side built July 24: VoiceOver labels (dots speak — "July 5, written"; drop caps read whole; year matrices defer to their month card; tutorial dots announce page), Reduce Motion already degrades the sequences. Remaining (on-device): Dynamic Type XL check, dark mode sweep, keyboard/scroll edge cases, fresh-install path. | 2–3 |
+| A7 | **Face ID lock** | ✅ Built July 24: Settings toggle, lock on background, LocalAuthentication with passcode fallback; stands aside if the device has no passcode. Privacy outranks commerce — the lock sits above the paywall. | 1 |
 
 Not in scope: widgets, iPad/Mac layouts, localization (copy stays constants
 until localization is real).
@@ -98,13 +98,16 @@ and the domain — so it lands **before TestFlight**, not before code.
 
 The no-backend architecture makes this unusually short:
 
-1. **Privacy policy.** Truthfully minimal: writing stays on device and in
-   the user's private iCloud; no accounts, no analytics, no tracking, no
-   third-party SDKs; notifications are local; reflections computed on
-   device; subscription handled by Apple. One page.
-2. **Terms of use.** Standard subscription terms (Apple's standard EULA
-   covers most of it; App Store requires a Terms link for auto-renewing
-   subscriptions).
+1. **Privacy policy.** ✅ Drafted July 24 — `docs/legal/privacy-policy.md`.
+   Truthfully minimal: writing stays on device and in the user's private
+   iCloud; no accounts, no analytics, no tracking, no third-party SDKs;
+   notifications are local; reflections computed on device; subscription
+   handled by Apple. One page, in the product's voice.
+2. **Terms of use.** ✅ Drafted July 24 — `docs/legal/terms.md`. Subscription
+   terms (trial/renewal/cancel via Apple), the **permanence disclosure**
+   (§3 — no edit/delete is a stated feature, not a defect), content
+   ownership, not-therapy disclaimer, liability limits. Placeholders
+   remaining: dates, final price, governing law.
 3. **App Privacy label** in App Store Connect: **"Data Not Collected"** —
    worth designing the App Store listing around.
 4. **Landing page.** One static page at **endpaper.space**: the pitch,

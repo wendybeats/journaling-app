@@ -78,6 +78,11 @@ struct CalendarView: View {
                         guard !written.isEmpty || isCurrentMonth(year, month) else { return }
                         withAnimation(Tokens.Motion.base) { openMonth = (year, month) }
                     }
+                    // The matrix is hidden from VoiceOver; the month card
+                    // speaks once, meaningfully.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(DayFormat.monthName(month)) \(String(year)), \(written.count) days written")
+                    .accessibilityAddTraits(written.isEmpty && !isCurrentMonth(year, month) ? [] : .isButton)
                 }
             }
         }

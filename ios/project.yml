@@ -22,6 +22,7 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
+        NSFaceIDUsageDescription: Endpaper can lock your notebook behind Face ID.
         UIAppFonts:      # resources copy flat into the bundle root
           - Newsreader.ttf
           - Newsreader-Italic.ttf

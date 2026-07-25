@@ -14,6 +14,7 @@ enum AppKeys {
     static let reminderHour = "endpaper.reminder.hour.v1"     // Int, default 8
     static let reminderMinute = "endpaper.reminder.minute.v1" // Int, default 0
     static let reflection = "endpaper.reflection.v1"  // consent state (round 2 port)
+    static let faceLock = "endpaper.facelock.v1"      // Bool — lock the app behind Face ID
 }
 
 enum AccountMode: String {

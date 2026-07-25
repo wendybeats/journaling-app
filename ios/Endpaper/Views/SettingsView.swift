@@ -10,10 +10,12 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage(AppKeys.account) private var accountMode = ""
 
+    @AppStorage(AppKeys.faceLock) private var faceLock = false
     @State private var reminderOn = ReminderManager.enabled
     @State private var reminderTime = Date()
     @State private var replaying = false
     @State private var exportURL: URL? = nil
+    @State private var syncLine = ""
 
     var body: some View {
         ScrollView {
@@ -63,9 +65,19 @@ struct SettingsView: View {
                         Text("Back up with iCloud").typeWritten()
                     }
                     .tint(Tokens.Surface.inverted)
-                    Text(accountMode == AccountMode.icloud.rawValue
-                         ? "Synced to your private iCloud · applies at next launch"
-                         : "Saved on this device only")
+                    Text(syncLine)
+                        .typeMetaSmall()
+                }
+
+                rule
+
+                // --- Face ID lock ---
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Toggle(isOn: $faceLock) {
+                        Text("Lock with Face ID").typeWritten()
+                    }
+                    .tint(Tokens.Surface.inverted)
+                    Text("Asks whenever the app returns")
                         .typeMetaSmall()
                 }
 
@@ -110,6 +122,24 @@ struct SettingsView: View {
             let (h, m) = ReminderManager.chosenTime
             reminderTime = Calendar.current.date(bySettingHour: h, minute: m, second: 0, of: .now) ?? .now
             exportURL = buildExport()
+            refreshSyncLine()
+        }
+        .onChange(of: accountMode) { _, _ in refreshSyncLine() }
+    }
+
+    /// The one quiet meta line the sync status is allowed (stage-2 plan
+    /// §1.2): never a banner, never on the page. ubiquityIdentityToken is
+    /// the crash-safe signal — nil when iCloud is signed out, restricted,
+    /// or the entitlement is absent in this build.
+    private func refreshSyncLine() {
+        guard accountMode == AccountMode.icloud.rawValue else {
+            syncLine = "Saved on this device only"
+            return
+        }
+        if FileManager.default.ubiquityIdentityToken != nil {
+            syncLine = "Synced to your private iCloud · applies at next launch"
+        } else {
+            syncLine = "iCloud unavailable — saved on this device for now"
         }
     }
 

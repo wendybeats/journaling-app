@@ -51,8 +51,18 @@ struct MonthDotGrid: View {
                     .frame(width: Tokens.DotSize.today, height: Tokens.DotSize.today)
                     .contentShape(Rectangle())
                     .onTapGesture { onTapDay?(day) }
+                    .accessibilityLabel(dayLabel(day))
+                    .accessibilityAddTraits(writtenDays.contains(day) ? .isButton : [])
             }
         }
+    }
+
+    /// Dots need spoken meaning: "July 5, written" / "July 6".
+    private func dayLabel(_ day: Int) -> String {
+        var label = "\(DayFormat.monthName(month)) \(day)"
+        if day == todayDay { label += ", today" }
+        if writtenDays.contains(day) { label += ", written" }
+        return label
     }
 }
 
@@ -80,6 +90,9 @@ struct YearMonthMatrix: View {
                     .frame(width: Tokens.DotSize.year, height: Tokens.DotSize.year)
             }
         }
+        // 365 tiny dots would drown VoiceOver — the enclosing view carries
+        // one meaningful label instead.
+        .accessibilityHidden(true)
     }
 }
 
@@ -104,6 +117,10 @@ struct WeekDotRow: View {
                     .fill(day.written ? Tokens.Dot.filled : Tokens.Dot.empty)
                     .frame(width: size, height: size)
                     .onTapGesture { if day.written { onTap(day.date) } }
+                    .accessibilityLabel(DayFormat.dayHeading(day.date)
+                        + (day.written ? ", written" : "")
+                        + (day.isToday ? ", today" : ""))
+                    .accessibilityAddTraits(day.written ? .isButton : [])
             }
         }
     }

@@ -155,5 +155,8 @@ struct DropCapParagraph: View {
             Text(rest)
                 .typeWritten()
         }
+        // VoiceOver reads the paragraph whole, not "L" then "ong day…"
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(text)
     }
 }

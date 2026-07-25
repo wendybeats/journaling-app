@@ -161,6 +161,8 @@ private extension TutorialSlide {
                     VDot(filled: i == index)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Page \(index + 1) of \(tutorialPages)")
             .padding(.bottom, Tokens.Space.xl)
         }
     }
