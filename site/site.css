@@ -154,6 +154,7 @@ section { position: relative; }
 .deep-intro .lede { max-width: 42ch; margin: 26px auto 0; }
 
 /* feature rows */
+.feature:not(.flip) { padding-left: 64px; padding-right: 64px; }
 .feature {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -270,27 +271,6 @@ section { position: relative; }
   50% { transform: scale(1.5); }
 }
 
-/* only human: the reflections motif, drifting */
-.motif { position: relative; width: 150px; height: 76px; margin: 56px auto 0; }
-.motif .ring, .motif .disc {
-  position: absolute; top: 6px;
-  width: 64px; height: 64px;
-  border-radius: 50%;
-}
-.motif .ring {
-  border: 1px solid var(--bone-raised);
-  left: 8px;
-}
-.motif.play .ring { animation: drift-l 7s ease-in-out 1; }
-.motif .disc {
-  background: var(--bone-raised);
-  opacity: 0.88;
-  right: 8px;
-}
-.motif.play .disc { animation: drift-r 7s ease-in-out 1; }
-@keyframes drift-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
-@keyframes drift-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-18px); } }
-
 /* --- Footer ------------------------------------------------------------------ */
 
 footer.site {
@@ -343,6 +323,7 @@ footer.site a:hover { color: var(--bone-soft); }
 
 @media (max-width: 760px) {
   .feature { grid-template-columns: 1fr; gap: 44px; padding-top: 96px; }
+  .feature:not(.flip) { padding-left: 0; padding-right: 0; }
   .feature.flip .copy { order: 1; }
   .feature.flip .art { order: 2; }
   .art { justify-content: flex-start; }
@@ -353,7 +334,7 @@ footer.site a:hover { color: var(--bone-soft); }
 /* --- Reduce motion ------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .motif .ring, .motif .disc, .matrix .dot.echo { animation: none !important; }
+  .matrix .dot.echo { animation: none !important; }
   .matrix .dot { opacity: 1; transform: none; transition: none; }
   .week-reg .dot { transition: none; }
 }

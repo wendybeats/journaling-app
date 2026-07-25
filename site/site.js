@@ -60,12 +60,3 @@ if (matrix) {
     });
   });
 }
-
-/* --- Only Human: the reflections motif drifts through one cycle -------------- */
-
-const motif = document.getElementById('motif');
-if (motif) {
-  onceInView(motif, (instant) => {
-    if (!instant) motif.classList.add('play');
-  }, 0.6);
-}
