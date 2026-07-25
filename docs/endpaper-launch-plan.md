@@ -125,6 +125,7 @@ The no-backend architecture makes this unusually short:
 | D3 | iCloud container + push-to-production schema | Container ID from §2 |
 | D4 | Subscription product | Yearly auto-renewing, 7-day free introductory offer, subscription group; final price decided here (pricing pass) |
 | D5 | App icon + launch screen | The dot is the obvious mark: one filled dot on bone. Launch screen = blank bone page |
+| D5b | **Figma file** (built July 24) | [Endpaper design file](https://www.figma.com/design/ZvusVn4JRWLMMxuMpuljO2/) — Design System page (semantic color variables with Light/Dark modes, the three type-register text styles, palette/type/spacing/dot documentation) + App Walkthrough page (23 screen mocks: core loop, onboarding, paywall, cards, reflections, wrapped) + Cover. Website page reserved for the landing-page design. |
 | D6 | Store assets | Screenshots (light+dark, the writing page and the dots), description in the product's voice, keywords; no video needed at launch |
 | D7 | TestFlight | Internal testing first (no review), then external group (one-time beta review) for friends |
 | D8 | App Review prep | Review notes explaining the trial/paywall and the no-account design; demo not needed (reviewer can write). Subscription apps get extra scrutiny: terms link, restore button, price clarity — all already in the trial moment |
