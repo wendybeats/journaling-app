@@ -1,11 +1,21 @@
 // endpaper.space — the living graphics. Dots only, in the app's own
-// registers: the week filling day by day, the month matrix drawing itself,
-// recurring days echoing. Everything degrades to a static filled state
-// under prefers-reduced-motion.
+// registers. Each graphic plays once, when it scrolls into view, then
+// rests in its finished state. Static from the start under
+// prefers-reduced-motion.
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* --- Week register: seven dots, a day fills at a time ---------------------- */
+function onceInView(el, run, threshold = 0.4) {
+  if (reduced) { run(true); return; }
+  new IntersectionObserver((entries, obs) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      run(false);
+      obs.disconnect();
+    }
+  }, { threshold }).observe(el);
+}
+
+/* --- Week register: seven dots, a day fills at a time, once ----------------- */
 
 const week = document.getElementById('week-reg');
 if (week) {
@@ -13,26 +23,17 @@ if (week) {
   const writtenPattern = [0, 1, 3, 4, 6];   // the honest week: gaps included
   const TODAY = 4;
 
-  if (reduced) {
-    writtenPattern.forEach((i) => dots[i].classList.add('filled'));
-    dots[TODAY].classList.add('today');
-  } else {
-    let step = 0;
-    setInterval(() => {
-      const phase = step % (writtenPattern.length + 3);   // pause between loops
-      if (phase === 0) {
-        dots.forEach((d) => d.classList.remove('filled', 'today'));
-      } else if (phase <= writtenPattern.length) {
-        const i = writtenPattern[phase - 1];
+  onceInView(week, (instant) => {
+    writtenPattern.forEach((i, order) => {
+      setTimeout(() => {
         dots[i].classList.add('filled');
         if (i === TODAY) dots[i].classList.add('today');
-      }
-      step++;
-    }, 750);
-  }
+      }, instant ? 0 : 550 * (order + 1));
+    });
+  });
 }
 
-/* --- Month matrix: draws itself on scroll; recurring days echo -------------- */
+/* --- Month matrix: draws itself once; recurring days echo twice, then rest --- */
 
 const matrix = document.getElementById('matrix');
 if (matrix) {
@@ -48,25 +49,23 @@ if (matrix) {
     dots.push(d);
   }
 
-  const reveal = () => {
+  onceInView(matrix, (instant) => {
     dots.forEach((d, i) => {
       setTimeout(() => {
         d.classList.add('on');
-        if (i === DAYS - 1) {
+        if (i === DAYS - 1 && !instant) {
           setTimeout(() => recurring.forEach((r) => dots[r].classList.add('echo')), 700);
         }
-      }, reduced ? 0 : 55 * i);
+      }, instant ? 0 : 55 * i);
     });
-  };
+  });
+}
 
-  if (reduced) {
-    reveal();
-  } else {
-    new IntersectionObserver((entries, obs) => {
-      if (entries.some((e) => e.isIntersecting)) {
-        reveal();
-        obs.disconnect();
-      }
-    }, { threshold: 0.4 }).observe(matrix);
-  }
+/* --- Only Human: the reflections motif drifts through one cycle -------------- */
+
+const motif = document.getElementById('motif');
+if (motif) {
+  onceInView(motif, (instant) => {
+    if (!instant) motif.classList.add('play');
+  }, 0.6);
 }
