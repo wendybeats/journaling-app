@@ -38,6 +38,7 @@ Stage 2 plan's units.
 | A5 | **CloudKit hardening** | ◐ Status surface built (quiet meta line in Settings via ubiquityIdentityToken — signed-out/absent states degrade politely). Remaining: two-device sync test on real hardware (write on one, appears on other; same-window sessions merge, not fork), production schema deploy. | 2 |
 | A6 | **QA pass** | ◐ Code side built July 24: VoiceOver labels (dots speak — "July 5, written"; drop caps read whole; year matrices defer to their month card; tutorial dots announce page), Reduce Motion already degrades the sequences. Remaining (on-device): Dynamic Type XL check, dark mode sweep, keyboard/scroll edge cases, fresh-install path. | 2–3 |
 | A7 | **Face ID lock** | ✅ Built July 24: Settings toggle, lock on background, LocalAuthentication with passcode fallback; stands aside if the device has no passcode. Privacy outranks commerce — the lock sits above the paywall. | 1 |
+| A8 | **Calendar polish** *(noted July 25, from device QA — deliberate later pass)* | Restore the web prototype's FLIP-grade morph (year ↔ month transitions currently lack the smoothness); dot sizing that scales dynamically with how much the user has written. The week/month hybrid was removed and day taps wired in the meantime — month grid is now the single register. | 2–3 |
 
 Not in scope: widgets, iPad/Mac layouts, localization (copy stays constants
 until localization is real).

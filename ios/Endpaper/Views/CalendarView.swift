@@ -15,7 +15,6 @@ struct CalendarView: View {
     @State private var writtenByMonth: [String: Set<Int>] = [:]
     @State private var years: [Int] = []
     @State private var openMonth: (year: Int, month: Int)? = nil
-    @State private var expandedWeek: Int? = nil
 
     var body: some View {
         ScrollView {
@@ -88,17 +87,20 @@ struct CalendarView: View {
         }
     }
 
-    // MARK: - Month detail (weeks, the large dot register)
+    // MARK: - Month detail
+    // One register, no week/month hybrid: the month grid at the 11px
+    // register, every written day tappable straight through to its page.
+    // (The year↔month morph and writing-volume-scaled dot sizing are a
+    // noted future pass — see launch plan A6b.)
 
     private func monthDetail(year: Int, month: Int) -> some View {
         let written = writtenByMonth[monthKey(year, month)] ?? []
-        let weeks = weeksOf(year: year, month: month)
 
         return VStack(alignment: .leading, spacing: Tokens.Space.lg) {
             Button {
-                withAnimation(Tokens.Motion.base) { openMonth = nil; expandedWeek = nil }
+                withAnimation(Tokens.Motion.base) { openMonth = nil }
             } label: {
-                Text("← \(year)").typeMeta()
+                Text("← \(String(year))").typeMeta()
             }
 
             Text("\(DayFormat.monthName(month)) \(String(year))")
@@ -107,46 +109,13 @@ struct CalendarView: View {
             MonthDotGrid(
                 year: year, month: month,
                 writtenDays: written,
-                todayDay: todayDay(year, month)
+                todayDay: todayDay(year, month),
+                onTapDay: { day in
+                    guard written.contains(day) else { return }
+                    navigateDay = String(format: "%04d-%02d-%02d", year, month, day)
+                }
             )
             .matchedGeometryEffect(id: monthKey(year, month), in: morph)
-
-            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
-                ForEach(Array(weeks.enumerated()), id: \.offset) { index, week in
-                    weekRow(index: index, week: week, written: written, year: year, month: month)
-                }
-            }
-            .padding(.top, Tokens.Space.md)
-        }
-    }
-
-    private func weekRow(index: Int, week: [Date], written: Set<Int>, year: Int, month: Int) -> some View {
-        let cal = Calendar.current
-        let expanded = expandedWeek == index
-
-        return VStack(alignment: .leading, spacing: Tokens.Space.sm) {
-            Button {
-                // One expanded at a time — opening a week closes the others.
-                withAnimation(Tokens.Motion.base) { expandedWeek = expanded ? nil : index }
-            } label: {
-                Text(DayFormat.weekRangeLabel(start: week.first!, end: week.last!))
-                    .typeMetaSmall()
-            }
-            if expanded {
-                WeekDotRow(
-                    days: week.map { date in
-                        let day = cal.component(.day, from: date)
-                        let inMonth = cal.component(.month, from: date) == month
-                        return WeekDay(
-                            date: date,
-                            written: inMonth && written.contains(day),
-                            isToday: DayFormat.key(for: date) == DayFormat.key()
-                        )
-                    },
-                    onTap: { date in navigateDay = DayFormat.key(for: date) }
-                )
-                .transition(.opacity)
-            }
         }
     }
 
@@ -182,24 +151,6 @@ struct CalendarView: View {
         return (c.year == year && c.month == month) ? c.day : nil
     }
 
-    /// The month's days grouped into Sunday-start weeks (weeks may spill
-    /// across month edges; spill days render but never fill).
-    private func weeksOf(year: Int, month: Int) -> [[Date]] {
-        var cal = Calendar.current
-        cal.firstWeekday = 1
-        let first = cal.date(from: DateComponents(year: year, month: month, day: 1))!
-        let dayCount = cal.range(of: .day, in: .month, for: first)!.count
-
-        var weeks: [[Date]] = []
-        var cursor = cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: first))!
-        let monthEnd = cal.date(byAdding: .day, value: dayCount - 1, to: first)!
-        while cursor <= monthEnd {
-            let week = (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: cursor) }
-            weeks.append(week)
-            cursor = cal.date(byAdding: .day, value: 7, to: cursor)!
-        }
-        return weeks
-    }
 }
 
 /// A past day, read-only — the page as it was.

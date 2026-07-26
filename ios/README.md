@@ -47,7 +47,7 @@ store local-only; no capability required.
   underlined).
 - **Onboarding** — the four tutorial slides (dot-fill moment, permanence
   rule, reflections preview), the account moment ("Keep your notebook.",
-  Path A), and the trial moment ("A week on me." — 7-day trial, hard
+  Path A), and the trial moment ("A week, on me." — 7-day trial, hard
   paywall, no freemium).
 - **Reminder** — the pre-prompt card after two written days; the system
   dialog only ever follows a yes; one-shot re-armed notifications that skip

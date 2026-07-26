@@ -3146,7 +3146,7 @@ function mountReflectionFlow(root) {
 
 
 // First launch: the four-screen tutorial, the account moment ("Keep your
-// notebook."), then the trial moment ("A week on me.") — Endpaper is paid,
+// notebook."), then the trial moment ("A week, on me.") — Endpaper is paid,
 // one week free, no freemium. Shows exactly once; replay lives in the
 // footer. iCloud/StoreKit are mocked in the prototype — buttons record
 // the chosen state. Copy and sequence per docs/endpaper-stage2-plan.md.
@@ -3266,7 +3266,7 @@ function showOnboarding() {
 
       center.appendChild(el('h1', 'type-display recap-big', 'Keep your notebook.'));
       center.appendChild(el('p', 'onboard-body',
-        'Your writing stays in your private storage — no profile, no analytics, nothing read by anyone but you.'));
+        'Your writing stays in your private storage. No profile, no analytics, nothing read by anyone but you.'));
 
       // Path A (decided): recovery through the user's own iCloud — no
       // account system, no server. One button.
@@ -3293,7 +3293,7 @@ function showOnboarding() {
       const slide = el('div');
       const center = el('div', 'recap-center onboard-account');
 
-      center.appendChild(el('h1', 'type-display recap-big', 'A week on me.'));
+      center.appendChild(el('h1', 'type-display recap-big', 'A week, on me.'));
       center.appendChild(el('p', 'onboard-body',
         'Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.'));
 
@@ -3329,7 +3329,7 @@ function showOnboarding() {
         'Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.',
         { extra: demoGrid() }),
       tutorialSlide(2, 'Reflect, if you wish.',
-        'Each week, month, and year, Endpaper can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.',
+        'Get a reflection of your most important thoughts every week, month, and year. Face your recurring challenges and themes. Always optional.',
         { extra: circlesGlyph() }),
       tutorialSlide(3, 'Go forth.', 'Today’s page is ready.', { cta: 'Begin' }),
       accountSlide,

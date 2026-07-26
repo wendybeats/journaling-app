@@ -64,6 +64,8 @@ struct FindView: View {
             }
         }
         .background(Tokens.Surface.page)
+        // The field glides from centered to top as typing begins — no jump.
+        .animation(Tokens.Motion.base, value: query.isEmpty)
         .navigationDestination(item: $openDay) { key in
             DayPageView(key: key)
         }

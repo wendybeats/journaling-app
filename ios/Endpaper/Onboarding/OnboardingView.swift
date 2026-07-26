@@ -46,7 +46,7 @@ struct OnboardingView: View {
                     TutorialSlide(
                         index: 2,
                         title: "Reflect, if you wish.",
-                        body: "Each week, month, and year, Endpaper can reflect your writing back to you — the topics and words you returned to most. Optional, always skippable, only ever yours.",
+                        body: "Get a reflection of your most important thoughts every week, month, and year. Face your recurring challenges and themes. Always optional.",
                         onSkip: { jump(to: accountIndex) }
                     ) { CirclesGlyph() }
                 case 3:
@@ -77,7 +77,9 @@ struct OnboardingView: View {
             .transition(.opacity)
         }
         .contentShape(Rectangle())
-        .onTapGesture { if index < tutorialPages - 1 { advance() } }  // tap advances the tutorial
+        // Tap anywhere advances every tutorial slide (incl. past "Go forth.");
+        // the account and trial moments require their buttons.
+        .onTapGesture { if index < tutorialPages { advance() } }
         .animation(Tokens.Motion.base, value: index)
     }
 
@@ -184,8 +186,7 @@ private struct DemoDotGrid: View {
                     .frame(width: Tokens.DotSize.today, height: Tokens.DotSize.today)
             }
         }
-        .padding(Tokens.Space.card)
-        .background(Tokens.Surface.raised, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        // Bare dots on the page — no card behind the moment.
         .task {
             if UIAccessibility.isReduceMotionEnabled {
                 visible = Set(filled)     // static filled grid under Reduce Motion
@@ -228,7 +229,7 @@ private struct AccountSlide: View {
             Text("Keep your notebook.")
                 .typeDisplay()
                 .multilineTextAlignment(.center)
-            Text("Your writing stays in your private storage — no profile, no analytics, nothing read by anyone but you.")
+            Text("Your writing stays in your private storage. No profile, no analytics, nothing read by anyone but you.")
                 .typeWritten()
                 .multilineTextAlignment(.center)
 
@@ -264,7 +265,7 @@ private struct TrialSlide: View {
     var body: some View {
         VStack(spacing: Tokens.Space.md) {
             Spacer()
-            Text("A week on me.")
+            Text("A week, on me.")
                 .typeDisplay()
                 .multilineTextAlignment(.center)
             Text("Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.")

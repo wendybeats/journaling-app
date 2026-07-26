@@ -38,79 +38,83 @@ func inlineLabel(_ reflection: ArchivedReflection) -> String {
     }
 }
 
-// MARK: - The weekly reflection (the reserved inverted card)
+// MARK: - The weekly reflection — a two-screen sequence, like the monthly:
+// stats for the week, then the words. Center-aligned on the inverted
+// surface, hierarchy per the web prototype's reflection card.
 
 struct WeeklyCardView: View {
     let signal: WeeklySignal
     var onClose: () -> Void
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Tokens.Surface.page.opacity(0.001).ignoresSafeArea()   // dim stage
-
-            VStack {
-                Spacer(minLength: Tokens.Space.xxl)
-                card
-                Spacer(minLength: Tokens.Space.xxl)
-            }
-            .padding(.horizontal, Tokens.Space.md)
-        }
-        .background(Tokens.Surface.inverted.ignoresSafeArea())
-        .onTapGesture(perform: onClose)
+        SlideSequenceView(slides: slides, onDone: onClose)
     }
 
-    private var card: some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            HStack {
-                Text("\(weekLabel(signal)) · \(signal.days) days · \(signal.words.formatted()) words")
+    private var slides: [SequenceSlide] {
+        var s: [SequenceSlide] = []
+
+        // 1 — the week, in numbers
+        s.append(SequenceSlide(duration: 4.5) {
+            VStack(spacing: Tokens.Space.lg) {
+                RecapCircles()
+                Text("Reflections — Your week")
+                    .font(.custom(EndpaperFont.heading, size: 22).weight(.medium))
+                    .foregroundStyle(Tokens.Text.onInverted)
+                Text(weekLabel(signal))
                     .font(.custom(EndpaperFont.meta, size: 11))
                     .tracking(11 * 0.14)
                     .textCase(.uppercase)
                     .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
-                Spacer()
-                Button(action: onClose) {
-                    Text("×")
-                        .font(.custom(EndpaperFont.heading, size: 22))
-                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.7))
+                HStack(spacing: Tokens.Space.xl) {
+                    SequenceStat(value: "\(signal.days)", label: "days")
+                    SequenceStat(value: signal.words.formatted(), label: "words")
                 }
-                .accessibilityLabel("Close reflection")
+                .padding(.top, Tokens.Space.md)
             }
+        })
 
-            if let topic = signal.topic, signal.quotes.count >= 2 {
-                Text("“\(topic.word)” kept surfacing — \(topic.mentions) times, across \(topic.days) days. Collected, in your words:")
-                    .font(.custom("Newsreader", size: 17))
-                    .lineSpacing(6)
-                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.92))
-
-                VStack(alignment: .leading, spacing: Tokens.Space.md) {
-                    ForEach(signal.quotes, id: \.self) { q in
-                        VStack(alignment: .leading, spacing: Tokens.Space.xs) {
-                            Text("“\(q.text.trimmingCharacters(in: CharacterSet(charactersIn: ".?!")))”")
-                                .font(.custom("Newsreader", size: 17).italic())
-                                .foregroundStyle(Tokens.Text.onInverted.opacity(0.85))
-                            Text(DayFormat.weekdayName(DayFormat.date(fromKey: q.day)))
-                                .font(.custom(EndpaperFont.meta, size: 10))
-                                .tracking(10 * 0.14)
-                                .textCase(.uppercase)
-                                .foregroundStyle(Tokens.Text.onInverted.opacity(0.5))
+        // 2 — the words (holds until Continue)
+        s.append(SequenceSlide(duration: nil) {
+            VStack(spacing: Tokens.Space.lg) {
+                if let topic = signal.topic, signal.quotes.count >= 2 {
+                    Text("\u{201C}\(topic.word)\u{201D}")
+                        .font(.custom("Newsreader", size: 44).italic())
+                        .foregroundStyle(Tokens.Text.onInverted)
+                    Text("kept surfacing — \(topic.mentions) times, across \(topic.days) days")
+                        .font(.custom(EndpaperFont.meta, size: 10))
+                        .tracking(10 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                    VStack(spacing: Tokens.Space.md) {
+                        ForEach(signal.quotes, id: \.self) { q in
+                            SequenceQuote(quote: q)
                         }
                     }
+                    .padding(.top, Tokens.Space.sm)
+                    Text("Worth sitting with?")
+                        .font(.custom("Newsreader", size: 19).italic())
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.7))
+                        .padding(.top, Tokens.Space.sm)
+                } else {
+                    Text("No single thread this week — \(signal.days) days of writing, each in its own place. Sometimes a week is just days.")
+                        .font(.custom("Newsreader", size: 22).italic())
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
+                        .multilineTextAlignment(.center)
                 }
-                .padding(.top, Tokens.Space.sm)
-
-                Text("Worth sitting with?")
-                    .font(.custom("Newsreader", size: 17).italic())
-                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.7))
-                    .padding(.top, Tokens.Space.md)
-            } else {
-                Text("No single thread this week — \(signal.days) days of writing, each in its own place. Sometimes a week is just days.")
-                    .font(.custom("Newsreader", size: 17))
-                    .lineSpacing(6)
-                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.92))
+                Button(action: onClose) {
+                    Text("Continue")
+                        .font(.custom(EndpaperFont.meta, size: 13))
+                        .tracking(13 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted)
+                }
+                .padding(.top, Tokens.Space.xl)
             }
-        }
-        .padding(Tokens.Space.card)
-        .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Tokens.Space.screenX)
+            .multilineTextAlignment(.center)
+        })
+
+        return s
     }
 }
 

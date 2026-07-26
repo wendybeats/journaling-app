@@ -144,7 +144,7 @@ struct SequenceQuote: View {
     var body: some View {
         VStack(spacing: Tokens.Space.xs) {
             Text("“\(quote.text.trimmingCharacters(in: CharacterSet(charactersIn: ".?!")))”")
-                .font(.custom("Newsreader", size: 17).italic())
+                .font(.custom("Newsreader", size: 19).italic())
                 .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
                 .multilineTextAlignment(.center)
             Text(stampAsDate

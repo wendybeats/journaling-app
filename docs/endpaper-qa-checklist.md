@@ -16,9 +16,9 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 - [ ] Tap anywhere advances slides 1→2→3; slide 2 plays the dot-fill cascade once
 - [ ] Progress dots track the current page (filled dot moves)
 - [ ] "Skip" on any tutorial slide jumps straight to the account moment
-- [ ] Slide 4 "Go forth." → Begin advances (tap-anywhere does not skip past the CTA slide)
+- [ ] Slide 4 "Go forth." → Begin or tap-anywhere advances (July 25: every tutorial slide advances on tap)
 - [ ] Account moment: "Back up with iCloud" and "Continue without an account →" both advance to the trial moment; note which you chose for §8
-- [ ] Trial moment "A week on me." → "Start my free week" lands on **Today with the keyboard up and cursor ready** (the ten-second test: fresh install → writable in <10s of user time)
+- [ ] Trial moment "A week, on me." → "Start my free week" lands on **Today with the keyboard up and cursor ready** (the ten-second test: fresh install → writable in <10s of user time)
 - [ ] Kill the app, relaunch → straight to Today. Onboarding never re-appears on its own
 - [ ] Settings → "Show the introduction again" → replays all six slides; finishing changes **nothing** (same account mode, same trial date — check Settings sync line unchanged)
 
@@ -47,8 +47,7 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 - [ ] Year view: twelve 5px-dot matrices; written days filled, empty days faint; current year present even if unwritten
 - [ ] Tap a written month → morphs to month detail (matrix animates between layouts)
 - [ ] Month grid: 11px dots, today ringed (current month only)
-- [ ] Week rows: tapping one expands it (36/44 register) and collapses any other
-- [ ] Tap a large written dot → that day's read-only page; ← BACK returns
+- [ ] Tap a written day dot in the month grid → that day's read-only page; ← BACK returns (July 25: week-row hybrid removed — the grid is the single register)
 - [ ] Unwritten months don't navigate (except the current month)
 - [ ] ← 2026 returns to the year view
 
@@ -63,7 +62,7 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 
 - [ ] **Consent card** appears on Today: "Reflections – Your Week" (it never appears before a recap could exist — verify by Clear → no card on empty data)
 - [ ] "No thanks" → card gone, never returns (relaunch to confirm); Seed demo resets it
-- [ ] Re-seed → "Yes, reflect" → the **weekly reflection** arrives as the inverted card: mono header (week · days · words), topic in the user's words, verbatim quotes with weekday stamps, "Worth sitting with?"
+- [ ] Re-seed → "Yes, reflect" → the **weekly reflection** arrives as a two-screen sequence (July 25): stats for the week (days · words), then the words — topic large, verbatim quotes with weekday stamps, "Worth sitting with?", Continue
 - [ ] Close it → next visit to Today, the **monthly recap** arrives (monthly wins, weekly first only right after consent — per the flow, one arrival per visit)
 - [ ] Recap sequence: circles intro → month grid draws itself dot by dot + row of three stats → "Recurring ideas" intertitle → topics with 2 quotes each → "Your Word" → "Challenges" (only if difficulty quotes exist) → "Reflect & start anew" + CONTINUE
 - [ ] Countdown bar shrinks; **tap skips** a slide; **hold ≥250 ms pauses** (bar freezes), release resumes

@@ -47,7 +47,8 @@ struct RecapView: View {
             if !signal.topics.isEmpty {
                 s.append(SequenceSlide(duration: 2.2) { Intertitle(text: "Recurring ideas") })
                 for topic in signal.topics {
-                    s.append(SequenceSlide(duration: 4.5) { RecapTopicSlide(topic: topic) })
+                    // Two quotes need reading time — slower than the stat slides.
+                    s.append(SequenceSlide(duration: 5.5) { RecapTopicSlide(topic: topic) })
                 }
             }
             // 4 — the tone, in the user's own word
