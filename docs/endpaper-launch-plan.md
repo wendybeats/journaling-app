@@ -157,10 +157,10 @@ all of D).
 ## 6. Go-live checklist (definition of done)
 
 - [ ] Name decided; bundle ID, container, domain, and all copy renamed
-- [ ] Reflections: weekly/monthly/wrapped land on device, thresholds honest,
-      Swift engine agrees with the JS engine on the seed corpus
-      *(harness built July 24 — `tools/parity/` + `EndpaperTests`, run with ⌘U;
-      271-day fixed corpus, 19 reference signals committed)*
+- [x] **Swift engine agrees with the JS engine** — ✅ July 27: parity suite
+      passed 4/4 on device (19 signals, zero failures, zero tie divergences)
+- [ ] Reflections: weekly/monthly/wrapped land on device, thresholds honest
+      (on-device QA §6 still to finish)
 - [ ] Settings complete; export produces a readable archive of real data
 - [ ] Trial → paywall → subscribe → restore all pass in sandbox
 - [ ] Two-device iCloud test passes; signed-out state degrades quietly
