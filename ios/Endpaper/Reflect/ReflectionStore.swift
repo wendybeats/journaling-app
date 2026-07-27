@@ -82,10 +82,13 @@ final class ReflectionStore {
 
     // MARK: Pending arrivals (one per visit; monthly wins — reflection.js)
 
-    /// The consent moment appears only once a recap could actually exist.
+    /// The consent moment appears as soon as there is any writing at all —
+    /// early enough that the user knows what's coming at the end of the
+    /// week, not a surprise after one. (Beta feedback July 2026; the web
+    /// prototype waited for a sufficient week.)
     func consentEligible(corpus: Corpus, now: Date = .now) -> Bool {
         guard state.consent == nil else { return false }
-        return Reflect.weeklySignal(start: Reflect.lastCompletedWeekStart(now: now), corpus: corpus).sufficient
+        return !corpus.byDay.isEmpty
     }
 
     /// The weekly reflection waiting to be shown, or nil (no consent /
@@ -126,10 +129,10 @@ final class ReflectionStore {
         state.archived.values.sorted { $0.boundaryKey() > $1.boundaryKey() }
     }
 
-    #if DEBUG
+    /// Wipes consent/seen/archived state. Reached only from the demo tools
+    /// (DEBUG + TestFlight builds); App Store builds surface no path to it.
     func resetAll() {
         state = State()
         persist()
     }
-    #endif
 }

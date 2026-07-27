@@ -139,7 +139,7 @@ struct ConsentCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.md) {
             Text("Reflections – Your Week").typeTitle()
-            Text("Where is your mind? See what your words say about you this week. Always private, for your eyes only")
+            Text("Where is your mind? At the end of each week, see what your words say about you. Always private, for your eyes only")
                 .typeWritten()
             HStack(spacing: Tokens.Space.lg) {
                 Button {

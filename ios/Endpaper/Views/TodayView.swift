@@ -89,13 +89,40 @@ struct TodayView: View {
             refresh()
             reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
                 && !ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
-            // Cursor ready — the app opens writable
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { writingFocused = true }
+            focusSoon()   // cursor ready — the app opens writable
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background || phase == .inactive { commit() }
+            if phase == .background || phase == .inactive {
+                commit()
+                // Release focus cleanly. Backgrounding tears the keyboard
+                // down behind SwiftUI's back; a FocusState left `true` with
+                // no keyboard silently eats every later tap on the field.
+                writingFocused = false
+            } else if phase == .active {
+                focusSoon()
+            }
         }
         .onDisappear { commit() }   // navigating away commits the session
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button {
+                    writingFocused = false
+                } label: {
+                    Text("Done").typeMeta()
+                }
+            }
+        }
+    }
+
+    /// Focus the writing surface once the view has settled. The false→true
+    /// hop forces a fresh first-responder request even if a previous focus
+    /// attempt raced a transition and left the state stuck.
+    private func focusSoon() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            writingFocused = false
+            DispatchQueue.main.async { writingFocused = true }
+        }
     }
 
     // MARK: - Writing surface

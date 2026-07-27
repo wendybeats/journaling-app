@@ -7,6 +7,8 @@ import LocalAuthentication
 
 struct LockView: View {
     var onUnlock: () -> Void
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var authInFlight = false
 
     var body: some View {
         VStack(spacing: Tokens.Space.lg) {
@@ -23,19 +25,31 @@ struct LockView: View {
         }
         .frame(maxWidth: .infinity)
         .background(Tokens.Surface.page.ignoresSafeArea())
-        .onAppear(perform: attempt)
+        // The lock usually mounts while the app is backgrounding — the
+        // system can't show an auth prompt then, and a prompt attempted
+        // there dies silently. Fire only when the scene is actually
+        // active, and re-fire on every return to foreground.
+        .onAppear { if scenePhase == .active { attempt() } }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { attempt() }
+        }
     }
 
     private func attempt() {
+        guard !authInFlight else { return }
         let context = LAContext()
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
             onUnlock()   // no passcode on the device — nothing to lock with
             return
         }
+        authInFlight = true
         context.evaluatePolicy(.deviceOwnerAuthentication,
                                localizedReason: "Unlock your notebook") { ok, _ in
-            if ok { DispatchQueue.main.async { onUnlock() } }
+            DispatchQueue.main.async {
+                authInFlight = false
+                if ok { onUnlock() }
+            }
         }
     }
 }

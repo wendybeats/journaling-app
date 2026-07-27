@@ -61,9 +61,9 @@ struct ArchiveView: View {
             }
             .id(seedStamp)
 
-            #if DEBUG
-            DebugSeedFooter { seedStamp += 1 }
-            #endif
+            if AppEnv.demoControls {
+                DebugSeedFooter { seedStamp += 1 }
+            }
         }
         .background(Tokens.Surface.page)
         .toolbar(.hidden, for: .navigationBar)
@@ -71,9 +71,10 @@ struct ArchiveView: View {
     }
 }
 
-#if DEBUG
-/// The prototype's footer control, iOS edition — demo data for testing.
-/// Debug builds only; never ships.
+/// The prototype's footer control, iOS edition — demo data so testers can
+/// exercise the calendar, reflections, and search without a year of writing.
+/// DEBUG + TestFlight only; App Store builds never show it. Clear removes
+/// only the seeded batch — real entries are untouchable.
 private struct DebugSeedFooter: View {
     @Environment(\.modelContext) private var context
     var onChange: () -> Void
@@ -91,7 +92,7 @@ private struct DebugSeedFooter: View {
                 DebugSeed.clear(in: context)
                 onChange()
             } label: {
-                Text("Clear").typeMetaSmall()
+                Text("Clear demo").typeMetaSmall()
             }
             .buttonStyle(.plain)
             Spacer()
@@ -100,4 +101,3 @@ private struct DebugSeedFooter: View {
         .padding(.vertical, Tokens.Space.sm)
     }
 }
-#endif

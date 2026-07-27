@@ -1,13 +1,31 @@
-// Demo data for testing — DEBUG builds only, triggered from the archive's
-// debug footer (the iOS twin of the web preview's "Seed demo / Clear").
-// A deterministic seeded RNG makes every run identical: roughly a year of
-// writing, 4–7 sessions on written days, occasional skipped days and a few
-// dry stretches so the dot matrices look lived-in. Topics recur on purpose —
-// the future reflection layer needs a corpus with actual threads in it.
+// Demo data for testing — DEBUG and TestFlight builds, triggered from the
+// archive's demo footer (the iOS twin of the web preview's "Seed demo /
+// Clear"). A deterministic seeded RNG makes every run identical: roughly a
+// year of writing, 4–7 sessions on written days, occasional skipped days and
+// a few dry stretches so the dot matrices look lived-in. Topics recur on
+// purpose — the reflection layer needs a corpus with actual threads in it.
+//
+// Seeded entries are tracked by id so Clear removes ONLY them — a tester's
+// real writing is never touched (permanence is the product; the demo tools
+// must not be a delete path for it).
 
-#if DEBUG
 import Foundation
 import SwiftData
+
+/// Which build is this? App Store builds hide the demo tools; DEBUG and
+/// TestFlight (sandbox receipt) show them.
+enum AppEnv {
+    static var isTestFlight: Bool {
+        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+    }
+    static var demoControls: Bool {
+        #if DEBUG
+        return true
+        #else
+        return isTestFlight
+        #endif
+    }
+}
 
 /// SplitMix64 — tiny, deterministic, good enough for demo data.
 private struct SeededRNG {
@@ -108,8 +126,11 @@ enum DebugSeed {
         return paragraphs.joined(separator: "\n\n")
     }
 
+    private static let seededIDsKey = "endpaper.demo.seededIDs"
+
     static func seed(in context: ModelContext) {
-        clear(in: context)
+        clear(in: context)   // removes a previous demo batch only
+        var seededIDs: [String] = []
         var rng = SeededRNG(seed: 0x5EED_0F_0E11)
 
         let cal = Calendar.current
@@ -134,20 +155,29 @@ enum DebugSeed {
                 let at = cal.date(byAdding: .minute, value: minuteOfDay, to: day)!
                 let entry = Entry(dayKey: DayFormat.key(for: at), at: at, text: sessionText(&rng))
                 context.insert(entry)
+                seededIDs.append(entry.id.uuidString)
                 minuteOfDay += rng.int(45...210)         // 45 min – 3.5 h between sessions
             }
         }
         try? context.save()
+        UserDefaults.standard.set(seededIDs, forKey: seededIDsKey)
     }
 
-    /// Debug-only escape hatch — the app itself has no delete path, by design.
+    /// Removes the seeded batch — and nothing else. The app itself has no
+    /// delete path, by design; real entries stay untouchable even here.
     /// Also resets reflection + reminder state so the consent card and
     /// pre-prompt choreography can be exercised again.
     static func clear(in context: ModelContext) {
-        try? context.delete(model: Entry.self)
-        try? context.save()
+        let ids = Set(UserDefaults.standard.stringArray(forKey: seededIDsKey) ?? [])
+        if !ids.isEmpty {
+            let all = (try? context.fetch(FetchDescriptor<Entry>())) ?? []
+            for entry in all where ids.contains(entry.id.uuidString) {
+                context.delete(entry)
+            }
+            try? context.save()
+        }
+        UserDefaults.standard.removeObject(forKey: seededIDsKey)
         ReflectionStore.shared.resetAll()
         UserDefaults.standard.removeObject(forKey: AppKeys.reminder)
     }
 }
-#endif
