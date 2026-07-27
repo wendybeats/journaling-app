@@ -180,4 +180,4 @@ all of D).
 | 2 | Crash reporting | None (no third-party SDKs); rely on Apple's opt-in crash reports in Xcode Organizer |
 | 3 | Export format | Markdown, one file per year, day-headed |
 | 4 | Reminder default time | 8:00 AM (Stage 2 assumption stands) |
-| 5 | Final price | $29.99/yr placeholder; decide at D4 with the pricing pass |
+| 5 | Final price | $29.99/yr placeholder. **Research done July 27** (docs/endpaper-pricing-research.md): market bands $18–24 / $36–50 / $60+; $29.99 sits in the gap at Bear's freemium-unlock price; hard-paywall comps all price premium. Recommendation: $34.99–39.99 annual-only, intro-offer headroom. Decide at D4 |
