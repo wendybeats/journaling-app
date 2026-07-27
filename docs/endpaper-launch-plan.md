@@ -1,4 +1,4 @@
-# Vellum — Launch Plan: From Prototype to the App Store
+# Endpaper — Launch Plan: From Prototype to the App Store
 
 **Version:** 1.0
 **Date:** July 24, 2026
