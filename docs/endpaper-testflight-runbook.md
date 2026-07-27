@@ -95,7 +95,7 @@ privacy/terms URLs are all in place.
 
 ## Known-remaining before *public* release (not beta blockers)
 
-- Pricing pass (final price on the product)
+- ~~Pricing pass~~ ✅ decided July 27: $39.99/yr annual-only
 - Store listing assets: screenshots (light+dark), description in the
   product's voice, keywords
 - Formal trademark screen on "Endpaper"
