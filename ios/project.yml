@@ -9,6 +9,25 @@ options:
     iOS: "17.0"
   createIntermediateGroups: true
 
+# One scheme for everything: ⌘R runs the app, ⌘U runs the parity suite.
+# (Without this, Xcode auto-creates a scheme per target and the test-only
+# scheme ends up selected after a test run — which can't ⌘R.)
+schemes:
+  Endpaper:
+    build:
+      targets:
+        Endpaper: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - EndpaperTests
+    profile:
+      config: Release
+    archive:
+      config: Release
+
 targets:
   Endpaper:
     type: application
