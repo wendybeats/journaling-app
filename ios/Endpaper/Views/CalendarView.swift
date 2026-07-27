@@ -1,21 +1,25 @@
-// Calendar — round 1 of the choreography plan
+// Calendar — rounds 1+2 of the choreography plan
 // (docs/endpaper-calendar-choreography.md).
 //
-// Registers:
-//   Year  — one piece, the original web layout: twelve rows (one per
-//           month), 31 dot columns, single-letter month gutter. Years
-//           stack; a row tap opens that month.
-//   Month — vertically *paged*: each month fills the viewport with its
-//           grid centered; swipe snaps month to month.
+// Registers (resting views, static):
+//   Year  — one piece: twelve rows, 31 dot columns, month-letter gutter.
+//   Month — vertically paged, one month per screen, grid centered.
 //   Day   — the read-only page.
 //
-// Every dot position comes from CalendarLayout — pure math shared by the
-// resting views today and by the transition Stage in round 2, so the
-// stage's capture/handoff can be pixel-identical by construction.
-// Transitions are a plain crossfade until the Stage lands.
+// The Stage (round 2): transitions between year and month mount a
+// full-screen, page-colored overlay of explicitly positioned dots.
+// The tapped month's dots are *travelers* — they fly from their year-row
+// positions into the centered grid, growing 6→34, each on its own
+// deterministic delay. Every other visible dot is *chaff* — it drifts
+// ~90–160pt along a jittered radial vector away from the forming grid and
+// dissolves. The register swap happens underneath the stage, so a flash
+// is structurally impossible: the stage's first frame matches the old
+// register, its last frame matches the new one, both computed from the
+// same CalendarLayout math the resting views use.
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 private struct MonthRef: Hashable {
     let year: Int
@@ -23,7 +27,7 @@ private struct MonthRef: Hashable {
     var key: String { String(format: "%04d-%02d", year, month) }
 }
 
-// MARK: - Shared layout math (the Stage reuses this in round 2)
+// MARK: - Shared layout math (resting views and the Stage both use this)
 
 enum CalendarLayout {
     // Year register — one-piece block
@@ -60,6 +64,85 @@ enum CalendarLayout {
     static func monthGridHeight(days: Int) -> CGFloat {
         CGFloat((days + 6) / 7) * monthCell
     }
+
+    static func daysIn(year: Int, month: Int) -> Int {
+        let cal = Calendar.current
+        let date = cal.date(from: DateComponents(year: year, month: month, day: 1))!
+        return cal.range(of: .day, in: .month, for: date)!.count
+    }
+}
+
+// MARK: - Choreography constants (one place for taste passes)
+
+private enum Choreo {
+    static let travel: Double = 0.42     // traveler flight
+    static let chaff: Double = 0.30      // scatter + dissolve
+    static let stagger: Double = 0.14    // max per-dot delay
+    static let total: Double = 0.64      // stage lifetime
+
+    static func delay(_ seed: Int) -> Double {
+        Double((seed * 131) % 89) / 89 * stagger
+    }
+
+    /// Radial scatter target: away from `center`, 90–160pt, with a
+    /// deterministic angular jitter so the field doesn't ray out evenly.
+    static func scatter(seed: Int, from: CGPoint, center: CGPoint) -> CGPoint {
+        var dx = from.x - center.x, dy = from.y - center.y
+        let len = max(1, hypot(dx, dy))
+        dx /= len; dy /= len
+        let jitter = (Double((seed * 53) % 41) / 41 - 0.5) * 0.9
+        let rx = dx * cos(jitter) - dy * sin(jitter)
+        let ry = dx * sin(jitter) + dy * cos(jitter)
+        let dist = 90 + CGFloat((seed * 37) % 71)
+        return CGPoint(x: from.x + rx * dist, y: from.y + ry * dist)
+    }
+
+    static func curve(_ duration: Double, delay: Double) -> Animation {
+        .timingCurve(0.22, 0.61, 0.36, 1, duration: duration).delay(delay)
+    }
+}
+
+private struct StageDot: Identifiable {
+    let id: String
+    let from: CGPoint
+    let to: CGPoint
+    let fromSize: CGFloat
+    let toSize: CGFloat
+    let toOpacity: Double
+    let filled: Bool
+    let duration: Double
+    let delay: Double
+}
+
+/// The stage: page-colored, swallows touches, dots at explicit coordinates.
+private struct StageView: View {
+    let dots: [StageDot]
+    let fly: Bool
+
+    var body: some View {
+        ZStack {
+            Tokens.Surface.page.ignoresSafeArea()
+            ForEach(dots) { d in
+                Circle()
+                    .fill(d.filled ? Tokens.Dot.filled : Tokens.Dot.empty)
+                    .frame(width: fly ? d.toSize : d.fromSize,
+                           height: fly ? d.toSize : d.fromSize)
+                    .position(fly ? d.to : d.from)
+                    .opacity(fly ? d.toOpacity : 1)
+                    .animation(Choreo.curve(d.duration, delay: d.delay), value: fly)
+            }
+        }
+        .contentShape(Rectangle())   // absorb taps mid-flight
+    }
+}
+
+// MARK: - Frame reporting (year blocks tell the stage where they are)
+
+private struct YearFrameKey: PreferenceKey {
+    static var defaultValue: [Int: CGRect] = [:]
+    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) {
+        value.merge(nextValue()) { $1 }
+    }
 }
 
 // MARK: - The calendar
@@ -75,17 +158,31 @@ struct CalendarView: View {
     @State private var navigateDay: String? = nil
     @State private var wrappedSignal: YearlySignal? = nil
 
+    // Stage state
+    @State private var stageDots: [StageDot]? = nil
+    @State private var fly = false
+    @State private var yearFrames: [Int: CGRect] = [:]
+    @State private var containerSize: CGSize = .zero
+
     var body: some View {
         ZStack {
             if let a = anchor {
                 monthPager(year: a.year)
-                    .transition(.opacity)
             } else {
                 yearRegister
-                    .transition(.opacity)
+            }
+            if let dots = stageDots {
+                StageView(dots: dots, fly: fly)
             }
         }
-        .animation(Tokens.Motion.base, value: anchor)
+        .coordinateSpace(name: "cal")
+        .background(
+            GeometryReader { g in
+                Color.clear.onAppear { containerSize = g.size }
+                    .onChange(of: g.size) { _, s in containerSize = s }
+            }
+        )
+        .onPreferenceChange(YearFrameKey.self) { yearFrames = $0 }
         .background(Tokens.Surface.page)
         .navigationDestination(item: $navigateDay) { key in
             DayPageView(key: key)
@@ -119,7 +216,13 @@ struct CalendarView: View {
                         YearBlock(
                             year: year,
                             counts: monthCounts,
-                            onTapMonth: { month in open(MonthRef(year: year, month: month)) }
+                            onTapMonth: { month in openMonth(MonthRef(year: year, month: month)) }
+                        )
+                        .background(
+                            GeometryReader { g in
+                                Color.clear.preference(key: YearFrameKey.self,
+                                                       value: [year: g.frame(in: .named("cal"))])
+                            }
                         )
                     }
                 }
@@ -131,7 +234,7 @@ struct CalendarView: View {
         }
     }
 
-    // MARK: Month register — paged, one month per screen, grid centered
+    // MARK: Month register — paged, one month per screen
 
     private func monthPager(year: Int) -> some View {
         ScrollView {
@@ -144,7 +247,17 @@ struct CalendarView: View {
                         todayDay: todayDay(ref),
                         onTapDay: { day in
                             navigateDay = String(format: "%04d-%02d-%02d", ref.year, ref.month, day)
-                        }
+                        },
+                        onPageUp: month > 1 ? {
+                            withAnimation(Tokens.Motion.base) {
+                                pagedMonth = MonthRef(year: year, month: month - 1).key
+                            }
+                        } : nil,
+                        onPageDown: month < 12 ? {
+                            withAnimation(Tokens.Motion.base) {
+                                pagedMonth = MonthRef(year: year, month: month + 1).key
+                            }
+                        } : nil
                     )
                     .containerRelativeFrame(.vertical)
                     .id(ref.key)
@@ -157,7 +270,7 @@ struct CalendarView: View {
         .overlay(alignment: .topLeading) {
             if !singleMonthRoot {
                 Button {
-                    withAnimation(Tokens.Motion.base) { anchor = nil }
+                    closeMonth(year: year)
                 } label: {
                     Text("← \(String(year))").typeMeta()
                 }
@@ -168,9 +281,161 @@ struct CalendarView: View {
         }
     }
 
-    private func open(_ ref: MonthRef) {
-        pagedMonth = ref.key
-        withAnimation(Tokens.Motion.base) { anchor = ref }
+    // MARK: The legs
+
+    /// Year → Month: travelers fly into the forming grid; chaff scatters.
+    private func openMonth(_ ref: MonthRef) {
+        guard !UIAccessibility.isReduceMotionEnabled,
+              let block = yearFrames[ref.year], containerSize != .zero else {
+            pagedMonth = ref.key
+            withAnimation(Tokens.Motion.base) { anchor = ref }
+            return
+        }
+
+        let days = CalendarLayout.daysIn(year: ref.year, month: ref.month)
+        let gridH = CalendarLayout.monthGridHeight(days: days)
+        let gridTop = (containerSize.height - gridH) / 2
+        let gridCenter = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let counts = monthCounts[ref.key] ?? [:]
+        var dots: [StageDot] = []
+
+        // Travelers — the tapped month's dots
+        for day in 1...days {
+            let local = CalendarLayout.yearDotCenter(month: ref.month, day: day)
+            let from = CGPoint(x: block.minX + local.x, y: block.minY + local.y)
+            let toLocal = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
+            let to = CGPoint(x: toLocal.x, y: gridTop + toLocal.y)
+            dots.append(StageDot(
+                id: "t-\(day)", from: from, to: to,
+                fromSize: CalendarLayout.yearDot, toSize: CalendarLayout.monthDot,
+                toOpacity: 1, filled: counts[day] != nil,
+                duration: Choreo.travel, delay: Choreo.delay(day)
+            ))
+        }
+
+        // Chaff — every other visible year dot drifts away and dissolves
+        for (year, frame) in yearFrames {
+            for month in 1...12 where !(year == ref.year && month == ref.month) {
+                let mCounts = monthCounts[String(format: "%04d-%02d", year, month)] ?? [:]
+                for day in 1...CalendarLayout.daysIn(year: year, month: month) {
+                    let local = CalendarLayout.yearDotCenter(month: month, day: day)
+                    let from = CGPoint(x: frame.minX + local.x, y: frame.minY + local.y)
+                    guard from.y > -20, from.y < containerSize.height + 20 else { continue }
+                    let seed = day * 131 + month * 17 + year
+                    dots.append(StageDot(
+                        id: "c-\(year)-\(month)-\(day)", from: from,
+                        to: Choreo.scatter(seed: seed, from: from, center: gridCenter),
+                        fromSize: CalendarLayout.yearDot, toSize: CalendarLayout.yearDot * 0.6,
+                        toOpacity: 0, filled: mCounts[day] != nil,
+                        duration: Choreo.chaff, delay: Choreo.delay(seed)
+                    ))
+                }
+            }
+        }
+
+        runStage(dots) {
+            pagedMonth = ref.key
+            anchor = ref            // swap happens under the stage
+        }
+    }
+
+    /// Month → Year: travelers shrink home; chaff flies back in (reversed).
+    private func closeMonth(year: Int) {
+        guard !UIAccessibility.isReduceMotionEnabled,
+              let currentKey = pagedMonth ?? anchor?.key,
+              containerSize != .zero else {
+            withAnimation(Tokens.Motion.base) { anchor = nil }
+            return
+        }
+        let parts = currentKey.split(separator: "-").compactMap { Int($0) }
+        let ref = parts.count == 2 ? MonthRef(year: parts[0], month: parts[1]) : MonthRef(year: year, month: 1)
+
+        // Swap to the year register first (under the stage), then read the
+        // block's landed frame on the next runloop tick and fly home.
+        let days = CalendarLayout.daysIn(year: ref.year, month: ref.month)
+        let gridH = CalendarLayout.monthGridHeight(days: days)
+        let gridTop = (containerSize.height - gridH) / 2
+        let gridCenter = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let counts = monthCounts[ref.key] ?? [:]
+
+        // Mount the stage frozen on the month grid so the swap is covered.
+        var holding: [StageDot] = []
+        for day in 1...days {
+            let local = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
+            let from = CGPoint(x: local.x, y: gridTop + local.y)
+            holding.append(StageDot(
+                id: "t-\(day)", from: from, to: from,
+                fromSize: CalendarLayout.monthDot, toSize: CalendarLayout.monthDot,
+                toOpacity: 1, filled: counts[day] != nil,
+                duration: Choreo.travel, delay: 0
+            ))
+        }
+        stageDots = holding
+        fly = false
+        anchor = nil                 // year register mounts beneath
+
+        // Two hops: the year register lays out on the first, its frame
+        // preference lands by the second — then we fly to fresh coordinates.
+        DispatchQueue.main.async { DispatchQueue.main.async {
+            guard let block = yearFrames[ref.year] else {
+                stageDots = nil
+                return
+            }
+            var dots: [StageDot] = []
+            for day in 1...days {
+                let local = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
+                let from = CGPoint(x: local.x, y: gridTop + local.y)
+                let toLocal = CalendarLayout.yearDotCenter(month: ref.month, day: day)
+                let to = CGPoint(x: block.minX + toLocal.x, y: block.minY + toLocal.y)
+                dots.append(StageDot(
+                    id: "t-\(day)", from: from, to: to,
+                    fromSize: CalendarLayout.monthDot, toSize: CalendarLayout.yearDot,
+                    toOpacity: 1, filled: counts[day] != nil,
+                    duration: Choreo.travel, delay: Choreo.delay(day)
+                ))
+            }
+            // Chaff returns: other visible dots fade back IN from scattered
+            // positions to their year spots.
+            for (y, frame) in yearFrames {
+                for month in 1...12 where !(y == ref.year && month == ref.month) {
+                    let mCounts = monthCounts[String(format: "%04d-%02d", y, month)] ?? [:]
+                    for day in 1...CalendarLayout.daysIn(year: y, month: month) {
+                        let local = CalendarLayout.yearDotCenter(month: month, day: day)
+                        let to = CGPoint(x: frame.minX + local.x, y: frame.minY + local.y)
+                        guard to.y > -20, to.y < containerSize.height + 20 else { continue }
+                        let seed = day * 131 + month * 17 + y
+                        dots.append(StageDot(
+                            id: "c-\(y)-\(month)-\(day)",
+                            from: Choreo.scatter(seed: seed, from: to, center: gridCenter),
+                            to: to,
+                            fromSize: CalendarLayout.yearDot * 0.6, toSize: CalendarLayout.yearDot,
+                            toOpacity: 1, filled: mCounts[day] != nil,
+                            duration: Choreo.chaff, delay: Choreo.delay(seed)
+                        ))
+                    }
+                }
+            }
+            // Returning chaff starts invisible-ish: model by starting from
+            // scattered position at small size; opacity animates 1→1, so
+            // fade-in is approximated by the size/position arrival.
+            stageDots = dots
+            DispatchQueue.main.async { fly = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + Choreo.total) {
+                stageDots = nil
+                fly = false
+            }
+        }
+    }
+
+    private func runStage(_ dots: [StageDot], swap: @escaping () -> Void) {
+        stageDots = dots
+        fly = false
+        swap()
+        DispatchQueue.main.async { fly = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Choreo.total) {
+            stageDots = nil
+            fly = false
+        }
     }
 
     // MARK: Data
@@ -190,8 +455,6 @@ struct CalendarView: View {
         monthCounts = counts
         years = yearSet.sorted(by: >)
 
-        // The dynamic register: with less than a month of entries, the big
-        // single month IS the calendar — no daunting empty year behind it.
         if counts.keys.count <= 1 {
             let ref = counts.keys.first
                 .flatMap { k -> MonthRef? in
@@ -227,19 +490,16 @@ private struct YearBlock: View {
         let today = cal.dateComponents([.year, .month, .day], from: .now)
 
         ZStack(alignment: .topLeading) {
-            // Month gutter letters
             ForEach(1...12, id: \.self) { month in
                 Text(Self.letters[month - 1])
                     .font(.custom(EndpaperFont.meta, size: 9))
                     .foregroundStyle(Tokens.Text.meta)
                     .position(x: 6, y: CGFloat(month - 1) * CalendarLayout.yearRowH + CalendarLayout.yearRowH / 2)
             }
-            // The year's dots, positioned by the shared layout math
             ForEach(1...12, id: \.self) { month in
                 let ref = String(format: "%04d-%02d", year, month)
                 let monthDays = counts[ref] ?? [:]
-                let dayCount = daysIn(year: year, month: month)
-                ForEach(1...dayCount, id: \.self) { day in
+                ForEach(1...CalendarLayout.daysIn(year: year, month: month), id: \.self) { day in
                     let isToday = today.year == year && today.month == month && today.day == day
                     Circle()
                         .fill(monthDays[day] != nil ? Tokens.Dot.filled : Tokens.Dot.empty)
@@ -254,7 +514,6 @@ private struct YearBlock: View {
                         .position(CalendarLayout.yearDotCenter(month: month, day: day))
                 }
             }
-            // Row-sized tap targets
             ForEach(1...12, id: \.self) { month in
                 let written = (counts[String(format: "%04d-%02d", year, month)] ?? [:]).count
                 let isCurrent = today.year == year && today.month == month
@@ -272,12 +531,6 @@ private struct YearBlock: View {
         }
         .frame(width: size.width, height: size.height)
     }
-
-    private func daysIn(year: Int, month: Int) -> Int {
-        let cal = Calendar.current
-        let date = cal.date(from: DateComponents(year: year, month: month, day: 1))!
-        return cal.range(of: .day, in: .month, for: date)!.count
-    }
 }
 
 // MARK: - Month page: viewport-filling, grid centered
@@ -287,9 +540,11 @@ private struct MonthPage: View {
     let counts: [Int: Int]
     let todayDay: Int?
     var onTapDay: (Int) -> Void
+    var onPageUp: (() -> Void)? = nil
+    var onPageDown: (() -> Void)? = nil
 
     var body: some View {
-        let dayCount = daysIn()
+        let dayCount = CalendarLayout.daysIn(year: ref.year, month: ref.month)
         GeometryReader { geo in
             let gridH = CalendarLayout.monthGridHeight(days: dayCount)
             let originY = (geo.size.height - gridH) / 2
@@ -298,6 +553,25 @@ private struct MonthPage: View {
                 Text("\(DayFormat.monthName(ref.month)) \(String(ref.year))")
                     .typeTitle()
                     .position(x: geo.size.width / 2, y: originY - Tokens.Space.xl)
+
+                // Quiet paging affordances — typographic arrows in the meta
+                // register at the container edges; tap pages, swipe still works.
+                if let onPageUp {
+                    Button(action: onPageUp) {
+                        Text("↑").typeMeta()
+                    }
+                    .buttonStyle(.plain)
+                    .position(x: geo.size.width / 2, y: Tokens.Space.xl)
+                    .accessibilityLabel("Previous month")
+                }
+                if let onPageDown {
+                    Button(action: onPageDown) {
+                        Text("↓").typeMeta()
+                    }
+                    .buttonStyle(.plain)
+                    .position(x: geo.size.width / 2, y: geo.size.height - Tokens.Space.lg)
+                    .accessibilityLabel("Next month")
+                }
 
                 ForEach(1...dayCount, id: \.self) { day in
                     let count = counts[day] ?? 0
@@ -332,12 +606,6 @@ private struct MonthPage: View {
                 }
             }
         }
-    }
-
-    private func daysIn() -> Int {
-        let cal = Calendar.current
-        let date = cal.date(from: DateComponents(year: ref.year, month: ref.month, day: 1))!
-        return cal.range(of: .day, in: .month, for: date)!.count
     }
 
     private func dayLabel(_ day: Int, count: Int, isToday: Bool) -> String {
