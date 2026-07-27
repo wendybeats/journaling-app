@@ -268,7 +268,7 @@ private struct TrialSlide: View {
             Text("A week, on me.")
                 .typeDisplay()
                 .multilineTextAlignment(.center)
-            Text("Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.")
+            Text("Every page, every reflection, free for seven days. After that, Endpaper is $39.99 a year — about the price of one good paper notebook.")
                 .typeWritten()
                 .multilineTextAlignment(.center)
 
@@ -287,7 +287,7 @@ private struct TrialSlide: View {
             }
             .padding(.top, Tokens.Space.lg)
 
-            Text("$29.99/year after trial · cancel anytime").typeMetaSmall()
+            Text("$39.99/year after trial · cancel anytime").typeMetaSmall()
 
             Button {
                 Task {

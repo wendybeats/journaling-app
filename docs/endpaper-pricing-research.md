@@ -48,8 +48,11 @@ first experiment if trial→paid conversion underperforms. If $29.99 is
 kept, treat it as a deliberate penetration price with a planned raise,
 not the anchor.
 
-**Decision: Wendell's, at the D4 pricing pass** (the product isn't
-created until then; nothing blocks on this today).
+**Decision — Wendell, July 27: $39.99/yr, annual-only, no monthly.**
+Rationale: Endpaper is marketed as a lifestyle; locking in (one annual
+commitment, no monthly escape hatch) matches the committed-practice
+positioning. Intro-offer headroom ($29.99 first year) stays in reserve
+as the first conversion lever.
 
 *Unverified: Journey/Stoic lifetime prices, Day One monthly, Journey
 trial length, Waking Up sticker conflict, Reflectly platform split,

@@ -49,7 +49,7 @@ speaking. No feature-matrix language, no exclamation points.
 >
 > A WEEK, ON ME
 > Every page and every reflection, free for seven days. After that,
-> Endpaper is $29.99 a year — about the price of one good paper notebook.
+> Endpaper is $39.99 a year — about the price of one good paper notebook.
 >
 > ---
 >
@@ -79,7 +79,7 @@ set in Instrument Sans Medium above — same system as the site hero.
 
 > Endpaper is a private journaling app with no account system — the
 > reviewer can use every feature immediately after the onboarding
-> sequence. The subscription (7-day free trial → $29.99/year) starts
+> sequence. The subscription (7-day free trial → $39.99/year) starts
 > from the final onboarding screen ("A week, on me.").
 >
 > There is deliberately no way to edit or delete a committed entry —

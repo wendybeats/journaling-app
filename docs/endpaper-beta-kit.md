@@ -52,7 +52,7 @@ Everything the TestFlight beta needs besides the build.
 3. The weekly reflection: did it feel like you? Anything that felt off,
    reachy, or wrong?
 4. What almost made you stop opening it?
-5. Would you pay $29.99/year at the end of the trial? If not — what's
+5. Would you pay $39.99/year at the end of the trial? If not — what's
    the number, or what's missing?
 
 ## Beta logistics

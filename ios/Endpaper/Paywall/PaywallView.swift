@@ -49,6 +49,6 @@ struct PaywallView: View {
     }
 
     private var priceLine: String {
-        gate.product?.displayPrice.appending(" a year") ?? "$29.99 a year"
+        gate.product?.displayPrice.appending(" a year") ?? "$39.99 a year"
     }
 }

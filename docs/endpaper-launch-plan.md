@@ -13,7 +13,7 @@ TestFlight beta.
 
 | Question | Decision |
 |---|---|
-| Launch pricing | **Keep the July 8 model: 7-day free trial → $29.99/yr, hard paywall, no freemium.** Monetization ships at launch, not V2. Price stays placeholder until the pre-submission pricing pass. |
+| Launch pricing | **7-day free trial → $39.99/yr, hard paywall, no freemium, annual-only.** (Decided July 27 after the pricing research: lifestyle positioning, locking in is the play. Supersedes the $29.99 placeholder.) Monetization ships at launch, not V2. |
 | Reflections at launch | **On-device deterministic only** — the engine the web prototype already proves (weekly / monthly / wrapped, quote-first, honest thresholds). Claude-written narrative is post-launch (R5), and with it the only backend the product would ever need. |
 | Backend | **None.** CloudKit private DB is Apple-hosted; notifications are local; reflections are on-device. There is no server, no account system, no analytics service. This is a launch *feature* — the privacy label reads "Data Not Collected." |
 | First milestone | **TestFlight beta**, then public launch. Store assets and review prep trail the beta instead of blocking it. |
@@ -180,4 +180,4 @@ all of D).
 | 2 | Crash reporting | None (no third-party SDKs); rely on Apple's opt-in crash reports in Xcode Organizer |
 | 3 | Export format | Markdown, one file per year, day-headed |
 | 4 | Reminder default time | 8:00 AM (Stage 2 assumption stands) |
-| 5 | Final price | $29.99/yr placeholder. **Research done July 27** (docs/endpaper-pricing-research.md): market bands $18–24 / $36–50 / $60+; $29.99 sits in the gap at Bear's freemium-unlock price; hard-paywall comps all price premium. Recommendation: $34.99–39.99 annual-only, intro-offer headroom. Decide at D4 |
+| 5 | Final price | ✅ **Decided July 27: $39.99/yr, annual-only, no monthly.** Research in docs/endpaper-pricing-research.md (market bands $18–24 / $36–50 / $60+; hard-paywall comps all price premium). Wendell's call: marketed as a lifestyle, locking in is the right play. Intro-offer headroom ($29.99 first year) held in reserve as the first lever if trial conversion underperforms |

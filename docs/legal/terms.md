@@ -18,7 +18,7 @@ iCloud. We operate no server and hold no copy of your writing (see the
 ## 2. Subscription and trial
 
 - Endpaper is a paid subscription with a **7-day free trial**. After the
-  trial, the subscription is **[$29.99 per year]** (the exact price in
+  trial, the subscription is **[$39.99 per year]** (the exact price in
   your currency is shown in the App Store before you confirm).
 - The subscription is billed to your Apple ID and **renews automatically**
   unless you cancel at least 24 hours before the end of the current

@@ -149,7 +149,7 @@ export function showOnboarding() {
 
       center.appendChild(el('h1', 'type-display recap-big', 'A week, on me.'));
       center.appendChild(el('p', 'onboard-body',
-        'Every page, every reflection, free for seven days. After that, Endpaper is $29.99 a year — about the price of one good paper notebook.'));
+        'Every page, every reflection, free for seven days. After that, Endpaper is $39.99 a year — about the price of one good paper notebook.'));
 
       const start = el('button', 'account-btn primary', 'Start my free week');
       start.type = 'button';
@@ -162,7 +162,7 @@ export function showOnboarding() {
       center.appendChild(stack);
 
       center.appendChild(el('div', 'type-meta-small trial-terms',
-        '$29.99/year after trial · cancel anytime'));
+        '$39.99/year after trial · cancel anytime'));
 
       const restore = el('button', 'type-meta-small trial-restore', 'Restore purchase');
       restore.type = 'button';

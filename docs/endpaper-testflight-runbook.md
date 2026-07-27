@@ -41,8 +41,8 @@ privacy/terms URLs are all in place.
 1. App → Monetization → Subscriptions → create group **Endpaper**.
 2. Auto-renewable subscription: reference name **Endpaper Yearly**,
    product ID **`com.wendellbarton.endpaper.yearly`** (must match
-   `TrialGate.yearlyID` exactly), duration 1 year, price $29.99 (final
-   price = the pricing pass; changing it later is fine).
+   `TrialGate.yearlyID` exactly), duration 1 year, price **$39.99**
+   (decided July 27: annual-only, no monthly).
 3. **Introductory offer**: Free, 7 days, one per Apple ID.
 4. Localization: display name "Endpaper Yearly", description "Every page,
    every reflection."
