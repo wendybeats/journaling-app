@@ -1,14 +1,18 @@
-// Calendar — dynamic by how much has been written (July 27 gameplan):
-//   < 1 month of entries  → one big month calendar, nothing else
-//   more months           → the year breakdown (twelve mini matrices)
-//   a year or more        → year sections stack (months over days)
+// Calendar — round 1 of the choreography plan
+// (docs/endpaper-calendar-choreography.md).
 //
-// The morph (July 28): every day-dot is its own matchedGeometryEffect pair,
-// so tapping a month sends each dot flying from its mini-matrix position to
-// its month-grid position while growing 5 → 34 px. A deterministic per-dot
-// delay staggers the flight — dots pulled magnetically, not moved as one
-// block. The month register is a scrollable list of the year's months,
-// landing on the tapped month with its neighbors above and below.
+// Registers:
+//   Year  — one piece, the original web layout: twelve rows (one per
+//           month), 31 dot columns, single-letter month gutter. Years
+//           stack; a row tap opens that month.
+//   Month — vertically *paged*: each month fills the viewport with its
+//           grid centered; swipe snaps month to month.
+//   Day   — the read-only page.
+//
+// Every dot position comes from CalendarLayout — pure math shared by the
+// resting views today and by the transition Stage in round 2, so the
+// stage's capture/handoff can be pixel-identical by construction.
+// Transitions are a plain crossfade until the Stage lands.
 
 import SwiftUI
 import SwiftData
@@ -19,44 +23,42 @@ private struct MonthRef: Hashable {
     var key: String { String(format: "%04d-%02d", year, month) }
 }
 
-// MARK: - The shared dot (both registers match on "yyyy-MM-d")
+// MARK: - Shared layout math (the Stage reuses this in round 2)
 
-private struct CalDot: View {
-    let ref: MonthRef
-    let day: Int
-    let size: CGFloat
-    let written: Bool
-    let isToday: Bool
-    let count: Int          // shown faintly on the big register only
-    let ns: Namespace.ID
+enum CalendarLayout {
+    // Year register — one-piece block
+    static let yearDot: CGFloat = 6
+    static let yearGapX: CGFloat = 4.4
+    static let yearRowH: CGFloat = 17
+    static let yearGutter: CGFloat = 20
 
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(written ? Tokens.Dot.filled : Tokens.Dot.empty)
-                .overlay {
-                    if isToday && size > 20 {
-                        Circle()
-                            .strokeBorder(Tokens.Dot.today, lineWidth: Tokens.DotSize.todayRing)
-                            .padding(-(Tokens.DotSize.todayRing + Tokens.DotSize.todayRingOffset))
-                    }
-                }
-            if written && count > 0 && size > 20 {
-                Text("\(count)")
-                    .font(.custom(EndpaperFont.meta, size: 9))
-                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.75))
-                    .transition(.opacity)
-            }
-        }
-        .frame(width: size, height: size)
-        .matchedGeometryEffect(id: "\(ref.key)-\(day)", in: ns)
-        // The magnetic stagger: each dot keeps the house curve but departs
-        // a beat apart, deterministically per day.
-        .transaction { t in
-            if t.animation != nil {
-                t.animation = Tokens.Motion.base.delay(Double((day * 131 + ref.month * 17) % 89) / 89.0 * 0.12)
-            }
-        }
+    static func yearDotCenter(month: Int, day: Int) -> CGPoint {
+        CGPoint(
+            x: yearGutter + CGFloat(day - 1) * (yearDot + yearGapX) + yearDot / 2,
+            y: CGFloat(month - 1) * yearRowH + yearRowH / 2
+        )
+    }
+    static var yearBlockSize: CGSize {
+        CGSize(width: yearGutter + 31 * yearDot + 30 * yearGapX, height: 12 * yearRowH)
+    }
+
+    // Month register — centered grid
+    static let monthCell: CGFloat = 46
+    static let monthDot: CGFloat = 34
+    static let monthDotToday: CGFloat = 40
+
+    static func monthDotCenter(day: Int, in width: CGFloat) -> CGPoint {
+        let col = (day - 1) % 7
+        let row = (day - 1) / 7
+        let gridW = 7 * monthCell
+        let x0 = (width - gridW) / 2
+        return CGPoint(
+            x: x0 + CGFloat(col) * monthCell + monthCell / 2,
+            y: CGFloat(row) * monthCell + monthCell / 2
+        )
+    }
+    static func monthGridHeight(days: Int) -> CGFloat {
+        CGFloat((days + 6) / 7) * monthCell
     }
 }
 
@@ -64,34 +66,26 @@ private struct CalDot: View {
 
 struct CalendarView: View {
     @Environment(\.modelContext) private var context
-    @Namespace private var morph
 
-    // "yyyy-MM" → day-of-month → entry count
     @State private var monthCounts: [String: [Int: Int]] = [:]
     @State private var years: [Int] = []
     @State private var anchor: MonthRef? = nil       // nil = year register
     @State private var singleMonthRoot = false
-    @State private var scrolledMonth: String? = nil
+    @State private var pagedMonth: String? = nil
     @State private var navigateDay: String? = nil
     @State private var wrappedSignal: YearlySignal? = nil
 
     var body: some View {
-        ScrollView {
-            Group {
-                if let a = anchor {
-                    monthsList(year: a.year)
-                        .transition(.opacity)
-                } else {
-                    yearsList
-                        .transition(.opacity)
-                }
+        ZStack {
+            if let a = anchor {
+                monthPager(year: a.year)
+                    .transition(.opacity)
+            } else {
+                yearRegister
+                    .transition(.opacity)
             }
-            .padding(.horizontal, Tokens.Space.screenX)
-            .padding(.top, Tokens.Space.md)
-            .padding(.bottom, Tokens.Space.xxl)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .scrollPosition(id: $scrolledMonth, anchor: .top)
+        .animation(Tokens.Motion.base, value: anchor)
         .background(Tokens.Surface.page)
         .navigationDestination(item: $navigateDay) { key in
             DayPageView(key: key)
@@ -102,128 +96,81 @@ struct CalendarView: View {
         .onAppear(perform: load)
     }
 
-    private func open(_ ref: MonthRef) {
-        scrolledMonth = ref.key                      // land the list on the tapped month
-        withAnimation(Tokens.Motion.base) { anchor = ref }
-    }
+    // MARK: Year register — one piece per year
 
-    private func close() {
-        scrolledMonth = nil
-        withAnimation(Tokens.Motion.base) { anchor = nil }
-    }
-
-    // MARK: Year register
-
-    private var yearsList: some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.xl) {
-            ForEach(years, id: \.self) { year in
-                yearSection(year)
+    private var yearRegister: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.xl) {
+                ForEach(years, id: \.self) { year in
+                    VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                        HStack {
+                            Text(String(year)).typeMeta()
+                            Spacer()
+                            if ReflectionStore.shared.consent == "yes" {
+                                Button {
+                                    let corpus = ReflectionStore.corpus(from: context)
+                                    wrappedSignal = Reflect.yearlySignal(year: year, corpus: corpus)
+                                } label: {
+                                    Text("Your year →").typeMetaSmall()
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        YearBlock(
+                            year: year,
+                            counts: monthCounts,
+                            onTapMonth: { month in open(MonthRef(year: year, month: month)) }
+                        )
+                    }
+                }
             }
+            .padding(.horizontal, Tokens.Space.screenX)
+            .padding(.top, Tokens.Space.md)
+            .padding(.bottom, Tokens.Space.xxl)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private func yearSection(_ year: Int) -> some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            HStack {
-                Text(String(year)).typeMeta()
-                Spacer()
-                if ReflectionStore.shared.consent == "yes" {
-                    Button {
-                        let corpus = ReflectionStore.corpus(from: context)
-                        wrappedSignal = Reflect.yearlySignal(year: year, corpus: corpus)
-                    } label: {
-                        Text("Your year →").typeMetaSmall()
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+    // MARK: Month register — paged, one month per screen, grid centered
 
-            let columns = Array(repeating: GridItem(.flexible(), spacing: Tokens.Space.md, alignment: .topLeading), count: 3)
-            LazyVGrid(columns: columns, alignment: .leading, spacing: Tokens.Space.lg) {
+    private func monthPager(year: Int) -> some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
                 ForEach(1...12, id: \.self) { month in
                     let ref = MonthRef(year: year, month: month)
-                    miniMonth(ref)
+                    MonthPage(
+                        ref: ref,
+                        counts: monthCounts[ref.key] ?? [:],
+                        todayDay: todayDay(ref),
+                        onTapDay: { day in
+                            navigateDay = String(format: "%04d-%02d-%02d", ref.year, ref.month, day)
+                        }
+                    )
+                    .containerRelativeFrame(.vertical)
+                    .id(ref.key)
                 }
             }
         }
-    }
-
-    private func miniMonth(_ ref: MonthRef) -> some View {
-        let counts = monthCounts[ref.key] ?? [:]
-        let mini = Tokens.DotSize.year
-        let gap = Tokens.DotSize.gapYear
-        let columns = Array(repeating: GridItem(.fixed(mini), spacing: gap), count: Tokens.DotSize.gridCols)
-
-        return VStack(alignment: .leading, spacing: Tokens.Space.xs) {
-            LazyVGrid(columns: columns, spacing: gap) {
-                ForEach(1...daysIn(ref), id: \.self) { day in
-                    CalDot(ref: ref, day: day, size: mini,
-                           written: counts[day] != nil,
-                           isToday: false, count: 0, ns: morph)
-                }
-            }
-            .accessibilityHidden(true)
-            Text(DayFormat.monthAbbr(ref.month)).typeMetaSmall()
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            guard !counts.isEmpty || isCurrentMonth(ref) else { return }
-            open(ref)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(DayFormat.monthName(ref.month)) \(String(ref.year)), \(counts.count) days written")
-        .accessibilityAddTraits(counts.isEmpty && !isCurrentMonth(ref) ? [] : .isButton)
-    }
-
-    // MARK: Month register — the year's months, scrollable, anchored
-
-    private func monthsList(year: Int) -> some View {
-        LazyVStack(alignment: .leading, spacing: Tokens.Space.xxl) {
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $pagedMonth)
+        .scrollIndicators(.hidden)
+        .overlay(alignment: .topLeading) {
             if !singleMonthRoot {
-                Button(action: close) {
+                Button {
+                    withAnimation(Tokens.Motion.base) { anchor = nil }
+                } label: {
                     Text("← \(String(year))").typeMeta()
                 }
                 .buttonStyle(.plain)
-            }
-            ForEach(1...12, id: \.self) { month in
-                let ref = MonthRef(year: year, month: month)
-                bigMonth(ref)
-                    .id(ref.key)
+                .padding(.horizontal, Tokens.Space.screenX)
+                .padding(.top, Tokens.Space.md)
             }
         }
-        .scrollTargetLayout()
     }
 
-    private func bigMonth(_ ref: MonthRef) -> some View {
-        let counts = monthCounts[ref.key] ?? [:]
-        let cell: CGFloat = 42
-        let columns = Array(repeating: GridItem(.fixed(cell), spacing: Tokens.Space.xs), count: Tokens.DotSize.gridCols)
-        let today = todayDay(ref)
-
-        return VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            Text("\(DayFormat.monthName(ref.month)) \(String(ref.year))")
-                .typeTitle()
-
-            LazyVGrid(columns: columns, spacing: Tokens.Space.sm) {
-                ForEach(1...daysIn(ref), id: \.self) { day in
-                    let count = counts[day] ?? 0
-                    let isToday = day == today
-                    CalDot(ref: ref, day: day,
-                           size: isToday ? 40 : 34,
-                           written: count > 0,
-                           isToday: isToday, count: count, ns: morph)
-                        .frame(width: cell, height: cell)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if count > 0 {
-                                navigateDay = String(format: "%04d-%02d-%02d", ref.year, ref.month, day)
-                            }
-                        }
-                        .accessibilityLabel(dayLabel(ref, day: day, count: count, isToday: isToday))
-                        .accessibilityAddTraits(count > 0 ? .isButton : [])
-                }
-            }
-        }
+    private func open(_ ref: MonthRef) {
+        pagedMonth = ref.key
+        withAnimation(Tokens.Motion.base) { anchor = ref }
     }
 
     // MARK: Data
@@ -253,29 +200,147 @@ struct CalendarView: View {
                 } ?? MonthRef(year: now.year!, month: now.month!)
             singleMonthRoot = true
             anchor = ref
-            scrolledMonth = ref.key
+            pagedMonth = ref.key
         } else {
             singleMonthRoot = false
         }
-    }
-
-    private func daysIn(_ ref: MonthRef) -> Int {
-        let cal = Calendar.current
-        let date = cal.date(from: DateComponents(year: ref.year, month: ref.month, day: 1))!
-        return cal.range(of: .day, in: .month, for: date)!.count
-    }
-
-    private func isCurrentMonth(_ ref: MonthRef) -> Bool {
-        let c = Calendar.current.dateComponents([.year, .month], from: .now)
-        return c.year == ref.year && c.month == ref.month
     }
 
     private func todayDay(_ ref: MonthRef) -> Int? {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
         return (c.year == ref.year && c.month == ref.month) ? c.day : nil
     }
+}
 
-    private func dayLabel(_ ref: MonthRef, day: Int, count: Int, isToday: Bool) -> String {
+// MARK: - Year block: twelve rows, 31 columns, one object
+
+private struct YearBlock: View {
+    let year: Int
+    let counts: [String: [Int: Int]]
+    var onTapMonth: (Int) -> Void
+
+    private static let letters = ["J","F","M","A","M","J","J","A","S","O","N","D"]
+
+    var body: some View {
+        let size = CalendarLayout.yearBlockSize
+        let cal = Calendar.current
+        let today = cal.dateComponents([.year, .month, .day], from: .now)
+
+        ZStack(alignment: .topLeading) {
+            // Month gutter letters
+            ForEach(1...12, id: \.self) { month in
+                Text(Self.letters[month - 1])
+                    .font(.custom(EndpaperFont.meta, size: 9))
+                    .foregroundStyle(Tokens.Text.meta)
+                    .position(x: 6, y: CGFloat(month - 1) * CalendarLayout.yearRowH + CalendarLayout.yearRowH / 2)
+            }
+            // The year's dots, positioned by the shared layout math
+            ForEach(1...12, id: \.self) { month in
+                let ref = String(format: "%04d-%02d", year, month)
+                let monthDays = counts[ref] ?? [:]
+                let dayCount = daysIn(year: year, month: month)
+                ForEach(1...dayCount, id: \.self) { day in
+                    let isToday = today.year == year && today.month == month && today.day == day
+                    Circle()
+                        .fill(monthDays[day] != nil ? Tokens.Dot.filled : Tokens.Dot.empty)
+                        .frame(width: CalendarLayout.yearDot, height: CalendarLayout.yearDot)
+                        .overlay {
+                            if isToday {
+                                Circle()
+                                    .strokeBorder(Tokens.Dot.today, lineWidth: 1)
+                                    .padding(-2)
+                            }
+                        }
+                        .position(CalendarLayout.yearDotCenter(month: month, day: day))
+                }
+            }
+            // Row-sized tap targets
+            ForEach(1...12, id: \.self) { month in
+                let written = (counts[String(format: "%04d-%02d", year, month)] ?? [:]).count
+                let isCurrent = today.year == year && today.month == month
+                Color.clear
+                    .contentShape(Rectangle())
+                    .frame(width: size.width, height: CalendarLayout.yearRowH)
+                    .position(x: size.width / 2, y: CGFloat(month - 1) * CalendarLayout.yearRowH + CalendarLayout.yearRowH / 2)
+                    .onTapGesture {
+                        if written > 0 || isCurrent { onTapMonth(month) }
+                    }
+                    .accessibilityElement()
+                    .accessibilityLabel("\(DayFormat.monthName(month)) \(String(year)), \(written) days written")
+                    .accessibilityAddTraits(written > 0 || isCurrent ? .isButton : [])
+            }
+        }
+        .frame(width: size.width, height: size.height)
+    }
+
+    private func daysIn(year: Int, month: Int) -> Int {
+        let cal = Calendar.current
+        let date = cal.date(from: DateComponents(year: year, month: month, day: 1))!
+        return cal.range(of: .day, in: .month, for: date)!.count
+    }
+}
+
+// MARK: - Month page: viewport-filling, grid centered
+
+private struct MonthPage: View {
+    let ref: MonthRef
+    let counts: [Int: Int]
+    let todayDay: Int?
+    var onTapDay: (Int) -> Void
+
+    var body: some View {
+        let dayCount = daysIn()
+        GeometryReader { geo in
+            let gridH = CalendarLayout.monthGridHeight(days: dayCount)
+            let originY = (geo.size.height - gridH) / 2
+
+            ZStack(alignment: .topLeading) {
+                Text("\(DayFormat.monthName(ref.month)) \(String(ref.year))")
+                    .typeTitle()
+                    .position(x: geo.size.width / 2, y: originY - Tokens.Space.xl)
+
+                ForEach(1...dayCount, id: \.self) { day in
+                    let count = counts[day] ?? 0
+                    let written = count > 0
+                    let isToday = day == todayDay
+                    let dotSize = isToday ? CalendarLayout.monthDotToday : CalendarLayout.monthDot
+                    let center = CalendarLayout.monthDotCenter(day: day, in: geo.size.width)
+
+                    ZStack {
+                        Circle()
+                            .fill(written ? Tokens.Dot.filled : Tokens.Dot.empty)
+                            .overlay {
+                                if isToday {
+                                    Circle()
+                                        .strokeBorder(Tokens.Dot.today, lineWidth: Tokens.DotSize.todayRing)
+                                        .padding(-(Tokens.DotSize.todayRing + Tokens.DotSize.todayRingOffset))
+                                }
+                            }
+                        if written {
+                            Text("\(count)")
+                                .font(.custom(EndpaperFont.meta, size: 9))
+                                .foregroundStyle(Tokens.Text.onInverted.opacity(0.75))
+                        }
+                    }
+                    .frame(width: dotSize, height: dotSize)
+                    .frame(width: CalendarLayout.monthCell, height: CalendarLayout.monthCell)
+                    .contentShape(Rectangle())
+                    .position(x: center.x, y: originY + center.y)
+                    .onTapGesture { if written { onTapDay(day) } }
+                    .accessibilityLabel(dayLabel(day, count: count, isToday: isToday))
+                    .accessibilityAddTraits(written ? .isButton : [])
+                }
+            }
+        }
+    }
+
+    private func daysIn() -> Int {
+        let cal = Calendar.current
+        let date = cal.date(from: DateComponents(year: ref.year, month: ref.month, day: 1))!
+        return cal.range(of: .day, in: .month, for: date)!.count
+    }
+
+    private func dayLabel(_ day: Int, count: Int, isToday: Bool) -> String {
         var label = "\(DayFormat.monthName(ref.month)) \(day)"
         if isToday { label += ", today" }
         if count > 0 { label += ", \(count) \(count == 1 ? "entry" : "entries")" }
