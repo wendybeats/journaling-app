@@ -46,9 +46,10 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 
 - [ ] **Thin notebook** (Clear → write on 1–2 days in one month): the calendar lands on ONE big month — no year view, no back crumb, nothing daunting
 - [ ] **Seeded notebook** (2+ months): lands on the year breakdown — mini matrices per month, stacked year sections for multi-year data
-- [ ] Tap a written month → its mini matrix **morphs** into the big month grid (one continuous motion, not a jump)
+- [ ] Tap a written month → **each dot flies** from its mini-matrix spot to its month-grid spot, growing 5→34px, staggered like magnetic pulls (July 28 rebuild — per-dot matching)
 - [ ] Month register: large tappable dots (~34px, today 40 + ring), each written day showing a **faint entry count on the dot**
-- [ ] Tap a written day → that day's read-only page; ← BACK returns; ← YEAR morphs back to the year view
+- [ ] Month register is a **scrollable list of the year's months**, landing on the tapped month with neighbors above/below
+- [ ] Tap a written day → that day's read-only page; ← BACK returns; ← YEAR flies the dots back into the year view
 - [ ] Unwritten months don't navigate (except the current month)
 - [ ] The whole journey year → month → day → back reads smooth, no jarring swaps
 
