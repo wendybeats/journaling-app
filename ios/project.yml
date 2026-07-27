@@ -55,5 +55,10 @@ targets:
         buildPhase: resources
       - path: ../tools/parity/expected.json
         buildPhase: resources
+    settings:
+      base:
+        # Test bundles have no info: block — let Xcode generate the plist.
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.wendellbarton.endpaper.tests
     dependencies:
       - target: Endpaper
