@@ -424,7 +424,7 @@ struct CalendarView: View {
                 stageDots = nil
                 fly = false
             }
-        }
+        } }   // second hop closes here (see the two-hop note above)
     }
 
     private func runStage(_ dots: [StageDot], swap: @escaping () -> Void) {
