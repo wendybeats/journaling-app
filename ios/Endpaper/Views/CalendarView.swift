@@ -1,4 +1,4 @@
-// Calendar — rounds 1+2 of the choreography plan
+// Calendar — rounds 1–3 of the choreography plan
 // (docs/endpaper-calendar-choreography.md).
 //
 // Registers (resting views, static):
@@ -16,6 +16,13 @@
 // is structurally impossible: the stage's first frame matches the old
 // register, its last frame matches the new one, both computed from the
 // same CalendarLayout math the resting views use.
+//
+// The survivor beat (round 3): month → day. The tapped day survives — it
+// glides to screen center and grows while every other dot scatters and
+// dissolves; after a held beat the stage fades and the day page is simply
+// there beneath it. The day is presented in-place (not nav-pushed) so the
+// reverse leg can fade the stage back in over the page and fly everything
+// home to the month grid.
 
 import SwiftUI
 import SwiftData
@@ -25,6 +32,14 @@ private struct MonthRef: Hashable {
     let year: Int
     let month: Int
     var key: String { String(format: "%04d-%02d", year, month) }
+}
+
+/// A day opened from the month register — carried whole so the reverse
+/// leg can rebuild the choreography without re-deriving anything.
+private struct DayCtx: Equatable {
+    let key: String
+    let ref: MonthRef
+    let day: Int
 }
 
 // MARK: - Shared layout math (resting views and the Stage both use this)
@@ -50,6 +65,7 @@ enum CalendarLayout {
     static let monthCell: CGFloat = 46
     static let monthDot: CGFloat = 34
     static let monthDotToday: CGFloat = 40
+    static let dayFocus: CGFloat = 48    // the survivor's size at screen center
 
     static func monthDotCenter(day: Int, in width: CGFloat) -> CGPoint {
         let col = (day - 1) % 7
@@ -91,7 +107,7 @@ struct CalendarView: View {
     @State private var anchor: MonthRef? = nil       // nil = year register
     @State private var singleMonthRoot = false
     @State private var pagedMonth: String? = nil
-    @State private var navigateDay: String? = nil
+    @State private var openDayCtx: DayCtx? = nil     // day presented in-place (round 3)
     @State private var wrappedSignal: YearlySignal? = nil
 
     // Stage state
@@ -107,8 +123,16 @@ struct CalendarView: View {
             } else {
                 yearRegister
             }
+            // The day rides above the pager in-place, so the survivor beat
+            // controls its arrival and departure (a nav push would slide
+            // over the stage).
+            if let d = openDayCtx {
+                DayPageView(key: d.key, onBack: { closeDayLeg(d) })
+                    .background(Tokens.Surface.page)
+            }
             if let dots = stageDots {
                 DotStage(dots: dots, fly: fly)
+                    .transition(.opacity)
             }
         }
         .coordinateSpace(name: "cal")
@@ -120,9 +144,6 @@ struct CalendarView: View {
         )
         .onPreferenceChange(YearFrameKey.self) { yearFrames = $0 }
         .background(Tokens.Surface.page)
-        .navigationDestination(item: $navigateDay) { key in
-            DayPageView(key: key)
-        }
         .fullScreenCover(item: $wrappedSignal) { signal in
             WrappedView(signal: signal) { wrappedSignal = nil }
         }
@@ -181,9 +202,7 @@ struct CalendarView: View {
                         ref: ref,
                         counts: monthCounts[ref.key] ?? [:],
                         todayDay: todayDay(ref),
-                        onTapDay: { day in
-                            navigateDay = String(format: "%04d-%02d-%02d", ref.year, ref.month, day)
-                        },
+                        onTapDay: { day in openDayLeg(ref, day: day) },
                         onPageUp: month > 1 ? {
                             withAnimation(Tokens.Motion.base) {
                                 pagedMonth = MonthRef(year: year, month: month - 1).key
@@ -361,6 +380,123 @@ struct CalendarView: View {
                 fly = false
             }
         } }   // second hop closes here (see the two-hop note above)
+    }
+
+    /// Month → Day (round 3, the survivor beat): the tapped day is the
+    /// *survivor* — every other dot scatters and dissolves while it glides
+    /// to screen center and grows a step. It holds a beat, then the stage
+    /// fades out and the day page is simply there beneath it, the survivor
+    /// dissolving into the top of the text.
+    private func openDayLeg(_ ref: MonthRef, day: Int) {
+        let ctx = DayCtx(
+            key: String(format: "%04d-%02d-%02d", ref.year, ref.month, day),
+            ref: ref, day: day
+        )
+        guard !UIAccessibility.isReduceMotionEnabled, containerSize != .zero else {
+            withAnimation(Tokens.Motion.base) { openDayCtx = ctx }
+            return
+        }
+
+        let days = CalendarLayout.daysIn(year: ref.year, month: ref.month)
+        let gridH = CalendarLayout.monthGridHeight(days: days)
+        let gridTop = (containerSize.height - gridH) / 2
+        let center = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let counts = monthCounts[ref.key] ?? [:]
+        let today = todayDay(ref)
+        func restSize(_ d: Int) -> CGFloat {
+            d == today ? CalendarLayout.monthDotToday : CalendarLayout.monthDot
+        }
+        func gridPoint(_ d: Int) -> CGPoint {
+            let local = CalendarLayout.monthDotCenter(day: d, in: containerSize.width)
+            return CGPoint(x: local.x, y: gridTop + local.y)
+        }
+
+        var dots: [ChoreoDot] = []
+        dots.append(ChoreoDot(
+            id: "s-\(day)", from: gridPoint(day), to: center,
+            fromSize: restSize(day), toSize: CalendarLayout.dayFocus,
+            toOpacity: 1, filled: true,
+            duration: Choreo.travel, delay: 0
+        ))
+        for d in 1...days where d != day {
+            let from = gridPoint(d)
+            let seed = d * 131 + 7
+            dots.append(ChoreoDot(
+                id: "c-\(d)", from: from,
+                to: Choreo.scatter(seed: seed, from: from, center: center),
+                fromSize: restSize(d), toSize: restSize(d) * 0.6,
+                toOpacity: 0, filled: counts[d] != nil,
+                duration: Choreo.chaff, delay: Choreo.delay(seed)
+            ))
+        }
+
+        stageDots = dots
+        fly = false
+        openDayCtx = ctx             // day mounts beneath the opaque stage
+        DispatchQueue.main.async { fly = true }
+        // Survivor lands, holds a beat, then the whole stage — page color
+        // and dot together — fades, revealing the page beneath.
+        DispatchQueue.main.asyncAfter(deadline: .now() + Choreo.travel + 0.12) {
+            withAnimation(.easeOut(duration: 0.22)) { stageDots = nil }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { fly = false }
+        }
+    }
+
+    /// Day → Month: the reverse beat. The stage fades in over the page —
+    /// the survivor reappearing at center, the scattered field small and
+    /// waiting — then everything flies home to the month grid.
+    private func closeDayLeg(_ d: DayCtx) {
+        guard !UIAccessibility.isReduceMotionEnabled, containerSize != .zero else {
+            withAnimation(Tokens.Motion.base) { openDayCtx = nil }
+            return
+        }
+
+        let ref = d.ref
+        let days = CalendarLayout.daysIn(year: ref.year, month: ref.month)
+        let gridH = CalendarLayout.monthGridHeight(days: days)
+        let gridTop = (containerSize.height - gridH) / 2
+        let center = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let counts = monthCounts[ref.key] ?? [:]
+        let today = todayDay(ref)
+        func restSize(_ n: Int) -> CGFloat {
+            n == today ? CalendarLayout.monthDotToday : CalendarLayout.monthDot
+        }
+        func gridPoint(_ n: Int) -> CGPoint {
+            let local = CalendarLayout.monthDotCenter(day: n, in: containerSize.width)
+            return CGPoint(x: local.x, y: gridTop + local.y)
+        }
+
+        var dots: [ChoreoDot] = []
+        dots.append(ChoreoDot(
+            id: "s-\(d.day)", from: center, to: gridPoint(d.day),
+            fromSize: CalendarLayout.dayFocus, toSize: restSize(d.day),
+            toOpacity: 1, filled: true,
+            duration: Choreo.travel, delay: 0
+        ))
+        for n in 1...days where n != d.day {
+            let home = gridPoint(n)
+            let seed = n * 131 + 7
+            dots.append(ChoreoDot(
+                id: "c-\(n)",
+                from: Choreo.scatter(seed: seed, from: home, center: center),
+                to: home,
+                fromSize: restSize(n) * 0.6, toSize: restSize(n),
+                toOpacity: 1, filled: counts[n] != nil,
+                duration: Choreo.chaff, delay: Choreo.delay(seed)
+            ))
+        }
+
+        fly = false
+        withAnimation(.easeIn(duration: 0.15)) { stageDots = dots }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            openDayCtx = nil          // page unmounts under the opaque stage
+            pagedMonth = ref.key
+            DispatchQueue.main.async { fly = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + Choreo.total) {
+                stageDots = nil       // last frame matches the month register
+                fly = false
+            }
+        }
     }
 
     private func runStage(_ dots: [ChoreoDot], swap: @escaping () -> Void) {
@@ -557,6 +693,9 @@ struct DayPageView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     let key: String
+    /// When presented in-place by the calendar's survivor beat, back runs
+    /// the reverse choreography instead of a navigation pop.
+    var onBack: (() -> Void)? = nil
 
     var body: some View {
         let date = DayFormat.date(fromKey: key)
@@ -565,7 +704,9 @@ struct DayPageView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Button { dismiss() } label: {
+                    Button {
+                        if let onBack { onBack() } else { dismiss() }
+                    } label: {
                         Text("← Back").typeMeta()
                     }
                     .buttonStyle(.plain)

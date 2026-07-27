@@ -85,9 +85,9 @@ the chaff flies home.
 
 | Round | Contents | Judge on device |
 |---|---|---|
-| 1 | One-piece year resting view + dot-frame capture plumbing (no stage yet; transitions temporarily plain crossfade) | The year as one object; row taps |
-| 2 | The Stage + Year ↔ Month legs (travelers + chaff, both directions) | The reorganize moment |
-| 3 | Month ↔ Day legs (survivor beat) + timing/perf/Reduce Motion polish | The whole journey |
+| 1 | ✅ One-piece year resting view + dot-frame capture plumbing (no stage yet; transitions temporarily plain crossfade) | The year as one object; row taps |
+| 2 | ✅ The Stage + Year ↔ Month legs (travelers + chaff, both directions) | The reorganize moment |
+| 3 | ✅ Month ↔ Day legs (survivor beat) + timing/perf/Reduce Motion polish — day presented in-place above the pager so both legs own its arrival/departure | The whole journey |
 
 ## Taste decisions — ✅ decided July 28
 
