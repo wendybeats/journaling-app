@@ -72,70 +72,6 @@ enum CalendarLayout {
     }
 }
 
-// MARK: - Choreography constants (one place for taste passes)
-
-private enum Choreo {
-    static let travel: Double = 0.42     // traveler flight
-    static let chaff: Double = 0.30      // scatter + dissolve
-    static let stagger: Double = 0.14    // max per-dot delay
-    static let total: Double = 0.64      // stage lifetime
-
-    static func delay(_ seed: Int) -> Double {
-        Double((seed * 131) % 89) / 89 * stagger
-    }
-
-    /// Radial scatter target: away from `center`, 90–160pt, with a
-    /// deterministic angular jitter so the field doesn't ray out evenly.
-    static func scatter(seed: Int, from: CGPoint, center: CGPoint) -> CGPoint {
-        var dx = from.x - center.x, dy = from.y - center.y
-        let len = max(1, hypot(dx, dy))
-        dx /= len; dy /= len
-        let jitter = (Double((seed * 53) % 41) / 41 - 0.5) * 0.9
-        let rx = dx * cos(jitter) - dy * sin(jitter)
-        let ry = dx * sin(jitter) + dy * cos(jitter)
-        let dist = 90 + CGFloat((seed * 37) % 71)
-        return CGPoint(x: from.x + rx * dist, y: from.y + ry * dist)
-    }
-
-    static func curve(_ duration: Double, delay: Double) -> Animation {
-        .timingCurve(0.22, 0.61, 0.36, 1, duration: duration).delay(delay)
-    }
-}
-
-private struct StageDot: Identifiable {
-    let id: String
-    let from: CGPoint
-    let to: CGPoint
-    let fromSize: CGFloat
-    let toSize: CGFloat
-    let toOpacity: Double
-    let filled: Bool
-    let duration: Double
-    let delay: Double
-}
-
-/// The stage: page-colored, swallows touches, dots at explicit coordinates.
-private struct StageView: View {
-    let dots: [StageDot]
-    let fly: Bool
-
-    var body: some View {
-        ZStack {
-            Tokens.Surface.page.ignoresSafeArea()
-            ForEach(dots) { d in
-                Circle()
-                    .fill(d.filled ? Tokens.Dot.filled : Tokens.Dot.empty)
-                    .frame(width: fly ? d.toSize : d.fromSize,
-                           height: fly ? d.toSize : d.fromSize)
-                    .position(fly ? d.to : d.from)
-                    .opacity(fly ? d.toOpacity : 1)
-                    .animation(Choreo.curve(d.duration, delay: d.delay), value: fly)
-            }
-        }
-        .contentShape(Rectangle())   // absorb taps mid-flight
-    }
-}
-
 // MARK: - Frame reporting (year blocks tell the stage where they are)
 
 private struct YearFrameKey: PreferenceKey {
@@ -159,7 +95,7 @@ struct CalendarView: View {
     @State private var wrappedSignal: YearlySignal? = nil
 
     // Stage state
-    @State private var stageDots: [StageDot]? = nil
+    @State private var stageDots: [ChoreoDot]? = nil
     @State private var fly = false
     @State private var yearFrames: [Int: CGRect] = [:]
     @State private var containerSize: CGSize = .zero
@@ -172,7 +108,7 @@ struct CalendarView: View {
                 yearRegister
             }
             if let dots = stageDots {
-                StageView(dots: dots, fly: fly)
+                DotStage(dots: dots, fly: fly)
             }
         }
         .coordinateSpace(name: "cal")
@@ -297,7 +233,7 @@ struct CalendarView: View {
         let gridTop = (containerSize.height - gridH) / 2
         let gridCenter = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
         let counts = monthCounts[ref.key] ?? [:]
-        var dots: [StageDot] = []
+        var dots: [ChoreoDot] = []
 
         // Travelers — the tapped month's dots
         for day in 1...days {
@@ -305,7 +241,7 @@ struct CalendarView: View {
             let from = CGPoint(x: block.minX + local.x, y: block.minY + local.y)
             let toLocal = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
             let to = CGPoint(x: toLocal.x, y: gridTop + toLocal.y)
-            dots.append(StageDot(
+            dots.append(ChoreoDot(
                 id: "t-\(day)", from: from, to: to,
                 fromSize: CalendarLayout.yearDot, toSize: CalendarLayout.monthDot,
                 toOpacity: 1, filled: counts[day] != nil,
@@ -322,7 +258,7 @@ struct CalendarView: View {
                     let from = CGPoint(x: frame.minX + local.x, y: frame.minY + local.y)
                     guard from.y > -20, from.y < containerSize.height + 20 else { continue }
                     let seed = day * 131 + month * 17 + year
-                    dots.append(StageDot(
+                    dots.append(ChoreoDot(
                         id: "c-\(year)-\(month)-\(day)", from: from,
                         to: Choreo.scatter(seed: seed, from: from, center: gridCenter),
                         fromSize: CalendarLayout.yearDot, toSize: CalendarLayout.yearDot * 0.6,
@@ -359,11 +295,11 @@ struct CalendarView: View {
         let counts = monthCounts[ref.key] ?? [:]
 
         // Mount the stage frozen on the month grid so the swap is covered.
-        var holding: [StageDot] = []
+        var holding: [ChoreoDot] = []
         for day in 1...days {
             let local = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
             let from = CGPoint(x: local.x, y: gridTop + local.y)
-            holding.append(StageDot(
+            holding.append(ChoreoDot(
                 id: "t-\(day)", from: from, to: from,
                 fromSize: CalendarLayout.monthDot, toSize: CalendarLayout.monthDot,
                 toOpacity: 1, filled: counts[day] != nil,
@@ -381,13 +317,13 @@ struct CalendarView: View {
                 stageDots = nil
                 return
             }
-            var dots: [StageDot] = []
+            var dots: [ChoreoDot] = []
             for day in 1...days {
                 let local = CalendarLayout.monthDotCenter(day: day, in: containerSize.width)
                 let from = CGPoint(x: local.x, y: gridTop + local.y)
                 let toLocal = CalendarLayout.yearDotCenter(month: ref.month, day: day)
                 let to = CGPoint(x: block.minX + toLocal.x, y: block.minY + toLocal.y)
-                dots.append(StageDot(
+                dots.append(ChoreoDot(
                     id: "t-\(day)", from: from, to: to,
                     fromSize: CalendarLayout.monthDot, toSize: CalendarLayout.yearDot,
                     toOpacity: 1, filled: counts[day] != nil,
@@ -404,7 +340,7 @@ struct CalendarView: View {
                         let to = CGPoint(x: frame.minX + local.x, y: frame.minY + local.y)
                         guard to.y > -20, to.y < containerSize.height + 20 else { continue }
                         let seed = day * 131 + month * 17 + y
-                        dots.append(StageDot(
+                        dots.append(ChoreoDot(
                             id: "c-\(y)-\(month)-\(day)",
                             from: Choreo.scatter(seed: seed, from: to, center: gridCenter),
                             to: to,
@@ -427,7 +363,7 @@ struct CalendarView: View {
         } }   // second hop closes here (see the two-hop note above)
     }
 
-    private func runStage(_ dots: [StageDot], swap: @escaping () -> Void) {
+    private func runStage(_ dots: [ChoreoDot], swap: @escaping () -> Void) {
         stageDots = dots
         fly = false
         swap()

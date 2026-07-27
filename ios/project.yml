@@ -38,7 +38,8 @@ targets:
       path: Endpaper/Info.plist
       properties:
         CFBundleDisplayName: Endpaper            # decided July 24 (pending trademark screen)
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: LaunchBackground          # bone / char, from the asset catalog
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: Endpaper can lock your notebook behind Face ID.
@@ -62,6 +63,7 @@ targets:
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"            # iPhone-first, like the PDP
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
   # Engine parity: the Swift engine must agree with the JS reference
   # engine over the shared corpus (tools/parity). Run with ⌘U.
