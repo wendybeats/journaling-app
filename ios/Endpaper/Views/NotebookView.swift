@@ -137,78 +137,103 @@ struct DayText: View {
     }
 }
 
-/// Two-line drop cap, nestled: the initial sits vertically centered against
-/// exactly two lines of text, and the remainder of the paragraph wraps
-/// beneath at full width — the web prototype's treatment. TextKit measures
-/// where the two-line split falls for the width beside the cap.
+/// Two-line drop cap, truly nestled. One text engine does all the
+/// wrapping: a UITextView with a TextKit exclusion path the size of the
+/// cap, so the first two lines flow beside the initial and everything
+/// after wraps beneath it at full width — no split-point math, no
+/// measure-vs-render disagreement. The cap overlays the carved-out
+/// corner, optically aligned cap-height to cap-height.
 struct DropCapParagraph: View {
     let text: String
 
-    private static let bodySize: CGFloat = 17
-    private static let capSize: CGFloat = 17 * 3.5
-
     var body: some View {
         let initial = String(text.prefix(1))
-        let rest = String(text.dropFirst())
-        let (beside, below) = Self.splitForTwoLines(rest, initial: initial)
+        let rest = String(text.dropFirst()).trimmingCharacters(in: .whitespaces)
+        let m = DropCapMetrics(initial: initial)
 
-        VStack(alignment: .leading, spacing: Self.lineGap) {
-            HStack(alignment: .center, spacing: Tokens.Space.sm) {
+        DropCapBody(text: rest, metrics: m)
+            .overlay(alignment: .topLeading) {
                 Text(initial)
-                    .font(.custom(EndpaperFont.body, size: Self.capSize))
+                    .font(.custom(EndpaperFont.body, size: m.capSize))
                     .foregroundStyle(Tokens.Text.written)
-                    .lineLimit(1)
                     .fixedSize()
-                Text(beside)
-                    .typeWritten()
-                Spacer(minLength: 0)
+                    .offset(y: m.capOffsetY)
             }
-            if !below.isEmpty {
-                Text(below)
-                    .typeWritten()
-            }
-        }
-        // VoiceOver reads the paragraph whole, not "L" then "ong day…"
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(text)
+            // VoiceOver reads the paragraph whole, not "L" then "ong day…"
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(text)
+    }
+}
+
+/// Shared font math for the drop cap. The cap is sized so its cap height
+/// spans exactly from line 1's cap top to line 2's baseline — two written
+/// lines — and offset so the tops align optically.
+private struct DropCapMetrics {
+    let bodyFont: UIFont
+    let capFont: UIFont
+    let capSize: CGFloat
+    let lineGap: CGFloat        // written register: 17 × 1.8 minus natural line height
+    let exclusion: CGRect       // the corner carved out of the text flow
+    let capOffsetY: CGFloat
+
+    init(initial: String) {
+        let body = UIFont(name: EndpaperFont.body, size: 17) ?? .systemFont(ofSize: 17)
+        bodyFont = body
+        lineGap = max(0, 17 * 1.8 - body.lineHeight)
+        let lineStep = body.lineHeight + lineGap
+
+        // Cap height target: line 1 cap top → line 2 baseline.
+        let target = lineStep + body.capHeight
+        let size = 17 * target / body.capHeight
+        capSize = size
+        let cap = UIFont(name: EndpaperFont.body, size: size) ?? .systemFont(ofSize: size)
+        capFont = cap
+
+        let capWidth = (initial as NSString).size(withAttributes: [.font: cap]).width
+        // Carve out lines 1–2 beside the cap; line 3 starts below the rect.
+        exclusion = CGRect(x: 0, y: 0,
+                           width: capWidth + Tokens.Space.sm,
+                           height: lineStep + body.lineHeight - 1)
+
+        // Align the cap glyph's top to line 1's cap top.
+        let bodyCapTop = body.ascender - body.capHeight
+        let capGlyphTop = cap.ascender - cap.capHeight
+        capOffsetY = bodyCapTop - capGlyphTop
+    }
+}
+
+private struct DropCapBody: UIViewRepresentable {
+    let text: String
+    let metrics: DropCapMetrics
+
+    func makeUIView(context: Context) -> UITextView {
+        let tv = UITextView()
+        tv.isEditable = false
+        tv.isScrollEnabled = false
+        tv.isSelectable = false
+        tv.backgroundColor = .clear
+        tv.textContainerInset = .zero
+        tv.textContainer.lineFragmentPadding = 0
+        tv.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        tv.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        return tv
     }
 
-    /// The written register's inter-line gap (line height minus glyph line).
-    private static var lineGap: CGFloat {
-        let font = UIFont(name: EndpaperFont.body, size: bodySize) ?? .systemFont(ofSize: bodySize)
-        return max(0, bodySize * 1.8 - font.lineHeight)
-    }
-
-    /// Splits `rest` at the word boundary where two laid-out lines end,
-    /// given the width remaining beside the cap. Portrait-only app, so the
-    /// screen width is a safe stand-in for the column.
-    private static func splitForTwoLines(_ rest: String, initial: String) -> (String, String) {
-        guard let bodyFont = UIFont(name: EndpaperFont.body, size: bodySize),
-              let capFont = UIFont(name: EndpaperFont.body, size: capSize) else {
-            return (rest, "")
-        }
-        let capWidth = (initial as NSString).size(withAttributes: [.font: capFont]).width
-        let besideWidth = UIScreen.main.bounds.width - Tokens.Space.screenX * 2 - capWidth - Tokens.Space.sm
-        guard besideWidth > 60 else { return (rest, "") }
-
+    func updateUIView(_ tv: UITextView, context: Context) {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = lineGap
-        let storage = NSTextStorage(string: rest, attributes: [.font: bodyFont, .paragraphStyle: paragraph])
-        let twoLines = bodyFont.lineHeight * 2 + lineGap + 1
-        let container = NSTextContainer(size: CGSize(width: besideWidth, height: twoLines))
-        container.lineFragmentPadding = 0
-        container.lineBreakMode = .byWordWrapping
-        let layout = NSLayoutManager()
-        layout.addTextContainer(container)
-        storage.addLayoutManager(layout)
+        paragraph.lineSpacing = metrics.lineGap
+        tv.attributedText = NSAttributedString(string: text, attributes: [
+            .font: metrics.bodyFont,
+            .paragraphStyle: paragraph,
+            .foregroundColor: UIColor(Tokens.Text.written),
+        ])
+        tv.textContainer.exclusionPaths = [UIBezierPath(rect: metrics.exclusion)]
+    }
 
-        let glyphRange = layout.glyphRange(for: container)
-        let fit = layout.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
-        guard fit.length < (rest as NSString).length else { return (rest, "") }
-
-        let beside = (rest as NSString).substring(to: fit.upperBound)
-        let below = (rest as NSString).substring(from: fit.upperBound)
-        return (beside.trimmingCharacters(in: .whitespaces),
-                below.trimmingCharacters(in: .whitespaces))
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        let width = proposal.width ?? UIScreen.main.bounds.width - Tokens.Space.screenX * 2
+        let fit = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        // Never shorter than the cap itself (short first paragraphs).
+        return CGSize(width: width, height: max(fit.height, metrics.exclusion.height))
     }
 }

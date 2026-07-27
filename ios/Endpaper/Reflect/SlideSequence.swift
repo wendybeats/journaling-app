@@ -67,7 +67,7 @@ struct SlideSequenceView: View {
                     let quick = pressBegan.map { Date().timeIntervalSince($0) < 0.25 } ?? false
                     pressBegan = nil
                     paused = false
-                    if quick && slide.duration != nil { advance() }   // tap skips
+                    if quick { advance() }   // tap continues on every slide, timed or held
                 }
         )
         .onAppear { run() }
@@ -118,14 +118,16 @@ struct Intertitle: View {
 }
 
 /// One big number with its mono label beneath — the stats register.
+/// The wrapped's hierarchy (44pt, generous air) is the family standard.
 struct SequenceStat: View {
     let value: String
     let label: String
+    var size: CGFloat = 44
 
     var body: some View {
         VStack(spacing: Tokens.Space.xs) {
             Text(value)
-                .font(.custom(EndpaperFont.heading, size: 34).weight(.medium))
+                .font(.custom(EndpaperFont.heading, size: size).weight(.medium))
                 .foregroundStyle(Tokens.Text.onInverted)
             Text(label)
                 .font(.custom(EndpaperFont.meta, size: 10))

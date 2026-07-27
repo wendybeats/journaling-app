@@ -3034,7 +3034,6 @@ function weeklyContent(signal) {
     frag.appendChild(el('p', 'reflection-body',
       `“${signal.topic.word}” kept surfacing — ${signal.topic.mentions} times, across ${signal.topic.days} days. Collected, in your words:`));
     for (const q of signal.quotes) frag.appendChild(quoteBlock(q));
-    frag.appendChild(el('p', 'reflection-closing', 'Worth sitting with?'));
   } else {
     frag.appendChild(el('p', 'reflection-body',
       `No single thread this week — ${signal.days} days of writing, each in its own place. Sometimes a week is just days.`));

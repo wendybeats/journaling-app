@@ -53,23 +53,18 @@ struct WeeklyCardView: View {
     private var slides: [SequenceSlide] {
         var s: [SequenceSlide] = []
 
-        // 1 — the week, in numbers
+        // 1 — the week, in numbers. The wrapped's hierarchy: one quiet
+        // mono line, then big stacked numbers with generous air.
         s.append(SequenceSlide(duration: 4.5) {
-            VStack(spacing: Tokens.Space.lg) {
-                RecapCircles()
-                Text("Reflections — Your week")
-                    .font(.custom(EndpaperFont.heading, size: 22).weight(.medium))
-                    .foregroundStyle(Tokens.Text.onInverted)
-                Text(weekLabel(signal))
+            VStack(spacing: Tokens.Space.xl) {
+                Text("Reflections — \(weekLabel(signal))")
                     .font(.custom(EndpaperFont.meta, size: 11))
                     .tracking(11 * 0.14)
                     .textCase(.uppercase)
                     .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
-                HStack(spacing: Tokens.Space.xl) {
-                    SequenceStat(value: "\(signal.days)", label: "days")
-                    SequenceStat(value: signal.words.formatted(), label: "words")
-                }
-                .padding(.top, Tokens.Space.md)
+                    .padding(.bottom, Tokens.Space.md)
+                SequenceStat(value: "\(signal.days)", label: "days written")
+                SequenceStat(value: signal.words.formatted(), label: "words")
             }
         })
 
@@ -91,10 +86,6 @@ struct WeeklyCardView: View {
                         }
                     }
                     .padding(.top, Tokens.Space.sm)
-                    Text("Worth sitting with?")
-                        .font(.custom("Newsreader", size: 19).italic())
-                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.7))
-                        .padding(.top, Tokens.Space.sm)
                 } else {
                     Text("No single thread this week — \(signal.days) days of writing, each in its own place. Sometimes a week is just days.")
                         .font(.custom("Newsreader", size: 22).italic())

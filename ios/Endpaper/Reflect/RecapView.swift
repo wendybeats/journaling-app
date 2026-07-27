@@ -37,9 +37,18 @@ struct RecapView: View {
             }
         })
 
-        // 2 — the month grid draws itself, then the row of three
-        s.append(SequenceSlide(duration: 5.0) {
-            RecapStatsSlide(signal: signal, writtenDays: writtenDays)
+        // 2 — the month grid draws itself (the wrapped's matrix moment)
+        s.append(SequenceSlide(duration: 4.5) {
+            RecapGridSlide(signal: signal, writtenDays: writtenDays)
+        })
+
+        // 3 — the numbers, wrapped-style: big, stacked, generous air
+        s.append(SequenceSlide(duration: 4.5) {
+            VStack(spacing: Tokens.Space.xl) {
+                SequenceStat(value: "\(signal.days)", label: "days written")
+                SequenceStat(value: signal.words.formatted(), label: "words")
+                SequenceStat(value: "\(signal.longestRun)", label: "longest run")
+            }
         })
 
         if signal.sufficient {
@@ -135,12 +144,11 @@ struct RecapCircles: View {
     }
 }
 
-/// Slide 2: the month grid drawing itself dot by dot, then the row of three.
-private struct RecapStatsSlide: View {
+/// Slide 2: the month grid drawing itself dot by dot, month label beneath.
+private struct RecapGridSlide: View {
     let signal: MonthlySignal
     let writtenDays: Set<Int>
     @State private var drawn = 0
-    @State private var statsIn = false
 
     var body: some View {
         let cal = Calendar.current
@@ -164,24 +172,21 @@ private struct RecapStatsSlide: View {
             }
             .fixedSize()
 
-            HStack(spacing: Tokens.Space.xl) {
-                SequenceStat(value: "\(signal.days)", label: "days")
-                SequenceStat(value: signal.words.formatted(), label: "words")
-                SequenceStat(value: "\(signal.longestRun)", label: "day run")
-            }
-            .opacity(statsIn ? 1 : 0)
-            .animation(Tokens.Motion.base, value: statsIn)
+            Text("\(DayFormat.monthName(signal.month)) \(String(signal.year))")
+                .font(.custom(EndpaperFont.meta, size: 11))
+                .tracking(11 * 0.14)
+                .textCase(.uppercase)
+                .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
         }
         .task {
             if UIAccessibility.isReduceMotionEnabled {
-                drawn = 31; statsIn = true
+                drawn = 31
                 return
             }
             for d in 1...dayCount {
                 drawn = d
                 try? await Task.sleep(for: .milliseconds(45))
             }
-            statsIn = true
         }
     }
 

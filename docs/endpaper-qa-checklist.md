@@ -42,14 +42,15 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 - [ ] Crumbs are plain mono words (no iOS pill/glass anywhere): ← TODAY, SETTINGS, tabs row
 - [ ] Scrolling a year of entries stays smooth (watch for hitches from LazyVStack)
 
-## 4. Archive — Calendar
+## 4. Archive — Calendar (dynamic register, July 27)
 
-- [ ] Year view: twelve 5px-dot matrices; written days filled, empty days faint; current year present even if unwritten
-- [ ] Tap a written month → morphs to month detail (matrix animates between layouts)
-- [ ] Month grid: 11px dots, today ringed (current month only)
-- [ ] Tap a written day dot in the month grid → that day's read-only page; ← BACK returns (July 25: week-row hybrid removed — the grid is the single register)
+- [ ] **Thin notebook** (Clear → write on 1–2 days in one month): the calendar lands on ONE big month — no year view, no back crumb, nothing daunting
+- [ ] **Seeded notebook** (2+ months): lands on the year breakdown — mini matrices per month, stacked year sections for multi-year data
+- [ ] Tap a written month → its mini matrix **morphs** into the big month grid (one continuous motion, not a jump)
+- [ ] Month register: large tappable dots (~34px, today 40 + ring), each written day showing a **faint entry count on the dot**
+- [ ] Tap a written day → that day's read-only page; ← BACK returns; ← YEAR morphs back to the year view
 - [ ] Unwritten months don't navigate (except the current month)
-- [ ] ← 2026 returns to the year view
+- [ ] The whole journey year → month → day → back reads smooth, no jarring swaps
 
 ## 5. Archive — Find
 
@@ -62,10 +63,10 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 
 - [ ] **Consent card** appears on Today: "Reflections – Your Week" (it never appears before a recap could exist — verify by Clear → no card on empty data)
 - [ ] "No thanks" → card gone, never returns (relaunch to confirm); Seed demo resets it
-- [ ] Re-seed → "Yes, reflect" → the **weekly reflection** arrives as a two-screen sequence (July 25): stats for the week (days · words), then the words — topic large, verbatim quotes with weekday stamps, "Worth sitting with?", Continue
+- [ ] Re-seed → "Yes, reflect" → the **weekly reflection** arrives as a two-screen sequence (July 25): the week in numbers (wrapped-style big stats), then the words — topic large, verbatim quotes with weekday stamps, Continue (no closing question — removed July 27)
 - [ ] Close it → next visit to Today, the **monthly recap** arrives (monthly wins, weekly first only right after consent — per the flow, one arrival per visit)
-- [ ] Recap sequence: circles intro → month grid draws itself dot by dot + row of three stats → "Recurring ideas" intertitle → topics with 2 quotes each → "Your Word" → "Challenges" (only if difficulty quotes exist) → "Reflect & start anew" + CONTINUE
-- [ ] Countdown bar shrinks; **tap skips** a slide; **hold ≥250 ms pauses** (bar freezes), release resumes
+- [ ] Recap sequence: circles intro → month grid draws itself (month label beneath) → the numbers, wrapped-style stacked → "Recurring ideas" intertitle → topics with 2 quotes each → "Your Word" → "Challenges" (only if difficulty quotes exist) → "Reflect & start anew" + CONTINUE
+- [ ] Countdown bar shrinks; **tap anywhere continues on every slide** (timed or held, July 27); **hold ≥250 ms pauses** (bar freezes), release resumes
 - [ ] Dismissed reflections rest as condensed on-color cards at period boundaries in the Notebook; tapping one reopens the full moment with identical content (no re-roll)
 - [ ] Calendar year row shows "Your year →" (consent = yes) → **wrapped**: year matrix draws itself → big numbers → five threads → most-discussed reveal with first-ever mention → "See you on the page."
 - [ ] Wrapped outro: "Save your year" opens the share sheet with the dots image — **verify the image contains dots and counts only, zero writing**
