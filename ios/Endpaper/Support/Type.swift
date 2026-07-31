@@ -60,8 +60,8 @@ struct TypeWritten: ViewModifier {          // 17 / 1.8 — the writing register
 /// classifier drives the draft surface and committed sections, so what
 /// you see while writing is exactly how it rests on the page:
 ///   one word            → 40   a big word idea
-///   up to ten words     → 28   a big idea
-///   up to ~three lines  → 22   a quote
+///   up to five words    → 28   a big idea
+///   up to ~two lines    → 22   a quote
 ///   more                → 17   body, the standard register
 enum WrittenScale {
     static func size(for text: String) -> CGFloat {
@@ -69,8 +69,8 @@ enum WrittenScale {
         if t.isEmpty { return 28 }
         let words = t.split(whereSeparator: { $0.isWhitespace }).count
         if words == 1 && t.count <= 18 { return 40 }
-        if words <= 10 { return 28 }
-        if t.count <= 140 { return 22 }
+        if words <= 5 { return 28 }
+        if t.count <= 90 { return 22 }
         return 17
     }
 }

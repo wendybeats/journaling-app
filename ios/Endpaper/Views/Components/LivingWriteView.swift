@@ -63,6 +63,12 @@ struct LivingWriteView: UIViewRepresentable {
         let lh: CGFloat = size >= 36 ? 1.25 : (size >= 22 ? 1.5 : 1.8)
         let para = NSMutableParagraphStyle()
         para.lineSpacing = max(0, size * lh - font.lineHeight)
+        // The largest tier gets air above and below — a big word idea
+        // shouldn't sit shoulder-to-shoulder with its neighbors.
+        if size >= 36 {
+            para.paragraphSpacingBefore = 12
+            para.paragraphSpacing = 8
+        }
         return [
             .font: font,
             .paragraphStyle: para,

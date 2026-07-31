@@ -21,17 +21,17 @@ final class VoiceCapture: ObservableObject {
     private var task: SFSpeechRecognitionTask?
     private var base = ""
 
-    func toggle(base: String) {
-        if isRecording { stop() } else { start(base: base) }
-    }
-
-    func start(base: String) {
+    /// `base` is a provider, not a value — it's read the moment recording
+    /// actually begins, after any permission flow. Capturing the text at
+    /// tap time went stale when the permission alert's scene-phase dance
+    /// changed the draft underneath it.
+    func start(base: @escaping () -> String) {
         SFSpeechRecognizer.requestAuthorization { status in
             DispatchQueue.main.async {
                 guard status == .authorized else { return }
                 AVAudioApplication.requestRecordPermission { granted in
                     DispatchQueue.main.async {
-                        if granted { self.begin(base: base) }
+                        if granted { self.begin(base: base()) }
                     }
                 }
             }

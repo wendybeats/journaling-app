@@ -114,7 +114,10 @@ struct TodayView: View {
             focusSoon()   // cursor ready — the app opens writable
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background || phase == .inactive {
+            // Background only — .inactive also fires for permission alerts,
+            // Control Center, and notification pulls, and committing there
+            // once resurrected a just-committed draft mid-dictation.
+            if phase == .background {
                 commit()
                 // Release focus cleanly on background so the resign/become
                 // cycle starts fresh on return.
@@ -138,7 +141,9 @@ struct TodayView: View {
                 if voice.isRecording {
                     voice.stop()
                 } else {
-                    voice.start(base: draft)
+                    // The base is read when recording actually begins (after
+                    // any permission flow), never captured at tap time.
+                    voice.start { draft }
                 }
             }
             // Done hides while recording — only one control may look like
@@ -309,7 +314,11 @@ struct EntrySection: View {
             Text(DayFormat.timeOfDay(entry.at))
                 .typeMetaSmall()
             ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                Text(line).typeWrittenScaled(WrittenScale.size(for: line))
+                let size = WrittenScale.size(for: line)
+                Text(line)
+                    .typeWrittenScaled(size)
+                    .padding(.top, size >= 36 ? 6 : 0)
+                    .padding(.bottom, size >= 36 ? 2 : 0)
             }
         }
         .contextMenu {
