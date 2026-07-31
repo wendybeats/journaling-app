@@ -18,6 +18,7 @@
 // Respect Reduce Motion at the call site: skip the stage, crossfade.
 
 import SwiftUI
+import Foundation
 
 /// One dot's flight plan.
 struct ChoreoDot: Identifiable {
@@ -51,8 +52,10 @@ enum Choreo {
         let len = max(1, hypot(dx, dy))
         dx /= len; dy /= len
         let jitter = (Double((seed * 53) % 41) / 41 - 0.5) * 0.9
-        let rx = dx * cos(jitter) - dy * sin(jitter)
-        let ry = dx * sin(jitter) + dy * cos(jitter)
+        let c = CGFloat(Foundation.cos(jitter))
+        let s = CGFloat(Foundation.sin(jitter))
+        let rx = dx * c - dy * s
+        let ry = dx * s + dy * c
         let dist = 90 + CGFloat((seed * 37) % 71)
         return CGPoint(x: from.x + rx * dist, y: from.y + ry * dist)
     }
