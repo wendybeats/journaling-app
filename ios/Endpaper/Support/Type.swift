@@ -55,6 +55,22 @@ struct TypeWritten: ViewModifier {          // 17 / 1.8 — the writing register
     }
 }
 
+/// The writing register at a living size — the surface meets your first
+/// words large (~28) and settles to 17 as the draft grows; short committed
+/// sections render at quote scale (24) so one-line insights sit on the
+/// page like pull quotes. Line height eases toward 1.5 at display sizes
+/// (1.8 at 17 stays load-bearing).
+struct TypeWrittenScaled: ViewModifier {
+    var size: CGFloat
+    func body(content: Content) -> some View {
+        let lh: CGFloat = size >= 24 ? 1.5 : 1.8
+        return content
+            .font(.custom(EndpaperFont.body, size: size))
+            .lineSpacing(spacing(family: EndpaperFont.body, size: size, lineHeight: lh))
+            .foregroundStyle(Tokens.Text.written)
+    }
+}
+
 struct TypeMeta: ViewModifier {             // 11 / 1.4 / 0.14em, uppercase
     var small = false                       // meta-small: 10
     func body(content: Content) -> some View {
@@ -71,6 +87,7 @@ extension View {
     func typeDisplay() -> some View { modifier(TypeDisplay()) }
     func typeTitle() -> some View { modifier(TypeTitle()) }
     func typeWritten(large: Bool = false) -> some View { modifier(TypeWritten(large: large)) }
+    func typeWrittenScaled(_ size: CGFloat) -> some View { modifier(TypeWrittenScaled(size: size)) }
     func typeMeta() -> some View { modifier(TypeMeta()) }
     func typeMetaSmall() -> some View { modifier(TypeMeta(small: true)) }
 }

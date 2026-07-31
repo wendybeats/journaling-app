@@ -22,7 +22,12 @@ be flipped with one line.
 7. The Done affordance should be a pill, not bare/circle.
 8. (Week review: consent now arrives day one as of build 2 — no action.)
 
-## Round A — the page feels right (build 3, ~a day)
+> **Status July 31:** Rounds A + B built together (build 3) at Wendell's
+> direction. REC pill design per his markups: dot + REC in a pill, inline
+> with Done, centered; extra line of air under the last written line.
+> Round C (photo) remains.
+
+## Round A — the page feels right (build 3, ~a day) ✅
 
 **A1. Commit timing** — *assumption: long idle, no edit window.*
 The idle timer goes 5 s → **3 minutes**; commit still fires immediately
@@ -53,7 +58,7 @@ system context menu: **Copy** (plain text) and **Share** (system sheet,
 day-headed text). Read-only outbound; permanence untouched. Also works
 on day pages in the archive.
 
-## Round B — voice notes (build 4, ~2 days)
+## Round B — voice notes (shipped with build 3) ✅
 
 *Assumption: a dedicated capture flow, not just keyboard dictation.*
 A quiet mic affordance on the writing surface (mono register, no icon

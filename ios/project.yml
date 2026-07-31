@@ -43,6 +43,8 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: Endpaper can lock your notebook behind Face ID.
+        NSMicrophoneUsageDescription: Endpaper can take spoken notes — the words appear on your page.
+        NSSpeechRecognitionUsageDescription: Speech is transcribed on this device. Nothing leaves your phone.
         UIAppFonts:      # resources copy flat into the bundle root
           - Newsreader.ttf
           - Newsreader-Italic.ttf
@@ -58,7 +60,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.wendellbarton.endpaper
         MARKETING_VERSION: 0.1.0
-        CURRENT_PROJECT_VERSION: 2
+        CURRENT_PROJECT_VERSION: 3
         CODE_SIGN_STYLE: Automatic
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"            # iPhone-first, like the PDP

@@ -21,6 +21,7 @@ struct TodayView: View {
     @State private var ackVisible = false
     @State private var idleCommit: Task<Void, Never>?
     @FocusState private var writingFocused: Bool
+    @StateObject private var voice = VoiceCapture()
 
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
@@ -79,12 +80,17 @@ struct TodayView: View {
                 }
             }
             .padding(.horizontal, Tokens.Space.screenX)
+            // A full line of air under the last written line — the writing
+            // bar sits below and must never crowd the text.
+            .padding(.bottom, Tokens.Space.lg)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.Surface.page)
         .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .bottom) { writingBar }
         .onAppear {
+            voice.onText = { draft = $0 }
             adoptStaleDraft()
             refresh()
             reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
@@ -103,16 +109,39 @@ struct TodayView: View {
             }
         }
         .onDisappear { commit() }   // navigating away commits the session
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button {
-                    writingFocused = false
-                } label: {
-                    Text("Done").typeMeta()
+    }
+
+    // MARK: - The writing bar
+    // Page-colored (never the system's white), REC centered, Done at the
+    // trailing edge while the keyboard is up. `safeAreaInset` keeps it
+    // above the keyboard when writing and at the page foot when not —
+    // the two resting states from Wendell's markups.
+
+    private var writingBar: some View {
+        ZStack {
+            RecPill(recording: voice.isRecording) {
+                if voice.isRecording {
+                    voice.stop()
+                } else {
+                    voice.start(base: draft)
+                }
+            }
+            if writingFocused {
+                HStack {
+                    Spacer()
+                    Button {
+                        writingFocused = false
+                    } label: {
+                        Text("Done").barPill()
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
+        .padding(.horizontal, Tokens.Space.screenX)
+        .padding(.vertical, Tokens.Space.sm)
+        .background(Tokens.Surface.page)
+        .animation(Tokens.Motion.fast, value: writingFocused)
     }
 
     /// Focus the writing surface once the view has settled. The false→true
@@ -134,7 +163,8 @@ struct TodayView: View {
                 text: $draft,
                 axis: .vertical
             )
-            .typeWritten()
+            .typeWrittenScaled(draftSize)
+            .animation(Tokens.Motion.base, value: draftSize)
             .tint(Tokens.Line.cursor)
             .focused($writingFocused)
             .lineLimit(1...)
@@ -142,8 +172,10 @@ struct TodayView: View {
                 draftDay = key
                 idleCommit?.cancel()
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                // Three minutes: a pause to think is not an event. Commit
+                // still fires instantly on Done, leaving, or backgrounding.
                 idleCommit = Task {
-                    try? await Task.sleep(for: .seconds(5))
+                    try? await Task.sleep(for: .seconds(180))
                     if !Task.isCancelled { commit() }
                 }
             }
@@ -156,9 +188,19 @@ struct TodayView: View {
         }
     }
 
+    /// The surface meets your first words large and settles as the draft
+    /// grows — short entries read designed, like a quote.
+    private var draftSize: CGFloat {
+        let len = draft.count
+        if len <= 70 && !draft.contains("\n") { return 28 }
+        if len <= 150 { return 22 }
+        return 17
+    }
+
     // MARK: - Commit choreography
 
     private func commit() {
+        voice.stop()
         idleCommit?.cancel()
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -196,7 +238,60 @@ struct TodayView: View {
     }
 }
 
+// MARK: - Writing-bar furniture (the quiet pill register)
+
+/// Mono uppercase in a hairline capsule — the writing bar's button shape.
+struct BarPill: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .typeMeta()
+            .padding(.horizontal, Tokens.Space.md)
+            .padding(.vertical, Tokens.Space.sm)
+            .overlay(Capsule().strokeBorder(Tokens.Line.rule, lineWidth: 1))
+            .contentShape(Capsule())
+    }
+}
+
+extension View {
+    func barPill() -> some View { modifier(BarPill()) }
+}
+
+/// The mic: a small dot and REC in a pill. The dot is hollow at rest,
+/// ink while recording, breathing slowly — the only motion on the page.
+struct RecPill: View {
+    let recording: Bool
+    var action: () -> Void
+    @State private var breathe = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Tokens.Space.xs) {
+                Circle()
+                    .strokeBorder(Tokens.Dot.filled, lineWidth: 1)
+                    .background(Circle().fill(recording ? Tokens.Dot.filled : .clear))
+                    .frame(width: 6, height: 6)
+                    .opacity(recording && breathe ? 0.35 : 1)
+                Text("Rec")
+            }
+            .barPill()
+        }
+        .buttonStyle(.plain)
+        .onChange(of: recording) { _, on in
+            if on {
+                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                    breathe = true
+                }
+            } else {
+                withAnimation(Tokens.Motion.fast) { breathe = false }
+            }
+        }
+        .accessibilityLabel(recording ? "Stop voice note" : "Start voice note")
+    }
+}
+
 /// One committed session: a small time stamp and the serif paragraphs.
+/// Short single-thought sections render at quote scale; long-press any
+/// section to copy or share it (read-only outbound — permanence holds).
 struct EntrySection: View {
     let entry: Entry
 
@@ -205,9 +300,27 @@ struct EntrySection: View {
             Text(DayFormat.timeOfDay(entry.at))
                 .typeMetaSmall()
             ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
-                Text(para).typeWritten()
+                Text(para).typeWrittenScaled(isQuote ? 24 : 17)
             }
         }
+        .contextMenu {
+            Button {
+                UIPasteboard.general.string = entry.text
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            ShareLink(item: shareText) {
+                Label("Share", systemImage: "square.and.arrow.up")
+            }
+        }
+    }
+
+    private var isQuote: Bool {
+        paragraphs.count == 1 && entry.text.count <= 100
+    }
+
+    private var shareText: String {
+        "\(DayFormat.dayHeading(entry.at)) · \(DayFormat.timeOfDay(entry.at))\n\n\(entry.text)"
     }
 
     private var paragraphs: [String] {
