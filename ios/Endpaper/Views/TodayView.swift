@@ -20,7 +20,7 @@ struct TodayView: View {
     @State private var ack = ""
     @State private var ackVisible = false
     @State private var idleCommit: Task<Void, Never>?
-    @FocusState private var writingFocused: Bool
+    @State private var writingFocused = false   // UIKit truth via LivingWriteView
     @StateObject private var voice = VoiceCapture()
 
     private let now = Date()
@@ -116,9 +116,8 @@ struct TodayView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background || phase == .inactive {
                 commit()
-                // Release focus cleanly. Backgrounding tears the keyboard
-                // down behind SwiftUI's back; a FocusState left `true` with
-                // no keyboard silently eats every later tap on the field.
+                // Release focus cleanly on background so the resign/become
+                // cycle starts fresh on return.
                 writingFocused = false
             } else if phase == .active {
                 focusSoon()
@@ -177,16 +176,15 @@ struct TodayView: View {
 
     private var writingSurface: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
-            TextField(
-                todayEntries.isEmpty ? "Write. This page is yours." : "Write.",
-                text: $draft,
-                axis: .vertical
-            )
-            .typeWrittenScaled(draftSize)
-            .animation(Tokens.Motion.base, value: draftSize)
-            .tint(Tokens.Line.cursor)
-            .focused($writingFocused)
-            .lineLimit(1...)
+            ZStack(alignment: .topLeading) {
+                if draft.isEmpty {
+                    Text(todayEntries.isEmpty ? "Write. This page is yours." : "Write.")
+                        .font(.custom(EndpaperFont.body, size: 28))
+                        .foregroundStyle(Tokens.Text.meta)
+                        .allowsHitTesting(false)
+                }
+                LivingWriteView(text: $draft, focused: $writingFocused)
+            }
             .onChange(of: draft) { _, text in
                 draftDay = key
                 idleCommit?.cancel()
@@ -198,19 +196,12 @@ struct TodayView: View {
                     if !Task.isCancelled { commit() }
                 }
             }
-            .onSubmit(commit)
 
             Text(ack)
                 .typeMetaSmall()
                 .opacity(ackVisible ? 1 : 0)
                 .animation(Tokens.Motion.base, value: ackVisible)
         }
-    }
-
-    /// Four tiers by volume written — WrittenScale, shared with committed
-    /// sections so the size never reverts on Enter or commit.
-    private var draftSize: CGFloat {
-        WrittenScale.size(for: draft)
     }
 
     // MARK: - Commit choreography
@@ -305,9 +296,11 @@ struct RecPill: View {
     }
 }
 
-/// One committed session: a small time stamp and the serif paragraphs.
-/// Short single-thought sections render at quote scale; long-press any
-/// section to copy or share it (read-only outbound — permanence holds).
+/// One committed session: a small time stamp and the serif lines, each
+/// resting at exactly the size it was written — per-line WrittenScale,
+/// the same classifier as the writing surface, so a preserved big line
+/// stays big on the page forever. Long-press to copy or share
+/// (read-only outbound — permanence holds).
 struct EntrySection: View {
     let entry: Entry
 
@@ -315,8 +308,8 @@ struct EntrySection: View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             Text(DayFormat.timeOfDay(entry.at))
                 .typeMetaSmall()
-            ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
-                Text(para).typeWrittenScaled(scale)
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                Text(line).typeWrittenScaled(WrittenScale.size(for: line))
             }
         }
         .contextMenu {
@@ -331,20 +324,14 @@ struct EntrySection: View {
         }
     }
 
-    /// The section rests at exactly the size it was written — WrittenScale,
-    /// same classifier as the draft surface.
-    private var scale: CGFloat {
-        WrittenScale.size(for: entry.text)
-    }
-
     private var shareText: String {
         "\(DayFormat.dayHeading(entry.at)) · \(DayFormat.timeOfDay(entry.at))\n\n\(entry.text)"
     }
 
-    private var paragraphs: [String] {
+    private var lines: [String] {
         entry.text
-            .components(separatedBy: "\n\n")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
     }
 }
