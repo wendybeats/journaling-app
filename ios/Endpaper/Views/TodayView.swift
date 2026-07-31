@@ -27,6 +27,12 @@ struct TodayView: View {
     private var key: String { DayFormat.key(for: now) }
 
     var body: some View {
+        ScrollViewReader { proxy in
+            scroll(proxy)
+        }
+    }
+
+    private func scroll(_ proxy: ScrollViewProxy) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 // The crumb — a bare word in the mono register, like the web
@@ -68,6 +74,10 @@ struct TodayView: View {
                 writingSurface
                     .padding(.top, todayEntries.isEmpty ? Tokens.Space.md : Tokens.Space.lg)
 
+                // The caret's landing light: writing follows the last line
+                // into view instead of sliding under the keyboard.
+                Color.clear.frame(height: 1).id("caret")
+
                 // Consent card / arrivals / January invite (reflection.js flow)
                 ReflectionFlowHost()
                     .padding(.top, Tokens.Space.xl)
@@ -89,6 +99,12 @@ struct TodayView: View {
         .background(Tokens.Surface.page)
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) { writingBar }
+        .onChange(of: draft) { _, _ in
+            guard writingFocused || voice.isRecording else { return }
+            withAnimation(.easeOut(duration: 0.15)) {
+                proxy.scrollTo("caret", anchor: .bottom)
+            }
+        }
         .onAppear {
             voice.onText = { draft = $0 }
             adoptStaleDraft()
@@ -126,7 +142,9 @@ struct TodayView: View {
                     voice.start(base: draft)
                 }
             }
-            if writingFocused {
+            // Done hides while recording — only one control may look like
+            // it stops the take.
+            if writingFocused && !voice.isRecording {
                 HStack {
                     Spacer()
                     Button {
@@ -142,6 +160,7 @@ struct TodayView: View {
         .padding(.vertical, Tokens.Space.sm)
         .background(Tokens.Surface.page)
         .animation(Tokens.Motion.fast, value: writingFocused)
+        .animation(Tokens.Motion.fast, value: voice.isRecording)
     }
 
     /// Focus the writing surface once the view has settled. The false→true
@@ -188,13 +207,10 @@ struct TodayView: View {
         }
     }
 
-    /// The surface meets your first words large and settles as the draft
-    /// grows — short entries read designed, like a quote.
+    /// Four tiers by volume written — WrittenScale, shared with committed
+    /// sections so the size never reverts on Enter or commit.
     private var draftSize: CGFloat {
-        let len = draft.count
-        if len <= 70 && !draft.contains("\n") { return 28 }
-        if len <= 150 { return 22 }
-        return 17
+        WrittenScale.size(for: draft)
     }
 
     // MARK: - Commit choreography
@@ -300,7 +316,7 @@ struct EntrySection: View {
             Text(DayFormat.timeOfDay(entry.at))
                 .typeMetaSmall()
             ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
-                Text(para).typeWrittenScaled(isQuote ? 24 : 17)
+                Text(para).typeWrittenScaled(scale)
             }
         }
         .contextMenu {
@@ -315,8 +331,10 @@ struct EntrySection: View {
         }
     }
 
-    private var isQuote: Bool {
-        paragraphs.count == 1 && entry.text.count <= 100
+    /// The section rests at exactly the size it was written — WrittenScale,
+    /// same classifier as the draft surface.
+    private var scale: CGFloat {
+        WrittenScale.size(for: entry.text)
     }
 
     private var shareText: String {

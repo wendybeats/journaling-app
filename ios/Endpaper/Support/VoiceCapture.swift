@@ -67,16 +67,22 @@ final class VoiceCapture: ObservableObject {
 
         task = recognizer.recognitionTask(with: req) { [weak self] result, error in
             guard let self else { return }
-            if let result {
-                let spoken = result.bestTranscription.formattedString
-                DispatchQueue.main.async {
-                    let joiner = self.base.isEmpty
-                        || self.base.hasSuffix(" ") || self.base.hasSuffix("\n") ? "" : " "
-                    self.onText?(self.base + joiner + spoken)
+            DispatchQueue.main.async {
+                // Once stopped, no late callback may touch the page —
+                // cancellation fires a final callback whose transcription
+                // can reset to (near) empty and would erase the dictation.
+                guard self.isRecording else { return }
+                if let result {
+                    let spoken = result.bestTranscription.formattedString
+                    if !spoken.isEmpty {
+                        let joiner = self.base.isEmpty
+                            || self.base.hasSuffix(" ") || self.base.hasSuffix("\n") ? "" : " "
+                        self.onText?(self.base + joiner + spoken)
+                    }
                 }
-            }
-            if error != nil || result?.isFinal == true {
-                DispatchQueue.main.async { self.stop() }
+                if error != nil || result?.isFinal == true {
+                    self.stop()
+                }
             }
         }
     }

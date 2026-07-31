@@ -55,15 +55,32 @@ struct TypeWritten: ViewModifier {          // 17 / 1.8 — the writing register
     }
 }
 
-/// The writing register at a living size — the surface meets your first
-/// words large (~28) and settles to 17 as the draft grows; short committed
-/// sections render at quote scale (24) so one-line insights sit on the
-/// page like pull quotes. Line height eases toward 1.5 at display sizes
-/// (1.8 at 17 stays load-bearing).
+/// The living size of writing — four tiers, decided by how much was
+/// written, never by newlines or the act of committing. The same
+/// classifier drives the draft surface and committed sections, so what
+/// you see while writing is exactly how it rests on the page:
+///   one word            → 40   a big word idea
+///   up to ten words     → 28   a big idea
+///   up to ~three lines  → 22   a quote
+///   more                → 17   body, the standard register
+enum WrittenScale {
+    static func size(for text: String) -> CGFloat {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.isEmpty { return 28 }
+        let words = t.split(whereSeparator: { $0.isWhitespace }).count
+        if words == 1 && t.count <= 18 { return 40 }
+        if words <= 10 { return 28 }
+        if t.count <= 140 { return 22 }
+        return 17
+    }
+}
+
+/// The writing register at a living size. Line height eases as the size
+/// grows (1.8 at 17 stays load-bearing; display sizes breathe tighter).
 struct TypeWrittenScaled: ViewModifier {
     var size: CGFloat
     func body(content: Content) -> some View {
-        let lh: CGFloat = size >= 24 ? 1.5 : 1.8
+        let lh: CGFloat = size >= 36 ? 1.25 : (size >= 22 ? 1.5 : 1.8)
         return content
             .font(.custom(EndpaperFont.body, size: size))
             .lineSpacing(spacing(family: EndpaperFont.body, size: size, lineHeight: lh))
