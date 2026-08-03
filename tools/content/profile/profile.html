@@ -1,0 +1,96 @@
+<!doctype html>
+<!-- Profile assets — avatar and banners, set like the page.
+     Rendered by render-profile.mjs. Mode is switched at render time by
+     setting body.dataset.mode to: avatar | banner-x | banner-yt. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader-italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1;
+    --ink: #1A1A1A;
+    --written: #262320;
+    --meta: #A9A6A0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --page: #161514; --ink: #E8E6E1; --written: #DEDAD3; --meta: #6B6862; }
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body { background: var(--page); font-family: 'Newsreader', serif; }
+
+  /* Avatar: the mark is "e." — the period is the product. */
+  body[data-mode="avatar"] .avatar {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body[data-mode="avatar"] .mark {
+    font-style: italic;
+    font-size: 620px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    transform: translateY(-4%);
+  }
+  body:not([data-mode="avatar"]) .avatar { display: none; }
+
+  /* Banners: one written line, dots, the address. */
+  body[data-mode^="banner"] .banner {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    gap: 40px;
+  }
+  body:not([data-mode^="banner"]) .banner { display: none; }
+  body[data-mode="banner-x"] .banner { padding: 0 480px 0 120px; }
+  body[data-mode="banner-yt"] .banner {
+    align-items: center; text-align: center;
+    padding: 0 560px;
+  }
+  .banner .dots { display: flex; gap: 12px; }
+  .banner .dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--ink); }
+  .banner .dots span.empty { background: transparent; box-shadow: inset 0 0 0 2px var(--meta); }
+  .banner .line {
+    font-size: 84px;
+    line-height: 1.2;
+    color: var(--written);
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+  .banner .line em { font-style: italic; }
+  .banner .addr {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 24px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--meta);
+  }
+  body[data-mode="banner-yt"] .banner .line { font-size: 96px; }
+  body[data-mode="banner-yt"] .banner .dots { justify-content: center; }
+</style>
+</head>
+<body data-mode="avatar">
+  <div class="avatar"><div class="mark">e.</div></div>
+  <div class="banner">
+    <div class="dots" aria-hidden="true">
+      <span></span><span></span><span class="empty"></span><span></span><span></span><span></span><span class="empty"></span><span></span>
+    </div>
+    <div class="line">A journal written in ink. <em>No editing. No deleting.</em></div>
+    <div class="addr">Endpaper &nbsp;·&nbsp; endpaper.space</div>
+  </div>
+</body>
+</html>
