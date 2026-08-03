@@ -1163,9 +1163,9 @@ main.entering { animation: view-enter var(--motion-base) var(--motion-ease); }
 const storage = (() => {
   try {
     const t = '__endpaper_probe__';
-    storage.setItem(t, t);
-    storage.removeItem(t);
-    return storage;
+    localStorage.setItem(t, t);
+    localStorage.removeItem(t);
+    return localStorage;
   } catch {
     const m = new Map();
     return {
@@ -1346,7 +1346,11 @@ function monthAbbr(m) {
 
 const STATE_KEY = 'endpaper.reflection.v1';
 
-function load() {
+// NOTE: this section came from a separate module; in the flattened
+// preview its load/persist must not shadow the entries store's pair
+// (function declarations collide silently — the shadowing broke entry
+// persistence entirely).
+function loadReflectionState() {
   try {
     return JSON.parse(storage.getItem(STATE_KEY)) ?? {};
   } catch {
@@ -1354,9 +1358,9 @@ function load() {
   }
 }
 
-let state = load();
+let state = loadReflectionState();
 
-function persist() {
+function persistReflectionState() {
   storage.setItem(STATE_KEY, JSON.stringify(state));
 }
 
@@ -1366,12 +1370,12 @@ function consentStatus() {
 
 function setConsent(value) {
   state.consent = value;
-  persist();
+  persistReflectionState();
 }
 
 function resetReflections() {
   state = {};
-  persist();
+  persistReflectionState();
 }
 
 /** Sunday that starts the last fully completed week. */
@@ -1670,12 +1674,12 @@ function consentEligible(now = new Date()) {
 function markSeen(signal) {
   state.seen = { ...(state.seen ?? {}), [signal.id]: true };
   state.archived = { ...(state.archived ?? {}), [signal.id]: signal };
-  persist();
+  persistReflectionState();
 }
 
 function removeReflection(id) {
   delete state.archived?.[id];
-  persist();
+  persistReflectionState();
 }
 
 /** Archived reflections, keyed by signal id. */
@@ -2739,7 +2743,7 @@ function showMonthlyRecap(signal, { onDone } = {}) {
 
 const MATRIX_DOT_STAGGER_MS = 14;
 const MATRIX_MS = 6000;
-const STATS_MS = 6000;
+// STATS_MS shared with the recap section above (single flattened scope).
 const TOPICS_MS = 6000;
 const REVEAL_MS = 7000;
 

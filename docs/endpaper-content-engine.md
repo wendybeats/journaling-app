@@ -102,6 +102,32 @@ first advocate wave.
 generate the month-end dot format themselves; January year-review season
 is the first big organic moment.
 
+## Addendum (Aug 2, from the AI-UGC playbook review)
+
+Reviewed the 2026 mobile AI-UGC playbook (videoai.me's own content —
+discount the tool pitch, keep the mechanics). Adopted:
+
+1. **Weekly kill/scale cycle** — losers die Friday, winners spawn
+   same-family variants; replaces the softer 4-week format cut.
+2. **Hook library** — `content/hooks.md`, 50–100 hooks tagged by
+   audience/theme/performance, mined from App Store reviews, Reddit
+   (r/Journaling, r/digitalminimalism), TikTok comments, and TestFlight
+   feedback. The engine writes captions from the library, not from
+   scratch.
+3. **Craft rules**: hook lands ≤1.5 s; captions burned in (muted
+   feeds); app identity visible at second 0 and at CTA.
+4. **One variable per variant set** — hooks × one visual, or one hook ×
+   visuals; never both.
+5. **Paid lane at launch** — Spark/Meta on proven organic winners,
+   $20–50/day tests, variant IDs via promo codes + UTMs.
+
+Explicitly rejected: **AI actors / synthetic testimonials / cloned-voice
+personas.** Endpaper's positioning is no-AI and nothing-fake; synthetic
+faces making first-person practice claims would be brand-corrosive and
+are fabricated-endorsement territory besides. The product is the actor —
+the screen itself is the pattern interrupt. Human moments are Wendell,
+on camera, for real.
+
 ## Build order (machine side)
 
 1. `tools/content/` — Playwright render harness: seed → capture stills
