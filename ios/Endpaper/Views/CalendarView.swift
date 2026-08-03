@@ -194,6 +194,7 @@ struct CalendarView: View {
     // MARK: Month register — paged, one month per screen
 
     private func monthPager(year: Int) -> some View {
+        ScrollViewReader { sp in
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(1...12, id: \.self) { month in
@@ -222,6 +223,15 @@ struct CalendarView: View {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $pagedMonth)
         .scrollIndicators(.hidden)
+        .onAppear {
+            // LazyVStack ignores the initial scrollPosition binding, which
+            // stranded every arrival on January. Assert the tapped month
+            // the moment the pager mounts (it lands under the stage, so
+            // the jump is never seen).
+            if let key = pagedMonth ?? anchor?.key {
+                sp.scrollTo(key, anchor: .top)
+            }
+        }
         .overlay(alignment: .topLeading) {
             if !singleMonthRoot {
                 Button {
@@ -234,6 +244,7 @@ struct CalendarView: View {
                 .padding(.top, Tokens.Space.md)
             }
         }
+        }   // ScrollViewReader
     }
 
     // MARK: The legs
@@ -588,17 +599,16 @@ private struct YearBlock: View {
             }
             ForEach(1...12, id: \.self) { month in
                 let written = (counts[String(format: "%04d-%02d", year, month)] ?? [:]).count
-                let isCurrent = today.year == year && today.month == month
+                // Every month row is a touch target — tapping July lands on
+                // July; an accidental adjacent month is one swipe away.
                 Color.clear
                     .contentShape(Rectangle())
                     .frame(width: size.width, height: CalendarLayout.yearRowH)
                     .position(x: size.width / 2, y: CGFloat(month - 1) * CalendarLayout.yearRowH + CalendarLayout.yearRowH / 2)
-                    .onTapGesture {
-                        if written > 0 || isCurrent { onTapMonth(month) }
-                    }
+                    .onTapGesture { onTapMonth(month) }
                     .accessibilityElement()
                     .accessibilityLabel("\(DayFormat.monthName(month)) \(String(year)), \(written) days written")
-                    .accessibilityAddTraits(written > 0 || isCurrent ? .isButton : [])
+                    .accessibilityAddTraits(.isButton)
             }
         }
         .frame(width: size.width, height: size.height)

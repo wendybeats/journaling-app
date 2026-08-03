@@ -114,23 +114,33 @@ struct NotebookDay: View {
     }
 }
 
-/// The day's writing; the first paragraph carries the two-line drop cap.
+/// The day's writing, line by line at the size it was written — the same
+/// WrittenScale classifier as the writing surface, so a preserved big
+/// word stays big in the notebook too. The two-line drop cap dresses the
+/// first line only when that line is body scale; a display-size opening
+/// line is already its own initial. All text is selectable — people will
+/// want to carry their own words out.
 struct DayText: View {
     let text: String
     var dropCap = false
 
     var body: some View {
-        let paragraphs = text
-            .components(separatedBy: "\n\n")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let lines = text
+            .components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
-        VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            ForEach(Array(paragraphs.enumerated()), id: \.offset) { index, para in
-                if dropCap && index == 0 {
-                    DropCapParagraph(text: para)
+        VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+            ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                let size = WrittenScale.size(for: line)
+                if dropCap && index == 0 && size == 17 {
+                    DropCapParagraph(text: line)
                 } else {
-                    Text(para).typeWritten()
+                    Text(line)
+                        .typeWrittenScaled(size)
+                        .textSelection(.enabled)
+                        .padding(.top, size >= 36 ? 6 : 0)
+                        .padding(.bottom, size >= 36 ? 2 : 0)
                 }
             }
         }
@@ -210,7 +220,7 @@ private struct DropCapBody: UIViewRepresentable {
         let tv = UITextView()
         tv.isEditable = false
         tv.isScrollEnabled = false
-        tv.isSelectable = false
+        tv.isSelectable = true      // read-only, but words can be carried out
         tv.backgroundColor = .clear
         tv.textContainerInset = .zero
         tv.textContainer.lineFragmentPadding = 0

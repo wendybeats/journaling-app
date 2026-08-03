@@ -317,6 +317,7 @@ struct EntrySection: View {
                 let size = WrittenScale.size(for: line)
                 Text(line)
                     .typeWrittenScaled(size)
+                    .textSelection(.enabled)
                     .padding(.top, size >= 36 ? 6 : 0)
                     .padding(.bottom, size >= 36 ? 2 : 0)
             }
