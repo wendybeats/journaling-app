@@ -1,0 +1,16 @@
+[
+  { "id": "permanence", "size": 72,
+    "html": "What you write can’t be edited or deleted.<br>That’s the point." },
+  { "id": "no-server", "size": 64,
+    "html": "No account. No server. No analytics.<br>We couldn’t read your journal if we wanted to." },
+  { "id": "no-ai", "size": 72,
+    "html": "No AI. No advice.<br><em>Your own words, read back.</em>" },
+  { "id": "open-write-close", "size": 96,
+    "html": "Open. Write. Close." },
+  { "id": "constellations", "size": 64,
+    "html": "Months become constellations. A year becomes something you can hold." },
+  { "id": "notebook-price", "size": 64,
+    "html": "About the price of one good paper notebook." },
+  { "id": "like-ink", "size": 72,
+    "html": "Write like it’s ink.<br>Because it is." }
+]
