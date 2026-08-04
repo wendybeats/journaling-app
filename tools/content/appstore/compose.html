@@ -1,0 +1,77 @@
+<!doctype html>
+<!-- App Store screenshot compositor — caption in the brand register, the
+     app in a quiet device frame beneath. Driven by render-appstore.mjs,
+     which sets the caption, scheme, and the framed screen image. Sized in
+     vw so the 6.9" and 6.5" canvases share one layout. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader-italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1;
+    --ink: #1A1A1A;
+    --written: #262320;
+    --meta: #A9A6A0;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3; --meta: #6B6862;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body {
+    background: var(--page);
+    font-family: 'Newsreader', serif;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 7vw 8vw 0;
+    gap: 5.5vw;
+  }
+  header { width: 100%; display: flex; flex-direction: column; gap: 3vw; }
+  .dots { display: flex; gap: 1.1vw; }
+  .dots span { width: 1vw; height: 1vw; border-radius: 50%; background: var(--ink); }
+  .dots span.empty { background: transparent; box-shadow: inset 0 0 0 0.16vw var(--meta); }
+  .caption {
+    font-size: 6.4vw;
+    line-height: 1.22;
+    color: var(--written);
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+  .caption em { font-style: italic; }
+  /* The device: a hairline-edged slab of the page itself — no fake
+     hardware, just the screen with phone-like corners. */
+  .device {
+    width: 76vw;
+    border-radius: 7vw;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 0.18vw var(--meta),
+      0 2.4vw 7vw rgba(0,0,0,0.18);
+  }
+  .device img { display: block; width: 100%; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="dots" aria-hidden="true">
+      <span></span><span></span><span class="empty"></span><span></span><span></span><span></span><span class="empty"></span><span></span>
+    </div>
+    <div class="caption" id="caption">Open. Write. Close.</div>
+  </header>
+  <div class="device"><img id="screen" alt=""></div>
+</body>
+</html>
