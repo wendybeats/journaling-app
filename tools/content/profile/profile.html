@@ -46,7 +46,21 @@
     letter-spacing: -0.02em;
     transform: translateY(-4%);
   }
-  body:not([data-mode="avatar"]) .avatar { display: none; }
+  body:not([data-mode="avatar"]):not([data-mode="icon"]) .avatar { display: none; }
+
+  /* App icon: same mark, sized for the masked corner radius. */
+  body[data-mode="icon"] .avatar {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body[data-mode="icon"] .mark {
+    font-style: italic;
+    font-size: 660px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    transform: translateY(-4%);
+  }
 
   /* Banners: one written line, dots, the address. */
   body[data-mode^="banner"] .banner {

@@ -16,6 +16,7 @@ struct TodayView: View {
 
     @State private var todayEntries: [Entry] = []
     @State private var reminderOffer = false
+    @State private var reviewOffer = false
     @State private var settlingID: UUID?
     @State private var ack = ""
     @State private var ackVisible = false
@@ -88,6 +89,13 @@ struct TodayView: View {
                     ReminderCard()
                         .padding(.top, Tokens.Space.xl)
                 }
+
+                // The rating ask waits its turn behind every other card —
+                // one ask per page, and this is the least urgent of them.
+                if reviewOffer {
+                    ReviewAskCard()
+                        .padding(.top, Tokens.Space.xl)
+                }
             }
             .padding(.horizontal, Tokens.Space.screenX)
             // A full line of air under the last written line — the writing
@@ -109,8 +117,9 @@ struct TodayView: View {
             voice.onText = { draft = $0 }
             adoptStaleDraft()
             refresh()
-            reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
-                && !ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
+            let consentPending = ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
+            reminderOffer = ReminderManager.shouldOfferPrompt(in: context) && !consentPending
+            reviewOffer = ReviewAskState.eligible(in: context) && !consentPending && !reminderOffer
             focusSoon()   // cursor ready — the app opens writable
         }
         .onChange(of: scenePhase) { _, phase in

@@ -8,6 +8,7 @@ import SwiftUI
 
 struct PaywallView: View {
     @ObservedObject private var gate = TrialGate.shared
+    @State private var redeeming = false
 
     var body: some View {
         VStack(spacing: Tokens.Space.md) {
@@ -42,10 +43,20 @@ struct PaywallView: View {
             }
             .padding(.top, Tokens.Space.xl)
 
+            // Founding-member codes redeem here; the resulting transaction
+            // arrives through Transaction.updates and lifts the gate.
+            Button {
+                redeeming = true
+            } label: {
+                Text("Have a code?").typeMetaSmall()
+            }
+            .padding(.top, Tokens.Space.sm)
+
             Spacer()
         }
         .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
         .background(Tokens.Surface.page.ignoresSafeArea())
+        .offerCodeRedemption(isPresented: $redeeming)
     }
 
     private var priceLine: String {

@@ -15,6 +15,8 @@ enum AppKeys {
     static let reminderMinute = "endpaper.reminder.minute.v1" // Int, default 0
     static let reflection = "endpaper.reflection.v1"  // consent state (round 2 port)
     static let faceLock = "endpaper.facelock.v1"      // Bool — lock the app behind Face ID
+    static let reviewAsk = "endpaper.reviewask.v1"    // "itIs" | "notYet" — answered once, kept forever
+    static let signals = "endpaper.signals.v1"        // [String] — local-only event notes (Signals.swift)
 }
 
 enum AccountMode: String {

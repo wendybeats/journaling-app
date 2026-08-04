@@ -4,6 +4,7 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
@@ -16,6 +17,7 @@ struct SettingsView: View {
     @State private var replaying = false
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
+    @State private var redeeming = false
 
     var body: some View {
         ScrollView {
@@ -105,6 +107,20 @@ struct SettingsView: View {
 
                 rule
 
+                // --- Founding / offer codes ---
+                // Redeemable before the paywall ever appears, so a founding
+                // member's year starts on day one, not day eight.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Button { redeeming = true } label: {
+                        Text("Redeem a code").typeWritten()
+                    }
+                    .buttonStyle(.plain)
+                    Text("Founding-member and gift codes")
+                        .typeMetaSmall()
+                }
+
+                rule
+
                 Text("Endpaper · no analytics, no tracking")
                     .typeMetaSmall()
             }
@@ -118,6 +134,7 @@ struct SettingsView: View {
         .fullScreenCover(isPresented: $replaying) {
             OnboardingView(replay: true) { replaying = false }
         }
+        .offerCodeRedemption(isPresented: $redeeming)
         .onAppear {
             let (h, m) = ReminderManager.chosenTime
             reminderTime = Calendar.current.date(bySettingHour: h, minute: m, second: 0, of: .now) ?? .now

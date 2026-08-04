@@ -17,6 +17,7 @@ const url = 'file://' + resolve(here, 'profile/profile.html');
 
 const TARGETS = [
   ['avatar', { width: 1000, height: 1000 }],
+  ['icon', { width: 1024, height: 1024 }],
   ['banner-x', { width: 1500, height: 500 }],
   ['banner-yt', { width: 2560, height: 1440 }],
 ];
