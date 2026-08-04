@@ -43,12 +43,13 @@ const SHOTS = [
     caption: 'The honest version of your year.' },
 ];
 
-// App Store Connect takes a single iPhone set now (6.9-inch, auto-scaled
-// to older devices). Both accepted pixel sizes are rendered; upload ONE
-// set — 1320×2868 first choice, 1290×2796 the fallback.
+// Which sizes ASC wants depends on the app record's screenshot slots —
+// Wendell's shows "iPhone 6.5-inch Display" (1284×2778). All three
+// accepted portrait sizes render; upload whichever set the slot names.
 const SIZES = [
   ['1320x2868', { width: 1320, height: 2868 }],
   ['1290x2796', { width: 1290, height: 2796 }],
+  ['1284x2778', { width: 1284, height: 2778 }],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
