@@ -43,10 +43,12 @@ const SHOTS = [
     caption: 'The honest version of your year.' },
 ];
 
-// Required portrait canvases: 6.9" and 6.5".
+// App Store Connect takes a single iPhone set now (6.9-inch, auto-scaled
+// to older devices). Both accepted pixel sizes are rendered; upload ONE
+// set — 1320×2868 first choice, 1290×2796 the fallback.
 const SIZES = [
-  ['69', { width: 1320, height: 2868 }],
-  ['65', { width: 1284, height: 2778 }],
+  ['1320x2868', { width: 1320, height: 2868 }],
+  ['1290x2796', { width: 1290, height: 2796 }],
 ];
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });

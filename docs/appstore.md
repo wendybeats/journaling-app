@@ -1,7 +1,10 @@
 # App Store listing — Endpaper
 
 Everything App Store Connect asks for, in submission order. Screenshots
-come from `tools/content/render-appstore.mjs` (6 shots × 6.9" + 6.5").
+come from `tools/content/render-appstore.mjs` — six shots in both accepted
+6.9" pixel sizes. ASC takes ONE iPhone set and auto-scales it to older
+devices: upload the 1320×2868 files (or the 1290×2796 set if the first is
+refused), never both.
 
 ## Identity
 
