@@ -31,6 +31,12 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | The one app on my phone with no red dot, no badge, no push | quiet tech | minimalists | card / clip | fresh |
 | Writing that counts because it can't be taken back | permanence | practice crowd | card | fresh |
 | My journal costs what one good paper notebook costs | price | fence-sitters | card | fresh |
+| [quote worth keeping], shown on the page it was written on | quotes | everyone | app still | fresh |
+| Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | fresh |
+| This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
+| Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |
+| A writing exercise for the day you have nothing to say | recs | lapsed journalers | list card | fresh |
+| Journaling prompts that don't ask how you feel | recs | skeptics | list card / carousel | fresh |
 
 ## Family notes
 
@@ -41,3 +47,26 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 - **Dots** is the repeatable identity format (month-end cadence).
 - **Maker log** hooks come from the actual git history and beta diary —
   never invent one.
+
+## Pillars (logged 2026-08, Wendell voice note)
+
+The page should be a destination for knowledge with an aesthetic people
+return to — promos mixed in sparingly, not a link-out billboard. Three
+pillars beyond the product families above:
+
+1. **Quotes on the page** — interesting/worth-keeping lines shown inside
+   the actual writing surface, the app as the picture frame. Sources:
+   public-domain writers on attention/honesty/memory, or (with explicit
+   permission) beta users' lines. Never invented "user" quotes. Renderer
+   note: the day-page template can set an arbitrary entry — a
+   quote-card mode is a small render-app.mjs variant when needed.
+2. **Founder videos, single take** — 60 seconds, Wendell to camera,
+   explicitly framed by the product rule: recorded once, mistakes kept,
+   like the journal. Say the frame out loud in the video — the format IS
+   the pitch. No cuts, no teleprompter polish. First one: "This is who I
+   am, this is what I'm building."
+3. **Recommendations** — books, writing exercises, prompt lists. List
+   cards and carousels in the brand register. Give value with no ask;
+   the app appears only as the page the list is written on.
+
+Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
