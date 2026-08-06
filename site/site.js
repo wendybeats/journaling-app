@@ -15,6 +15,34 @@ function onceInView(el, run, threshold = 0.4) {
   }, { threshold }).observe(el);
 }
 
+/* --- The writable page: today's date, and type that settles as you write ---- */
+/* Same register as the app (search bar fits 42→17px); here the written
+   type starts large and steps down as the entry grows, exactly the
+   feeling of the app's living write surface. */
+
+const tryPage = document.getElementById('try-page');
+if (tryPage) {
+  const day = document.getElementById('page-day');
+  const date = document.getElementById('page-date');
+  const write = document.getElementById('page-write');
+  const hint = document.getElementById('page-hint');
+
+  const now = new Date();
+  day.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  date.textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const SIZES = [[0, 26], [45, 23], [100, 20], [170, 18], [260, 17]];
+  write.addEventListener('input', () => {
+    hint.classList.add('gone');
+    const len = write.textContent.length;
+    let size = SIZES[0][1];
+    for (const [at, px] of SIZES) if (len >= at) size = px;
+    write.style.fontSize = size + 'px';
+  });
+  write.addEventListener('focus', () => hint.classList.add('gone'));
+  tryPage.addEventListener('click', () => write.focus());
+}
+
 /* --- Week register: seven dots, a day fills at a time, once ----------------- */
 
 const week = document.getElementById('week-reg');

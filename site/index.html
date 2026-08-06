@@ -43,8 +43,24 @@
     <div class="deep-intro">
       <h2>Dive <span class="accent-i">Deep</span></h2>
       <p class="lede">Endpaper is your personal writing space to&nbsp;explore your own mind.</p>
-      <div class="device">
-        <img src="img/app-today.png" alt="Endpaper’s Today page — the date, a blank page, and a ready cursor." width="780" height="1688" loading="lazy">
+      <div class="lockup">
+        <div class="device side">
+          <img src="img/app-notebook.png" alt="The Notebook — every written day, read like a book." width="780" height="1688" loading="lazy">
+        </div>
+        <div class="device page" id="try-page">
+          <div class="page-top">
+            <span>Endpaper</span><span id="page-date"></span>
+          </div>
+          <h3 class="page-day" id="page-day"></h3>
+          <div class="page-rule" aria-hidden="true"></div>
+          <div class="page-write" id="page-write" contenteditable="true" role="textbox" aria-multiline="true"
+               aria-label="Try the page — write something" spellcheck="false"
+               data-placeholder="Write. This page is yours."></div>
+          <div class="page-hint" id="page-hint">TAP THE PAGE · TYPE</div>
+        </div>
+        <div class="device side">
+          <img src="img/app-calendar.png" alt="The Calendar — a year of days as dots." width="780" height="1688" loading="lazy">
+        </div>
       </div>
     </div>
 
