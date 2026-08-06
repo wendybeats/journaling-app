@@ -1,0 +1,7 @@
+# Per-platform attribution paths — the only URL a social bio can hold.
+# The ref lands in the query string; App Store links can carry it onward.
+/tt  /?ref=tiktok     302
+/ig  /?ref=instagram  302
+/x   /?ref=x          302
+/yt  /?ref=youtube    302
+/th  /?ref=threads    302

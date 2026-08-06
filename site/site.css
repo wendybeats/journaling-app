@@ -105,10 +105,12 @@ h2 { font-size: clamp(34px, 5.5vw, 56px); }
 
 .kicker {
   font-family: var(--font-meta);
-  font-size: 14px;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--graphite);
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 .lede {
@@ -123,7 +125,7 @@ section { position: relative; }
 
 .hero, .closing {
   text-align: center;
-  padding: 96px 0 140px;
+  padding: 88px 0 104px;
 }
 .hero .kicker, .closing .kicker { margin-top: 22px; }
 .hero h1, .closing h2 { max-width: 15ch; margin: 28px auto 0; }
@@ -131,8 +133,8 @@ section { position: relative; }
 .deep {
   background: var(--ink);
   color: var(--bone-raised);
-  padding: 170px 0 140px;
-  margin-top: 110px;
+  padding: 140px 0 120px;
+  margin-top: 72px;
 }
 .deep h1, .deep h2 { color: var(--bone-raised); }
 .deep .kicker { color: var(--bone-soft); }
@@ -153,6 +155,16 @@ section { position: relative; }
 .deep-intro h2 { margin: 0 auto; font-size: clamp(40px, 6vw, 64px); }
 .deep-intro .lede { max-width: 42ch; margin: 26px auto 0; }
 
+/* the product, once — a hairline-framed phone, no fake hardware */
+.device {
+  width: min(300px, 74vw);
+  margin: 72px auto 0;
+  border-radius: 34px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--hairline-dk);
+}
+.device img { display: block; width: 100%; height: auto; }
+
 /* feature rows */
 .feature:not(.flip) { padding-left: 64px; padding-right: 64px; }
 .feature {
@@ -160,15 +172,16 @@ section { position: relative; }
   grid-template-columns: 1fr 1fr;
   gap: 72px;
   align-items: center;
-  padding: 220px 0 0;
+  padding: 150px 0 0;
 }
 .feature.flip .copy { order: 2; }
 .feature.flip .art { order: 1; }
 .feature h2 { font-size: clamp(34px, 4.5vw, 48px); }
-.feature ul { list-style: none; margin-top: 40px; display: grid; gap: 30px; }
+.feature ul { list-style: none; margin-top: 40px; display: grid; gap: 26px; }
 .feature li {
   position: relative;
   padding-left: 34px;
+  max-width: 30ch;
   font-size: 18px;
   line-height: 1.6;
   color: var(--bone-soft);
@@ -185,11 +198,11 @@ section { position: relative; }
 
 .only-human {
   text-align: center;
-  padding: 240px 0 60px;
+  padding: 160px 0 20px;
 }
 .only-human .lede { max-width: 40ch; margin: 26px auto 0; }
 
-.closing { padding-top: 150px; }
+.closing { padding-top: 120px; }
 
 /* --- The App Store badge (black, official style) ----------------------------- */
 
@@ -242,10 +255,11 @@ section { position: relative; }
   background: var(--ink);
 }
 
-/* week register: seven dots, filling one day at a time (site.js) */
-.week-reg { display: flex; align-items: center; gap: 22px; }
+/* week register: seven dots, filling one day at a time (site.js).
+   Sized in clamp so all seven always fit the smallest viewport. */
+.week-reg { display: flex; align-items: center; gap: clamp(12px, 3.2vw, 22px); }
 .week-reg .dot {
-  width: 40px; height: 40px;
+  width: clamp(26px, 8vw, 40px); height: clamp(26px, 8vw, 40px);
   background: var(--hairline-dk);
   transition: background 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
               transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -322,13 +336,16 @@ footer.site a:hover { color: var(--bone-soft); }
 /* --- Small screens ----------------------------------------------------------- */
 
 @media (max-width: 760px) {
-  .feature { grid-template-columns: 1fr; gap: 44px; padding-top: 96px; }
+  .feature { grid-template-columns: 1fr; gap: 44px; padding-top: 88px; }
   .feature:not(.flip) { padding-left: 0; padding-right: 0; }
   .feature.flip .copy { order: 1; }
   .feature.flip .art { order: 2; }
-  .art { justify-content: flex-start; }
-  .hero, .closing { padding: 64px 0 110px; }
-  .deep { padding: 110px 0 96px; }
+  .art { justify-content: center; }
+  .hero, .closing { padding: 56px 0 88px; }
+  .deep { padding: 96px 0 80px; margin-top: 56px; }
+  .device { margin-top: 56px; }
+  .only-human { padding-top: 110px; }
+  footer.site .links { gap: 18px; flex-wrap: wrap; }
 }
 
 /* --- Reduce motion ------------------------------------------------------------ */
