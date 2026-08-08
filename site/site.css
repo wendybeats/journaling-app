@@ -133,8 +133,8 @@ section { position: relative; }
 .deep {
   background: var(--ink);
   color: var(--bone-raised);
-  padding: 140px 0 120px;
-  margin-top: 72px;
+  padding: 24px 0 120px;
+  margin-top: 40px;
   overflow: hidden;
 }
 /* the deep sea — faint dot trails sinking from the seam into the ink.
@@ -441,7 +441,7 @@ footer.site a:hover { color: var(--bone-soft); }
     justify-content: center;
     align-items: center;
   }
-  .deep { padding: 96px 0 80px; margin-top: 56px; }
+  .deep { padding: 16px 0 80px; margin-top: 32px; }
   .only-human { padding-top: 110px; }
   footer.site .links { gap: 18px; flex-wrap: wrap; }
 
