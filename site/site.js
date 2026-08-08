@@ -25,10 +25,11 @@ const sea = document.getElementById('deep-sea');
 if (sea) {
   const ctx = sea.getContext('2d');
   const DOT = '#EFEDE8';                      // bone-raised, from the token sheet
-  const LIFE = 3200;                          // stamp lifetime, ms
+  const LIFE = 9000;                          // stamp lifetime — long, slow tails
+  const STEP = 7;                             // px of travel between dots — dense, beaded strands
   const BASE_ALPHA = 0.12;                    // never brighter than this
   let W = 0, H = 0, dpr = 1, sprite = null;
-  let particles = [], stamps = [], head = 0, CAP = 1400;
+  let particles = [], stamps = [], head = 0, CAP = 2600;
   let running = false, raf = 0, last = 0, t = 0;
 
   function size() {
@@ -47,7 +48,7 @@ if (sea) {
     g.addColorStop(0, DOT); g.addColorStop(0.55, DOT); g.addColorStop(1, 'transparent');
     sc.fillStyle = g;
     sc.beginPath(); sc.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); sc.fill();
-    const n = W < 760 ? 20 : 34;
+    const n = W < 760 ? 14 : 26;
     particles = Array.from({ length: n }, spawn);
     stamps = []; head = 0;
   }
@@ -55,20 +56,21 @@ if (sea) {
   function spawn() {
     return {
       x: Math.random() * W,
-      y: -20 - Math.random() * 60,
+      y: -20 - Math.random() * 80,
       phase: Math.random() * Math.PI * 2,
-      speed: 22 + Math.random() * 26,          // px/s — a slow sink
+      speed: 30 + Math.random() * 22,          // px/s — a slow, steady sink
       trail: 0,
-      r: 1.1 + Math.random() * 1.3,
+      r: 1.1 + Math.random() * 1.2,
     };
   }
 
-  // Mostly downward, swaying up to ~60° either side — layered sines make
-  // neighboring paths curl together into loose, changing threads.
+  // Man-o-war tentacles: dominantly vertical, swaying at most ~20° —
+  // one long S along the strand's depth, one slow breath in time.
   function angle(p) {
     return Math.PI / 2
-      + Math.sin(p.y * 0.005 + t * 0.00030 + p.phase) * 1.0
-      + Math.sin(p.x * 0.007 - t * 0.00021) * 0.6;
+      + Math.sin(p.y * 0.006 + p.phase) * 0.24
+      + Math.sin(t * 0.00035 + p.phase * 1.7) * 0.10
+      + Math.sin(p.x * 0.004 - t * 0.0002) * 0.06;
   }
 
   function step(now) {
@@ -79,21 +81,28 @@ if (sea) {
       p.x += Math.cos(a) * p.speed * dt;
       p.y += Math.sin(a) * p.speed * dt;
       p.trail += p.speed * dt;
-      if (p.trail > 11) {                      // a dot every ~11px of travel
+      if (p.trail > STEP) {
         p.trail = 0;
         stamps[head % CAP] = { x: p.x, y: p.y, r: p.r, born: now };
         head++;
       }
-      if (p.y > H * 0.94 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
+      if (p.y > H * 0.96 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
     }
     ctx.clearRect(0, 0, W, H);
     for (const s of stamps) {
       if (!s) continue;
       const age = (now - s.born) / LIFE;
       if (age >= 1) continue;
-      const depth = 1 - Math.pow(Math.max(s.y, 0) / H, 1.35);  // gone by the bottom
-      ctx.globalAlpha = BASE_ALPHA * (1 - age) * depth;
-      const d = s.r * 2 + 4;
+      // The strand holds its brightness for most of its life, then lets
+      // go quickly — so a tentacle reads as one piece, eroding from the
+      // top as its tip extends. Depth does the dissolving; a short
+      // fade-in stops new dots from popping.
+      const hold = Math.min(1, (1 - age) * 3);
+      const arrive = Math.min(1, (now - s.born) / 250);
+      const depth = 1 - Math.pow(Math.max(s.y, 0) / H, 1.35);
+      ctx.globalAlpha = BASE_ALPHA * hold * arrive * depth;
+      const taper = 1 - 0.35 * Math.max(s.y, 0) / H;           // strands thin with depth
+      const d = (s.r * 2 + 4) * taper;
       ctx.drawImage(sprite, s.x - d / 2, s.y - d / 2, d, d);
     }
     ctx.globalAlpha = 1;
@@ -110,10 +119,10 @@ if (sea) {
   size();
   addEventListener('resize', () => { stop(); size(); settled(); start(); });
 
-  // Fast-forward the sim so the sea is already alive on first sight.
+  // Fast-forward the sim so full-length tentacles hang on first sight.
   function settled() {
     const now = performance.now();
-    for (let i = 0; i < 360; i++) { last = now - (360 - i) * 16; running = false; stepOnce(now - (359 - i) * 16); }
+    for (let i = 0; i < 700; i++) stepOnce(now - (699 - i) * 16);
   }
   function stepOnce(fake) {
     const dt = 16 / 1000; t = fake;
@@ -122,8 +131,8 @@ if (sea) {
       p.x += Math.cos(a) * p.speed * dt;
       p.y += Math.sin(a) * p.speed * dt;
       p.trail += p.speed * dt;
-      if (p.trail > 11) { p.trail = 0; stamps[head % CAP] = { x: p.x, y: p.y, r: p.r, born: fake }; head++; }
-      if (p.y > H * 0.94 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
+      if (p.trail > STEP) { p.trail = 0; stamps[head % CAP] = { x: p.x, y: p.y, r: p.r, born: fake }; head++; }
+      if (p.y > H * 0.96 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
     }
   }
 
