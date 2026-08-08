@@ -75,6 +75,18 @@ once the 30 codes are gone.)
 >
 > Made by one person, slowly. A human reads every email:
 > hello@endpaper.space
+>
+> Endpaper is $39.99/year after a 7-day free trial. The subscription
+> renews automatically unless cancelled at least 24 hours before the
+> period ends — manage it anytime in iOS Settings → Subscriptions.
+>
+> Privacy Policy: https://endpaper.space/privacy.html
+> Terms of Use (EULA): https://endpaper.space/terms.html
+
+The last block is REQUIRED (guideline 3.1.2 — first submission was
+rejected for a missing Terms of Use link). Auto-renew apps must carry a
+functional ToU/EULA link in the description; ours qualifies because
+terms.html incorporates Apple's standard EULA by reference.
 
 ## What's New (1.0)
 
