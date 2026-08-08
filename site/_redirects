@@ -1,3 +1,9 @@
+# Clean URLs for pages referenced from App Store metadata — these MUST
+# resolve (a dead Terms link is a 3.1.2 rejection).
+/privacy  /privacy.html  200
+/terms    /terms.html    200
+/support  /support.html  200
+
 # Per-platform attribution paths — the only URL a social bio can hold.
 # The ref lands in the query string; App Store links can carry it onward.
 /tt  /?ref=tiktok     302

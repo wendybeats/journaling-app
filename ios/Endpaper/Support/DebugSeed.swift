@@ -163,6 +163,23 @@ enum DebugSeed {
         UserDefaults.standard.set(seededIDs, forKey: seededIDsKey)
     }
 
+    /// Production safety: a TestFlight tester who seeded demo data and then
+    /// moved to the App Store build would be stuck with a year of fake
+    /// entries in a journal that can't delete — with the demo controls
+    /// hidden. On production launches, silently remove any leftover seeded
+    /// batch (entries only; reflection/reminder state is left alone).
+    static func sweepProductionLeftovers(in context: ModelContext) {
+        guard !AppEnv.demoControls else { return }
+        let ids = Set(UserDefaults.standard.stringArray(forKey: seededIDsKey) ?? [])
+        guard !ids.isEmpty else { return }
+        let all = (try? context.fetch(FetchDescriptor<Entry>())) ?? []
+        for entry in all where ids.contains(entry.id.uuidString) {
+            context.delete(entry)
+        }
+        try? context.save()
+        UserDefaults.standard.removeObject(forKey: seededIDsKey)
+    }
+
     /// Removes the seeded batch — and nothing else. The app itself has no
     /// delete path, by design; real entries stay untouchable even here.
     /// Also resets reflection + reminder state so the consent card and

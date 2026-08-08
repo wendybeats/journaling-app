@@ -14,6 +14,9 @@ struct EndpaperApp: App {
     init() {
         let icloud = UserDefaults.standard.string(forKey: AppKeys.account) == AccountMode.icloud.rawValue
         container = Self.makeContainer(icloud: icloud)
+        // TestFlight demo data must not follow a tester into the App Store
+        // build, where the demo controls (and their only delete path) hide.
+        DebugSeed.sweepProductionLeftovers(in: container.mainContext)
     }
 
     private static func makeContainer(icloud: Bool) -> ModelContainer {
