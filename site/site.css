@@ -135,7 +135,19 @@ section { position: relative; }
   color: var(--bone-raised);
   padding: 140px 0 120px;
   margin-top: 72px;
+  overflow: hidden;
 }
+/* the deep sea — faint dot trails sinking from the seam into the ink.
+   Canvas covers only the section's upper reach; trails dissipate with
+   depth long before its edge. Content stacks above it. */
+.deep-sea {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: min(160vh, 1500px);
+  pointer-events: none;
+}
+.deep .wrap { position: relative; }
 .deep h1, .deep h2 { color: var(--bone-raised); }
 .deep .kicker { color: var(--bone-soft); }
 .deep .lede { color: var(--bone-soft); }
