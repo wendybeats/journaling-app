@@ -15,6 +15,32 @@ function onceInView(el, run, threshold = 0.4) {
   }, { threshold }).observe(el);
 }
 
+/* --- The dive: the seam dot swallows the screen ----------------------------- */
+/* The ink section is clipped to a circle that starts exactly at the seam
+   dot (44px, centered on the section's top edge) and inflates with
+   scroll — diving into the dot. Accelerating ease; the clip is dropped
+   entirely once fully open so nothing is left on the compositor. */
+
+const deepSection = document.querySelector('section.deep');
+if (deepSection && !reduced) {
+  let diveTicking = false;
+  function dive() {
+    diveTicking = false;
+    const top = deepSection.getBoundingClientRect().top;
+    const vh = innerHeight;
+    const p = Math.min(1, Math.max(0, (vh - top) / (vh * 0.9)));
+    if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
+    const maxR = Math.hypot(innerWidth / 2, vh * 1.3);
+    const R = 22 + Math.pow(p, 1.7) * maxR;
+    deepSection.style.clipPath = `circle(${R}px at 50% 0px)`;
+  }
+  addEventListener('scroll', () => {
+    if (!diveTicking) { diveTicking = true; requestAnimationFrame(dive); }
+  }, { passive: true });
+  addEventListener('resize', dive);
+  dive();
+}
+
 /* --- The deep sea: dot trails sinking into the ink -------------------------- */
 /* Particles drift down a slow flow field from the seam, stamping faint
    bone dots as they go; stamps age out, and everything dissipates with
@@ -49,18 +75,23 @@ if (sea) {
     sc.fillStyle = g;
     sc.beginPath(); sc.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); sc.fill();
     const n = W < 760 ? 14 : 26;
-    particles = Array.from({ length: n }, spawn);
+    const now = performance.now();
+    particles = Array.from({ length: n }, () => spawn(now));
+    // First fill: scatter births across a whole life cycle so the warm
+    // start produces strands at every stage, not one synchronized drop.
+    for (const p of particles) p.born = now - Math.random() * LIFE;
     stamps = []; head = 0;
   }
 
-  function spawn() {
+  function spawn(now) {
     return {
       x: Math.random() * W,
-      y: -20 - Math.random() * 80,
+      y: -20 - Math.random() * 60,
       phase: Math.random() * Math.PI * 2,
       speed: 30 + Math.random() * 22,          // px/s — a slow, steady sink
       trail: 0,
-      r: 1.1 + Math.random() * 1.2,
+      r: 0.9 + Math.random() * 1.5,            // strands differ in weight
+      born: (now ?? 0) + Math.random() * 4500, // staggered starts, never in chorus
     };
   }
 
@@ -77,16 +108,22 @@ if (sea) {
     const dt = Math.min(now - last, 50) / 1000;
     last = now; t = now;
     for (const p of particles) {
+      if (now < p.born) continue;              // waiting its turn at the surface
       const a = angle(p);
       p.x += Math.cos(a) * p.speed * dt;
       p.y += Math.sin(a) * p.speed * dt;
       p.trail += p.speed * dt;
       if (p.trail > STEP) {
         p.trail = 0;
-        stamps[head % CAP] = { x: p.x, y: p.y, r: p.r, born: now };
+        stamps[head % CAP] = { x: p.x, y: p.y, r: p.r * (0.88 + Math.random() * 0.24), born: now };
         head++;
       }
-      if (p.y > H * 0.96 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
+      // A strand retires once its trail is fully drawn — before its top
+      // erodes free of the surface. Tentacles hang from the top, always;
+      // a head that outlived its tail was forming loose mid-screen.
+      if (now - p.born > LIFE * 0.8 || p.y > H * 0.96 || p.x < -30 || p.x > W + 30) {
+        Object.assign(p, spawn(now));
+      }
     }
     ctx.clearRect(0, 0, W, H);
     for (const s of stamps) {
@@ -127,12 +164,15 @@ if (sea) {
   function stepOnce(fake) {
     const dt = 16 / 1000; t = fake;
     for (const p of particles) {
+      if (fake < p.born) continue;
       const a = angle(p);
       p.x += Math.cos(a) * p.speed * dt;
       p.y += Math.sin(a) * p.speed * dt;
       p.trail += p.speed * dt;
-      if (p.trail > STEP) { p.trail = 0; stamps[head % CAP] = { x: p.x, y: p.y, r: p.r, born: fake }; head++; }
-      if (p.y > H * 0.96 || p.x < -30 || p.x > W + 30) Object.assign(p, spawn());
+      if (p.trail > STEP) { p.trail = 0; stamps[head % CAP] = { x: p.x, y: p.y, r: p.r * (0.88 + Math.random() * 0.24), born: fake }; head++; }
+      if (fake - p.born > LIFE * 0.8 || p.y > H * 0.96 || p.x < -30 || p.x > W + 30) {
+        Object.assign(p, spawn(fake));
+      }
     }
   }
 
