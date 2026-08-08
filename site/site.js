@@ -50,15 +50,21 @@ if (deepSection && heroDot && !reduced) {
     // viewport — the dive spans most of a viewport of scrolling, slow to
     // leave the dot, fast at the end.
     fullScroll = Math.max(240, dotDocY + lift - innerHeight * 0.12);
-    maxR = Math.hypot(innerWidth / 2, fullScroll - dotDocY + innerHeight);
+    // The circle's center sticks 42% down the viewport once scrolling
+    // begins, so the mouth holds its place on screen while the page
+    // falls into it — the viewport is fully covered from that point.
+    maxR = Math.hypot(innerWidth / 2, innerHeight * 0.62) * 1.04;
   }
 
   function dive() {
     diveTicking = false;
     const p = Math.min(1, Math.max(0, scrollY / fullScroll));
     if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
-    const R = 8 + Math.pow(p, 1.7) * maxR;
-    deepSection.style.clipPath = `circle(${R}px at 50% 8px)`;
+    const stick = scrollY + innerHeight * 0.42;
+    const centerDocY = Math.max(dotDocY, stick);      // on the dot until it would rise past the line
+    const cy = centerDocY - (dotDocY - 8);            // element-local
+    const R = 8 + Math.pow(p, 1.6) * maxR;
+    deepSection.style.clipPath = `circle(${R}px at 50% ${cy}px)`;
   }
 
   measure(); dive();
