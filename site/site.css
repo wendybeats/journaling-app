@@ -152,13 +152,16 @@ section { position: relative; }
 .deep .kicker { color: var(--bone-soft); }
 .deep .lede { color: var(--bone-soft); }
 
-/* the dot that sinks into the ink — the seam between worlds */
+/* the dot that sinks into the ink — the seam between worlds. When the
+   dive effect is active (site.js), the section's box is raised so this
+   dot sits exactly where the hero's dot was, and the whole ink world
+   inflates out of it. */
 .seam-dot {
   position: absolute;
-  top: -22px;
+  top: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 44px; height: 44px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--ink);
 }

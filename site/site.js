@@ -15,30 +15,56 @@ function onceInView(el, run, threshold = 0.4) {
   }, { threshold }).observe(el);
 }
 
-/* --- The dive: the seam dot swallows the screen ----------------------------- */
-/* The ink section is clipped to a circle that starts exactly at the seam
-   dot (44px, centered on the section's top edge) and inflates with
-   scroll — diving into the dot. Accelerating ease; the clip is dropped
-   entirely once fully open so nothing is left on the compositor. */
+/* --- The dive: the hero's dot swallows the screen ---------------------------- */
+/* The ink section's box is raised (margin up, padding down — content
+   never moves) until its top edge sits exactly at the hero's dot; its
+   seam dot replaces the hero dot pixel-for-pixel. The section is then
+   clipped to a circle that starts as that dot and inflates with scroll,
+   the ink swallowing the headline and badge on its way to full screen.
+   The clip drops entirely once open; scrolling back re-seals the dot. */
 
 const deepSection = document.querySelector('section.deep');
-if (deepSection && !reduced) {
-  let diveTicking = false;
+const heroDot = document.querySelector('.hero .mark-dot');
+if (deepSection && heroDot && !reduced) {
+  let dotDocY = 0, fullScroll = 1, maxR = 0, diveTicking = false;
+
+  function measure() {
+    // Undo any previous surgery before measuring fresh.
+    deepSection.style.marginTop = '';
+    deepSection.style.paddingTop = '';
+    heroDot.style.visibility = '';
+    deepSection.style.clipPath = 'none';
+
+    const d = heroDot.getBoundingClientRect();
+    const s = deepSection.getBoundingClientRect();
+    dotDocY = d.top + scrollY + d.height / 2;
+    const lift = Math.round(s.top + scrollY - dotDocY);
+    const cs = getComputedStyle(deepSection);
+    deepSection.style.marginTop = (parseFloat(cs.marginTop) - lift) + 'px';
+    deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + lift) + 'px';
+    heroDot.style.visibility = 'hidden';     // the seam dot takes its place
+
+    // Fully open when the ink's original top edge reaches the top of the
+    // viewport — the dive spans most of a viewport of scrolling, slow to
+    // leave the dot, fast at the end.
+    fullScroll = Math.max(240, dotDocY + lift - innerHeight * 0.12);
+    maxR = Math.hypot(innerWidth / 2, fullScroll - dotDocY + innerHeight);
+  }
+
   function dive() {
     diveTicking = false;
-    const top = deepSection.getBoundingClientRect().top;
-    const vh = innerHeight;
-    const p = Math.min(1, Math.max(0, (vh - top) / (vh * 0.9)));
+    const p = Math.min(1, Math.max(0, scrollY / fullScroll));
     if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
-    const maxR = Math.hypot(innerWidth / 2, vh * 1.3);
-    const R = 22 + Math.pow(p, 1.7) * maxR;
+    const R = 8 + Math.pow(p, 1.7) * maxR;
     deepSection.style.clipPath = `circle(${R}px at 50% 0px)`;
   }
+
+  measure(); dive();
   addEventListener('scroll', () => {
     if (!diveTicking) { diveTicking = true; requestAnimationFrame(dive); }
   }, { passive: true });
-  addEventListener('resize', dive);
-  dive();
+  let rz;
+  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { measure(); dive(); }, 120); });
 }
 
 /* --- The deep sea: dot trails sinking into the ink -------------------------- */
