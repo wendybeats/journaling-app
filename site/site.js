@@ -25,31 +25,36 @@ function onceInView(el, run, threshold = 0.4) {
 
 const deepSection = document.querySelector('section.deep');
 const heroDot = document.querySelector('.hero .mark-dot');
-if (deepSection && heroDot && !reduced) {
+const seamDot = document.querySelector('.seam-dot');
+if (deepSection && heroDot && seamDot && !reduced) {
   let dotDocY = 0, fullScroll = 1, maxR = 0, diveTicking = false;
 
   function measure() {
     // Undo any previous surgery before measuring fresh.
     deepSection.style.marginTop = '';
     deepSection.style.paddingTop = '';
+    seamDot.style.top = '';
     heroDot.style.visibility = '';
     deepSection.style.clipPath = 'none';
 
     const d = heroDot.getBoundingClientRect();
     const s = deepSection.getBoundingClientRect();
-    // The box top lands 8px above the dot center, so the seam dot (top: 0,
-    // centered 8px into the box) sits exactly where the hero dot was.
+    const origTop = s.top + scrollY;
     dotDocY = d.top + scrollY + d.height / 2;
-    const lift = Math.round(s.top + scrollY - dotDocY) + 8;
+    // Raise the box all the way to the page top (padding keeps content
+    // put), so the clip circle can grow UPWARD over the hero too — a
+    // full disc, never a semicircle cut at the section's edge. In box
+    // coordinates, document y and element y now coincide.
     const cs = getComputedStyle(deepSection);
-    deepSection.style.marginTop = (parseFloat(cs.marginTop) - lift) + 'px';
-    deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + lift) + 'px';
-    heroDot.style.visibility = 'hidden';     // the seam dot takes its place
+    deepSection.style.marginTop = (parseFloat(cs.marginTop) - origTop) + 'px';
+    deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + origTop) + 'px';
+    seamDot.style.top = (dotDocY - 8) + 'px';  // the seam dot takes the hero dot's place
+    heroDot.style.visibility = 'hidden';
 
     // An extreme plunge: the window is deliberately short — the ink
     // fully owns the screen well before the section's own content
     // arrives, so there is never a long ride inside a floating ring.
-    fullScroll = Math.max(200, (dotDocY + lift - innerHeight * 0.12) * 0.62);
+    fullScroll = Math.max(200, (origTop - innerHeight * 0.12) * 0.62);
     // The circle's center sticks 42% down the viewport once scrolling
     // begins, so the mouth holds its place on screen while the page
     // falls into it — the viewport is fully covered from that point.
@@ -62,9 +67,8 @@ if (deepSection && heroDot && !reduced) {
     if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
     const stick = scrollY + innerHeight * 0.42;
     const centerDocY = Math.max(dotDocY, stick);      // on the dot until it would rise past the line
-    const cy = centerDocY - (dotDocY - 8);            // element-local
     const R = 8 + Math.pow(p, 1.5) * maxR;
-    deepSection.style.clipPath = `circle(${R}px at 50% ${cy}px)`;
+    deepSection.style.clipPath = `circle(${R}px at 50% ${centerDocY}px)`;
   }
 
   measure(); dive();
