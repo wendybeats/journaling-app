@@ -126,8 +126,8 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
 const sea = document.getElementById('deep-sea');
 if (sea) {
   const ctx = sea.getContext('2d');
-  const DOT = '#332F2B';                      // hairline-dk — the unfilled-dot register,
-                                              // same as the week/matrix dots on the ink
+  const DOT = '#262320';                      // one quiet step above the ink — a glint,
+                                              // not a graphic; the sea stays in the dark
   const LIFE = 22000;                         // stamp lifetime — tails reach the whole band
   const STEP = 7;                             // px of travel between dots — dense, beaded strands
   const BASE_ALPHA = 0.85;                    // solid-register color; fades do the rest
