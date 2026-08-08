@@ -76,12 +76,13 @@ if (deepSection && heroDot && !reduced) {
 const sea = document.getElementById('deep-sea');
 if (sea) {
   const ctx = sea.getContext('2d');
-  const DOT = '#EFEDE8';                      // bone-raised, from the token sheet
-  const LIFE = 9000;                          // stamp lifetime — long, slow tails
+  const DOT = '#332F2B';                      // hairline-dk — the unfilled-dot register,
+                                              // same as the week/matrix dots on the ink
+  const LIFE = 22000;                         // stamp lifetime — tails reach the whole band
   const STEP = 7;                             // px of travel between dots — dense, beaded strands
-  const BASE_ALPHA = 0.12;                    // never brighter than this
+  const BASE_ALPHA = 0.85;                    // solid-register color; fades do the rest
   let W = 0, H = 0, dpr = 1, sprite = null;
-  let particles = [], stamps = [], head = 0, CAP = 2600;
+  let particles = [], stamps = [], head = 0, CAP = 6000;
   let running = false, raf = 0, last = 0, t = 0;
 
   function size() {
@@ -114,7 +115,7 @@ if (sea) {
       x: Math.random() * W,
       y: -20 - Math.random() * 60,
       phase: Math.random() * Math.PI * 2,
-      speed: 30 + Math.random() * 22,          // px/s — a slow, steady sink
+      speed: 45 + Math.random() * 33,          // px/s — quick enough to keep pace with a scroll
       trail: 0,
       r: 0.9 + Math.random() * 1.5,            // strands differ in weight
       born: (now ?? 0) + Math.random() * 4500, // staggered starts, never in chorus
@@ -185,7 +186,7 @@ if (sea) {
   // Fast-forward the sim so full-length tentacles hang on first sight.
   function settled() {
     const now = performance.now();
-    for (let i = 0; i < 700; i++) stepOnce(now - (699 - i) * 16);
+    for (let i = 0; i < 1600; i++) stepOnce(now - (1599 - i) * 16);
   }
   function stepOnce(fake) {
     const dt = 16 / 1000; t = fake;
