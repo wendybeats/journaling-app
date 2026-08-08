@@ -46,14 +46,14 @@ if (deepSection && heroDot && !reduced) {
     deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + lift) + 'px';
     heroDot.style.visibility = 'hidden';     // the seam dot takes its place
 
-    // Fully open when the ink's original top edge reaches the top of the
-    // viewport — the dive spans most of a viewport of scrolling, slow to
-    // leave the dot, fast at the end.
-    fullScroll = Math.max(240, dotDocY + lift - innerHeight * 0.12);
+    // An extreme plunge: the window is deliberately short — the ink
+    // fully owns the screen well before the section's own content
+    // arrives, so there is never a long ride inside a floating ring.
+    fullScroll = Math.max(200, (dotDocY + lift - innerHeight * 0.12) * 0.62);
     // The circle's center sticks 42% down the viewport once scrolling
     // begins, so the mouth holds its place on screen while the page
     // falls into it — the viewport is fully covered from that point.
-    maxR = Math.hypot(innerWidth / 2, innerHeight * 0.62) * 1.04;
+    maxR = Math.hypot(innerWidth / 2, innerHeight * 0.62) * 1.06;
   }
 
   function dive() {
@@ -63,7 +63,7 @@ if (deepSection && heroDot && !reduced) {
     const stick = scrollY + innerHeight * 0.42;
     const centerDocY = Math.max(dotDocY, stick);      // on the dot until it would rise past the line
     const cy = centerDocY - (dotDocY - 8);            // element-local
-    const R = 8 + Math.pow(p, 1.6) * maxR;
+    const R = 8 + Math.pow(p, 1.5) * maxR;
     deepSection.style.clipPath = `circle(${R}px at 50% ${cy}px)`;
   }
 
