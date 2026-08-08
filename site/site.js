@@ -26,28 +26,40 @@ function onceInView(el, run, threshold = 0.4) {
 const deepSection = document.querySelector('section.deep');
 const heroDot = document.querySelector('.hero .mark-dot');
 const seamDot = document.querySelector('.seam-dot');
-if (deepSection && heroDot && seamDot && !reduced) {
-  let dotDocY = 0, fullScroll = 1, maxR = 0, diveTicking = false;
+const closeDot = document.querySelector('.closing .mark-dot');
+if (deepSection && heroDot && seamDot && closeDot && !reduced) {
+  let dotDocY = 0, closeDocY = 0, fullScroll = 1, maxR = 0;
+  let exitStart = 1e9, exitWin = 1, diveTicking = false;
 
   function measure() {
     // Undo any previous surgery before measuring fresh.
     deepSection.style.marginTop = '';
     deepSection.style.paddingTop = '';
+    deepSection.style.marginBottom = '';
+    deepSection.style.paddingBottom = '';
+    deepSection.style.zIndex = '';
     seamDot.style.top = '';
     heroDot.style.visibility = '';
     deepSection.style.clipPath = 'none';
 
     const d = heroDot.getBoundingClientRect();
+    const c = closeDot.getBoundingClientRect();
     const s = deepSection.getBoundingClientRect();
     const origTop = s.top + scrollY;
+    const origBottom = s.bottom + scrollY;
     dotDocY = d.top + scrollY + d.height / 2;
-    // Raise the box all the way to the page top (padding keeps content
-    // put), so the clip circle can grow UPWARD over the hero too — a
-    // full disc, never a semicircle cut at the section's edge. In box
-    // coordinates, document y and element y now coincide.
+    closeDocY = c.top + scrollY + c.height / 2;
+    // Raise the box to the page top AND drop it past the closing dot
+    // (padding compensated both ways, content never moves), so the clip
+    // circle can be a full disc at either end — swallowing the hero on
+    // the way in, closing into the ending's dot on the way out.
     const cs = getComputedStyle(deepSection);
+    const ext = Math.max(0, closeDocY + 40 - origBottom);
     deepSection.style.marginTop = (parseFloat(cs.marginTop) - origTop) + 'px';
     deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + origTop) + 'px';
+    deepSection.style.paddingBottom = (parseFloat(cs.paddingBottom) + ext) + 'px';
+    deepSection.style.marginBottom = (parseFloat(cs.marginBottom) - ext) + 'px';
+    deepSection.style.zIndex = '1';            // the ink covers the ending until it closes
     seamDot.style.top = (dotDocY - 8) + 'px';  // the seam dot takes the hero dot's place
     heroDot.style.visibility = 'hidden';
 
@@ -59,19 +71,45 @@ if (deepSection && heroDot && seamDot && !reduced) {
     // begins, so the mouth holds its place on screen while the page
     // falls into it — the viewport is fully covered from that point.
     maxR = Math.hypot(innerWidth / 2, innerHeight * 0.62) * 1.06;
+    // The reverse dive: begins as the closing dot nears the fold and
+    // finishes with the disc landing on it. The surgery above can shift
+    // the ending slightly, so the target is re-measured after it — and
+    // the landing must arrive before the page runs out of scroll.
+    closeDocY = closeDot.getBoundingClientRect().top + scrollY + closeDot.getBoundingClientRect().height / 2;
+    exitWin = innerHeight * 0.55;
+    const maxScroll = document.documentElement.scrollHeight - innerHeight;
+    const exitEnd = Math.min(closeDocY - innerHeight * 0.30, maxScroll - 60);
+    exitStart = exitEnd - exitWin;
   }
 
   function dive() {
     diveTicking = false;
+    const stickDoc = scrollY + innerHeight * 0.42;
+    if (scrollY > exitStart) {
+      // Surfacing: the ink collapses into the ending's dot — the entry,
+      // in reverse. Smooth in, decisive landing.
+      const q = Math.min(1, (scrollY - exitStart) / exitWin);
+      const e = q * q * (3 - 2 * q);                 // smoothstep
+      const centerDocY = stickDoc + (closeDocY - stickDoc) * e;
+      const R = 8 + (maxR - 8) * (1 - Math.pow(e, 1.15));
+      deepSection.style.clipPath = `circle(${R}px at 50% ${centerDocY}px)`;
+      return;
+    }
     const p = Math.min(1, Math.max(0, scrollY / fullScroll));
-    if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
-    const stick = scrollY + innerHeight * 0.42;
-    const centerDocY = Math.max(dotDocY, stick);      // on the dot until it would rise past the line
+    const centerDocY = Math.max(dotDocY, stickDoc);  // on the dot until it would rise past the line
+    // Past the plunge the clip stays at full cover (never 'none' — the
+    // box now overhangs the ending, and the exit needs the same circle).
     const R = 8 + Math.pow(p, 1.5) * maxR;
     deepSection.style.clipPath = `circle(${R}px at 50% ${centerDocY}px)`;
   }
 
   measure(); dive();
+  // Font loading reflows everything below the headline — re-anchor both
+  // ends of the dive once metrics are final.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => { measure(); dive(); });
+  }
+  addEventListener('load', () => { measure(); dive(); });
   addEventListener('scroll', () => {
     if (!diveTicking) { diveTicking = true; requestAnimationFrame(dive); }
   }, { passive: true });
