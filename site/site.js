@@ -37,8 +37,10 @@ if (deepSection && heroDot && !reduced) {
 
     const d = heroDot.getBoundingClientRect();
     const s = deepSection.getBoundingClientRect();
+    // The box top lands 8px above the dot center, so the seam dot (top: 0,
+    // centered 8px into the box) sits exactly where the hero dot was.
     dotDocY = d.top + scrollY + d.height / 2;
-    const lift = Math.round(s.top + scrollY - dotDocY);
+    const lift = Math.round(s.top + scrollY - dotDocY) + 8;
     const cs = getComputedStyle(deepSection);
     deepSection.style.marginTop = (parseFloat(cs.marginTop) - lift) + 'px';
     deepSection.style.paddingTop = (parseFloat(cs.paddingTop) + lift) + 'px';
@@ -56,7 +58,7 @@ if (deepSection && heroDot && !reduced) {
     const p = Math.min(1, Math.max(0, scrollY / fullScroll));
     if (p >= 1) { deepSection.style.clipPath = 'none'; return; }
     const R = 8 + Math.pow(p, 1.7) * maxR;
-    deepSection.style.clipPath = `circle(${R}px at 50% 0px)`;
+    deepSection.style.clipPath = `circle(${R}px at 50% 8px)`;
   }
 
   measure(); dive();
