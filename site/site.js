@@ -62,6 +62,11 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
     deepSection.style.zIndex = '1';            // the ink covers the ending until it closes
     seamDot.style.top = (dotDocY - 8) + 'px';  // the seam dot takes the hero dot's place
     heroDot.style.visibility = 'hidden';
+    // The sea rides the band, not the box: anchor the canvas at the dot
+    // (where the ink begins) so strands live behind the section's content
+    // and the animation keeps running while that band is on screen.
+    const seaEl = document.getElementById('deep-sea');
+    if (seaEl) seaEl.style.top = (dotDocY - 8) + 'px';
 
     // An extreme plunge: the window is deliberately short — the ink
     // fully owns the screen well before the section's own content
@@ -82,6 +87,18 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
     exitStart = exitEnd - exitWin;
   }
 
+  // While the ink owns the screen, the browser chrome follows it in —
+  // Safari's status-bar scrim samples the page's theme/background, and
+  // a bone scrim over the deep reads as a light leak.
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  let immersed = null;
+  function setImmersed(on) {
+    if (on === immersed) return;
+    immersed = on;
+    if (themeMeta) themeMeta.setAttribute('content', on ? '#1A1A1A' : '#E8E6E1');
+    document.documentElement.style.backgroundColor = on ? '#1A1A1A' : '';
+  }
+
   function dive() {
     diveTicking = false;
     const stickDoc = scrollY + innerHeight * 0.42;
@@ -93,6 +110,7 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
       const centerDocY = stickDoc + (closeDocY - stickDoc) * e;
       const R = 8 + (maxR - 8) * (1 - Math.pow(e, 1.15));
       deepSection.style.clipPath = `circle(${R}px at 50% ${centerDocY}px)`;
+      setImmersed(q < 0.3);
       return;
     }
     const p = Math.min(1, Math.max(0, scrollY / fullScroll));
@@ -101,6 +119,7 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
     // box now overhangs the ending, and the exit needs the same circle).
     const R = 8 + Math.pow(p, 1.5) * maxR;
     deepSection.style.clipPath = `circle(${R}px at 50% ${centerDocY}px)`;
+    setImmersed(p >= 0.9);
   }
 
   measure(); dive();
@@ -126,8 +145,8 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
 const sea = document.getElementById('deep-sea');
 if (sea) {
   const ctx = sea.getContext('2d');
-  const DOT = '#2D2925';                      // between glint and graphic — visible on a
-                                              // phone panel, still well inside the dark
+  const DOT = '#332F2B';                      // hairline-dk — the unfilled-dot register;
+                                              // the trails are meant to be seen
   const LIFE = 22000;                         // stamp lifetime — tails reach the whole band
   const STEP = 7;                             // px of travel between dots — dense, beaded strands
   const BASE_ALPHA = 0.85;                    // solid-register color; fades do the rest
