@@ -70,3 +70,11 @@ pillars beyond the product families above:
    the app appears only as the page the list is written on.
 
 Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
+
+## Live log
+
+| Date | Platform | Asset / format | Hook / role | Notes |
+|---|---|---|---|---|
+| 2026-08-09 | IG + Threads | rule-permanence-feed-light | Intro announcement (pinned anchor, not a test) | Founding-thirty offer included; app in review |
+| 2026-08-09 | IG story | rule-no-ai-story-dark + link sticker (/ig) | no-AI angle | "launching this week" overlay |
+| 2026-08-09 | IG story | rule-open-write-close-story-light + poll | permanence question | Poll: "Could you keep a journal you can't edit?" |
