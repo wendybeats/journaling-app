@@ -127,6 +127,16 @@ section { position: relative; }
   text-align: center;
   padding: 88px 0 104px;
 }
+/* the hero fills the first screen and centers its group; svh keeps
+   mobile Safari's collapsing bars honest */
+.hero .wrap {
+  min-height: calc(100vh - 210px);
+  min-height: calc(100svh - 210px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .hero .kicker, .closing .kicker { margin-top: 22px; }
 .hero h1, .closing h2 { max-width: 15ch; margin: 28px auto 0; }
 
@@ -279,7 +289,7 @@ section { position: relative; }
   left: 0; top: 0.42em;
   width: 13px; height: 13px;
   border-radius: 50%;
-  background: var(--bone-raised);
+  background: var(--stone-dk);   /* muted — furniture, not content */
 }
 .art { display: flex; justify-content: center; }
 
@@ -431,34 +441,18 @@ footer.site a:hover { color: var(--bone-soft); }
   .feature.flip .art { order: 2; }
   .art { justify-content: center; }
   .hero, .closing { padding: 56px 0 88px; }
-  /* the hero fills the first screen and centers — svh keeps Safari's
-     bars honest; the dot rests below the group as the page's period */
-  .hero .wrap {
-    min-height: calc(100vh - 200px);
-    min-height: calc(100svh - 200px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
   .deep { padding: 16px 0 80px; margin-top: 32px; }
   .only-human { padding-top: 110px; }
   footer.site .links { gap: 18px; flex-wrap: wrap; }
 
-  /* lockup stacks: the writable page leads, the two screens two-up beneath */
+  /* on a phone, one screen is the story: just the writable page */
   .lockup {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr;
     margin-top: 56px;
-    max-width: 420px;
+    max-width: none;
   }
-  .device.page {
-    order: -1;
-    grid-column: 1 / -1;
-    width: min(300px, 82vw);
-    margin: 0 auto;
-  }
-  .device.side { width: 100%; }
+  .device.side { display: none; }
+  .device.page { width: min(300px, 82vw); margin: 0 auto; }
 }
 
 /* --- Reduce motion ------------------------------------------------------------ */
