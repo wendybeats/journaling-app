@@ -132,8 +132,15 @@ if (deepSection && heroDot && seamDot && closeDot && !reduced) {
   addEventListener('scroll', () => {
     if (!diveTicking) { diveTicking = true; requestAnimationFrame(dive); }
   }, { passive: true });
-  let rz;
-  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { measure(); dive(); }, 120); });
+  let rz, diveW = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => {
+      if (Math.abs(innerWidth - diveW) < 2) { dive(); return; }  // URL-bar twitch, not a resize
+      diveW = innerWidth;
+      measure(); dive();
+    }, 120);
+  });
 }
 
 /* --- The deep sea: dot strands, tied to the scroll --------------------------- */
@@ -149,7 +156,7 @@ if (sea) {
   const DOT = '#332F2B';                     // hairline-dk — the unfilled-dot register
   const BASE_ALPHA = 0.85;
   const STEP = 8;                            // px between dots along a strand
-  const TAIL = 64;                           // dots per strand
+  const TAIL = 88;                           // dots per strand — long tentacles
   let W = 0, H = 0, dpr = 1, sprite = null, strands = [];
 
   function size() {
@@ -167,7 +174,7 @@ if (sea) {
     g.addColorStop(0, DOT); g.addColorStop(0.55, DOT); g.addColorStop(1, 'transparent');
     sc.fillStyle = g;
     sc.beginPath(); sc.arc(sp / 2, sp / 2, sp / 2, 0, Math.PI * 2); sc.fill();
-    const n = W < 760 ? 12 : 24;
+    const n = W < 760 ? 12 : 30;
     strands = Array.from({ length: n }, (_, i) => ({
       x0: (i + 0.15 + Math.random() * 0.7) * (W / n),  // jittered lanes
       phase: Math.random() * Math.PI * 2,
@@ -194,9 +201,9 @@ if (sea) {
       for (let k = 0; k < TAIL; k++) {
         const s = head - k * STEP;
         if (s < 0 || s > H) continue;
-        const tail = 1 - k / TAIL;                     // ramp along the strand
-        const surface = Math.min(1, s / 160);          // fade in below the surface
-        const depth = Math.max(0, 1 - Math.pow(s / H, 1.35));
+        const tail = 1 - (k / TAIL) * 0.72;            // ramp with a floor — tails stay present
+        const surface = Math.min(1, s / 120);          // fade in below the surface
+        const depth = Math.max(0, 1 - Math.pow(s / H, 2) * 0.92);
         ctx.globalAlpha = BASE_ALPHA * tail * surface * depth;
         const d = (st.r * 2 + 4) * (1 - 0.35 * s / H) * st.jit[k];
         ctx.drawImage(sprite, xAt(st, s) - d / 2, s - d / 2, d, d);
@@ -212,8 +219,17 @@ if (sea) {
       if (!seaTick) { seaTick = true; requestAnimationFrame(() => { seaTick = false; draw(); }); }
     }, { passive: true });
   }
-  let seaRz;
-  addEventListener('resize', () => { clearTimeout(seaRz); seaRz = setTimeout(size, 140); });
+  let seaRz, seaW = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(seaRz);
+    seaRz = setTimeout(() => {
+      // iOS fires resize for URL-bar height changes ~every flick; only a
+      // real width change (rotation, window resize) reshuffles the sea.
+      if (Math.abs(innerWidth - seaW) < 2) { draw(); return; }
+      seaW = innerWidth;
+      size();
+    }, 140);
+  });
 }
 
 /* --- The writable page: today's date, and type that settles as you write ---- */
