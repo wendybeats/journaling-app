@@ -32,7 +32,31 @@ const SIZES = [
   ['feed', { width: 1080, height: 1350 }],
 ];
 
+// The SAVED stamp and the caption must tell the same time. Mornings for
+// light, evenings for dark, with a lived-in minute rather than a fixed one.
+function stampFor(theme) {
+  if (theme === 'light') {
+    const m = 48 + Math.floor(Math.random() * 41);          // 6:48–7:28 AM
+    return m < 60 ? `6:${String(m).padStart(2, '0')} AM` : `7:${String(m - 60).padStart(2, '0')} AM`;
+  }
+  const m = 14 + Math.floor(Math.random() * 46);            // 9:14–9:59 PM
+  return `9:${String(m).padStart(2, '0')} PM`;
+}
+
+function captionFor(stamp) {
+  const now = new Date();
+  const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const mon = now.toLocaleDateString('en-US', { month: 'short' });
+  const d = now.getDate();
+  const ord = (d % 10 === 1 && d !== 11) ? 'st' : (d % 10 === 2 && d !== 12) ? 'nd'
+            : (d % 10 === 3 && d !== 13) ? 'rd' : 'th';
+  const t = stamp.replace(' AM', 'am').replace(' PM', 'pm');
+  return `Thought of ${day}, ${mon} ${d}${ord} at ${t}`;
+}
+
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+
+const stamps = { light: stampFor('light'), dark: stampFor('dark') };
 
 for (const [sizeName, viewport] of SIZES) {
   for (const theme of ['light', 'dark']) {
@@ -44,7 +68,7 @@ for (const [sizeName, viewport] of SIZES) {
     });
     const page = await ctx.newPage();
     const url = 'file://' + resolve(here, 'cards/quote-motion.html')
-      + `?text=${encodeURIComponent(text)}&theme=${theme}`;
+      + `?text=${encodeURIComponent(text)}&theme=${theme}&at=${encodeURIComponent(stamps[theme])}`;
     await page.goto(url);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
@@ -68,6 +92,14 @@ for (const [sizeName, viewport] of SIZES) {
     }
   }
 }
+
+// Paste-ready words, matching each variant's SAVED stamp exactly.
+import('node:fs').then(({ writeFileSync }) => {
+  for (const theme of ['light', 'dark']) {
+    writeFileSync(resolve(out, `${slug}-${theme}-caption.txt`),
+      `Caption:\n${captionFor(stamps[theme])}\n\nFirst comment:\nwritten in my Endpaper journal - find the app endpaper.space\n`);
+  }
+});
 
 await browser.close();
 console.log('quote motion rendered to', out);
