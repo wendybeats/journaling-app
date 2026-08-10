@@ -7,7 +7,7 @@
 // Output: <packsRoot>/pack-<YYYY-WW>/{assets, captions.md, THIS-WEEK.md}
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, readdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -32,9 +32,27 @@ execFileSync('node', [resolve(here, 'render-app.mjs'), pack], { stdio: 'inherit'
 console.log('rendering cards…');
 execFileSync('node', [resolve(here, 'render-cards.mjs'), pack], { stdio: 'inherit' });
 
-const assets = readdirSync(pack).filter(f => f.endsWith('.png')).sort();
+// Reels are the distribution surface (see hooks.md → Signals): every
+// pack carries one quote video, rotating through the attribution-safe
+// shortlist by week.
+const quotes = JSON.parse(readFileSync(resolve(here, 'cards/quotes.json'), 'utf8'));
+const weekNum = Number(week.slice(-2));
+const q = quotes[weekNum % quotes.length];
+console.log(`rendering quote video… ("${q.text.slice(0, 32)}…" — ${q.by})`);
+execFileSync('node', [resolve(here, 'render-quote.mjs'), q.text, pack, 'quote'], { stdio: 'inherit' });
+
+const assets = readdirSync(pack).filter(f => f.endsWith('.png') || f.endsWith('.mp4')).sort();
 
 const captions = `# Captions — pack ${week}
+
+## THIS WEEK'S QUOTE VIDEO (quote-*.mp4) — post as a Reel
+Quote: "${q.text}" — ${q.by}
+- Light variant carries a morning SAVED time; dark carries evening.
+  Post to match.
+- Caption: "Wrote this one down so it would stop following me around."
+  Attribution in caption or first comment: — ${q.by}
+- Reels are the reach surface; stills below are anchors, carousels,
+  and story material.
 
 Voice rules: quiet, direct, complete sentences, no exclamation points,
 no hashtag soup (0–2 native tags max where the platform expects them).

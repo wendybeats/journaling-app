@@ -31,7 +31,10 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | The one app on my phone with no red dot, no badge, no push | quiet tech | minimalists | card / clip | fresh |
 | Writing that counts because it can't be taken back | permanence | practice crowd | card | fresh |
 | My journal costs what one good paper notebook costs | price | fence-sitters | card | fresh |
-| [quote worth keeping], shown on the page it was written on | quotes | everyone | app still | fresh |
+| [quote worth keeping], shown on the page it was written on | quotes | everyone | quote-motion Reel | winner |
+| Wrote this one down so it would stop following me around | quotes | everyone | quote-motion caption | live |
+| Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | fresh |
+| One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | fresh |
 | Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | fresh |
 | This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
 | Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |
@@ -82,6 +85,12 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   over 66). If completion stays that low by Friday, shorten the
   first-letter hang (1s → 0.5s) and test. Decide with a full day's
   data, not five minutes'.
+- W33 pass (2026-08-10, same-day data): quotes family promoted to
+  winner on the reach signal; two same-family variants spawned (series
+  framing, weekly cadence framing). Packs now include a quote video
+  every week (make-pack renders it from cards/quotes.json, rotating).
+  Stills recadenced to anchor/carousel/story duty. Story-frame results
+  from 08-09 still pending — log when known.
 
 ## Live log
 
