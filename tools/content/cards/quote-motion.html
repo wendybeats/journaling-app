@@ -56,7 +56,7 @@
     justify-content: center; align-items: center;
     text-align: center;
     margin-top: 24px;
-    font-size: 96px;
+    font-size: 210px;
     line-height: 1.4;
     color: var(--written);
     transition: font-size 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -72,7 +72,7 @@
   @keyframes blink { 50% { opacity: 0; } }
   .ack {
     font-family: 'Fragment Mono', monospace;
-    font-size: 34px; letter-spacing: 0.14em;
+    font-size: 26px; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--meta);
     opacity: 0;
     transition: opacity 700ms ease;
@@ -100,8 +100,9 @@
   const params = new URLSearchParams(location.search);
   const QUOTE = params.get('text') || 'Those who commit to nothing are distracted by everything.';
   const HOLD = Number(params.get('hold') || 5000);
-  const AT = params.get('at') || '9:41 PM';
-  if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
+  const dark = params.get('theme') === 'dark';
+  if (dark) document.documentElement.classList.add('dark');
+  const AT = params.get('at') || (dark ? '9:37 PM' : '7:04 AM');
 
   const now = new Date();
   document.getElementById('day').textContent =
@@ -136,10 +137,12 @@
       await pause(d);
     }
     await pause(1100);                         // the settle — writing done
-    ack.textContent = 'SAVED ' + AT;
-    ack.classList.add('on');
-    await pause(600);
     caret.style.display = 'none';              // pen down
+    ack.textContent = 'SAVED ' + AT;
+    ack.classList.add('on');                   // the quiet ack visits…
+    await pause(2200);
+    ack.classList.remove('on');                // …and leaves the words alone
+    await pause(900);
     await pause(HOLD);
     window.__done = true;
   }
