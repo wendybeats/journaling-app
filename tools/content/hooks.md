@@ -71,6 +71,18 @@ pillars beyond the product families above:
 
 Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 
+## Signals
+
+- 2026-08-10: First reach data. Pinned still post: 7 views in ~24h,
+  mostly followers. Quote-motion Reel ("commit to nothing"): 66 views
+  in 5 minutes, 98.4% non-followers. **Video is the distribution
+  surface; stills are anchors/carousel/story material.** Reels-first
+  cadence from here.
+- Watch-the-metric: avg watch on the Reel opened at ~1.3s/view (83s
+  over 66). If completion stays that low by Friday, shorten the
+  first-letter hang (1s → 0.5s) and test. Decide with a full day's
+  data, not five minutes'.
+
 ## Live log
 
 | Date | Platform | Asset / format | Hook / role | Notes |
@@ -78,3 +90,4 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-09 | IG + Threads | rule-permanence-feed-light | Intro announcement (pinned anchor, not a test) | Founding-thirty offer included; app in review |
 | 2026-08-09 | IG story | rule-no-ai-story-dark + link sticker (/ig) | no-AI angle | "launching this week" overlay |
 | 2026-08-09 | IG story | rule-open-write-close-story-light + poll | permanence question | Poll: "Could you keep a journal you can't edit?" |
+| 2026-08-10 | IG Reel | quote-motion "commit to nothing" | quotes pillar, video format test | 66 views / 5 min, 98.4% non-followers — early winner on reach |
