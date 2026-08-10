@@ -42,31 +42,26 @@
     display: flex; flex-direction: column;
     font-family: 'Newsreader', serif;
   }
-  header {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 30px; color: var(--ink);
-  }
-  header .date {
-    font-family: 'Fragment Mono', monospace;
-    font-size: 22px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--meta);
-  }
   .day {
     font-family: 'Instrument Sans', sans-serif;
     font-weight: 500; font-size: 58px;
     letter-spacing: -0.01em; color: var(--ink);
-    margin-top: 64px;
+    text-align: center;
   }
   .rule { height: 2px; background: var(--hairline); margin-top: 36px; }
+  /* the quote group floats centered; SAVED sits right beneath the line */
   .write {
     flex: 1;
-    margin-top: 56px;
-    font-size: 96px;             /* the first word arrives huge */
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    margin-top: 24px;
+    font-size: 96px;
     line-height: 1.4;
     color: var(--written);
     transition: font-size 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
   }
+  .line { max-width: 100%; }
   .caret {
     display: inline-block;
     width: 3px; height: 0.92em;
@@ -77,28 +72,29 @@
   @keyframes blink { 50% { opacity: 0; } }
   .ack {
     font-family: 'Fragment Mono', monospace;
-    font-size: 24px; letter-spacing: 0.14em;
+    font-size: 34px; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--meta);
     opacity: 0;
     transition: opacity 700ms ease;
+    margin-top: 64px;
   }
   .ack.on { opacity: 1; }
   footer {
-    margin-top: 40px;
     font-family: 'Fragment Mono', monospace;
     font-size: 22px; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--meta);
-    display: flex; justify-content: space-between;
+    text-align: center;
   }
 </style>
 </head>
 <body>
-  <header><span>Endpaper</span><span class="date" id="date"></span></header>
   <div class="day" id="day"></div>
   <div class="rule"></div>
-  <div class="write"><span id="text"></span><span class="caret" id="caret"></span></div>
-  <div class="ack" id="ack"></div>
-  <footer><span>Endpaper</span><span>endpaper.space</span></footer>
+  <div class="write">
+    <div class="line"><span id="text"></span><span class="caret" id="caret"></span></div>
+    <div class="ack" id="ack"></div>
+  </div>
+  <footer>endpaper.space</footer>
 
 <script>
   const params = new URLSearchParams(location.search);
@@ -110,12 +106,10 @@
   const now = new Date();
   document.getElementById('day').textContent =
     now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  document.getElementById('date').textContent =
-    now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
 
   // The app's living write, at video scale: sizes step down as the entry
   // grows — huge first word, medium first phrase, then the written register.
-  const SIZES = [[0, 96], [12, 80], [34, 64], [70, 54]];
+  const SIZES = [[0, 210], [2, 96], [12, 80], [34, 64], [70, 54]];
   const el = document.getElementById('text');
   const write = document.querySelector('.write');
   const ack = document.getElementById('ack');
@@ -126,6 +120,7 @@
   async function run() {
     await pause(900);                          // the blank page, caret ready
     let typed = '';
+    let first = true;
     for (const ch of QUOTE) {
       typed += ch;
       el.textContent = typed;
@@ -137,6 +132,7 @@
       if (ch === ' ') d += 60;
       if (',;'.includes(ch)) d += 240;
       if ('.?!'.includes(ch)) d += 380;
+      if (first) { first = false; await pause(1000); continue; }  // the HUGE first letter hangs
       await pause(d);
     }
     await pause(1100);                         // the settle — writing done
