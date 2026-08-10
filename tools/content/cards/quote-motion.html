@@ -62,6 +62,16 @@
     transition: font-size 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
   }
   .line { max-width: 100%; }
+  .emph {
+    display: inline-block;
+    transition: font-weight 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
+                transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .emph.on {
+    font-style: italic;
+    font-weight: 500;
+  }
+  .emph.pulse { transform: scale(1.07); }
   .caret {
     display: inline-block;
     width: 3px; height: 0.92em;
@@ -98,7 +108,15 @@
 
 <script>
   const params = new URLSearchParams(location.search);
-  const QUOTE = params.get('text') || 'Those who commit to nothing are distracted by everything.';
+  const RAW = params.get('text') || 'Those who commit to nothing are distracted by everything.';
+  // *word* marks emphasis: typed plain, pressed to italic+bold after.
+  const segs = [];
+  RAW.split(/(\*[^*]+\*)/).forEach(part => {
+    if (!part) return;
+    if (part.startsWith('*') && part.endsWith('*')) segs.push({ t: part.slice(1, -1), em: true });
+    else segs.push({ t: part, em: false });
+  });
+  const QUOTE = segs.map(s => s.t).join('');
   const HOLD = Number(params.get('hold') || 5000);
   const dark = params.get('theme') === 'dark';
   if (dark) document.documentElement.classList.add('dark');
@@ -118,25 +136,44 @@
 
   const pause = (ms) => new Promise(r => setTimeout(r, ms));
 
+  // The line is built from spans so marked words can transform in place.
+  const spans = segs.map(sg => {
+    const sp = document.createElement('span');
+    if (sg.em) sp.className = 'emph';
+    el.appendChild(sp);
+    return sp;
+  });
+
   async function run() {
     await pause(900);                          // the blank page, caret ready
-    let typed = '';
+    let typedLen = 0;
     let first = true;
-    for (const ch of QUOTE) {
-      typed += ch;
-      el.textContent = typed;
-      let size = SIZES[0][1];
-      for (const [at, px] of SIZES) if (typed.length >= at) size = px;
-      write.style.fontSize = size + 'px';
-      // Human cadence: quick keystrokes, breath at spaces and stops.
-      let d = 46 + Math.random() * 46;
-      if (ch === ' ') d += 60;
-      if (',;'.includes(ch)) d += 240;
-      if ('.?!'.includes(ch)) d += 380;
-      if (first) { first = false; await pause(1000); continue; }  // the HUGE first letter hangs
-      await pause(d);
+    for (let i = 0; i < segs.length; i++) {
+      for (const ch of segs[i].t) {
+        typedLen += 1;
+        spans[i].textContent += ch;
+        let size = SIZES[0][1];
+        for (const [at, px] of SIZES) if (typedLen >= at) size = px;
+        write.style.fontSize = size + 'px';
+        // Human cadence: quick keystrokes, breath at spaces and stops.
+        let d = 46 + Math.random() * 46;
+        if (ch === ' ') d += 60;
+        if (',;'.includes(ch)) d += 240;
+        if ('.?!'.includes(ch)) d += 380;
+        if (first) { first = false; await pause(1000); continue; }  // the HUGE first letter hangs
+        await pause(d);
+      }
     }
-    await pause(1100);                         // the settle — writing done
+    await pause(700);                          // the settle — writing done
+    // The press: marked words swell for a beat and take italic + weight.
+    const marked = spans.filter((sp, i) => segs[i].em);
+    if (marked.length) {
+      marked.forEach(sp => { sp.classList.add('pulse'); sp.classList.add('on'); });
+      await pause(300);
+      marked.forEach(sp => sp.classList.remove('pulse'));
+      await pause(700);
+    }
+    await pause(400);
     caret.style.display = 'none';              // pen down
     ack.textContent = 'SAVED ' + AT;
     ack.classList.add('on');                   // the quiet ack visits…
