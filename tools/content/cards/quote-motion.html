@@ -122,7 +122,10 @@
   if (dark) document.documentElement.classList.add('dark');
   const AT = params.get('at') || (dark ? '9:37 PM' : '7:04 AM');
 
-  const now = new Date();
+  // ?date=YYYY-MM-DD renders a future page (scheduling ahead); noon
+  // anchors the parse away from any timezone edge.
+  const dateParam = params.get('date');
+  const now = dateParam ? new Date(dateParam + 'T12:00:00') : new Date();
   document.getElementById('day').textContent =
     now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 

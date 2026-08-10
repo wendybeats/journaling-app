@@ -112,3 +112,4 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-09 | IG story | rule-open-write-close-story-light + poll | permanence question | Poll: "Could you keep a journal you can't edit?" |
 | 2026-08-10 | IG Reel | quote-motion "commit to nothing" | quotes pillar, video format test | 66 views / 5 min, 98.4% non-followers — early winner on reach |
 | 2026-08-10 | IG Reel (scheduled 21:51 EEST via Eden) | quote-motion Marcus Aurelius dark | quotes franchise, first machine-scheduled post | caption "Thought of Monday, Aug 10th at 9:51pm", first comment auto |
+| 2026-08-11 | IG Reel (scheduled 07:08 EEST via Eden) | quote-motion Seneca "everywhere is *nowhere*" light | morning franchise slot 1, first emphasis-press post live | 14.7s runtime (short — watch-time test), caption "Thought of Tuesday, Aug 11th at 7:08am", first comment auto. Renderer takes a date arg now — render the night before, dated to posting day |

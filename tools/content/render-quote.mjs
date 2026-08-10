@@ -3,7 +3,9 @@
 // then the SAVED ack — recorded as video. Story (1080×1920) and feed
 // (1080×1350) sizes, light and dark, H.264 for the platforms.
 //
-// Usage: node render-quote.mjs "The quote." [outDir] [slug]
+// Usage: node render-quote.mjs "The quote." [outDir] [slug] [YYYY-MM-DD]
+// The optional date renders the page (and caption) for a future posting
+// day — the 07:05 franchise schedules the night before.
 // Requires ffmpeg (auto-resolved from @ffmpeg-installer if present).
 
 import { chromium } from 'playwright';
@@ -17,6 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const text = process.argv[2] || 'Those who commit to nothing are distracted by everything.';
 const out = resolve(process.argv[3] || resolve(here, 'out'));
 const slug = process.argv[4] || 'quote';
+const dateArg = process.argv[5] || '';           // YYYY-MM-DD, optional
 mkdirSync(out, { recursive: true });
 
 let ffmpeg = null;
@@ -44,7 +47,7 @@ function stampFor(theme) {
 }
 
 function captionFor(stamp) {
-  const now = new Date();
+  const now = dateArg ? new Date(dateArg + 'T12:00:00') : new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const mon = now.toLocaleDateString('en-US', { month: 'short' });
   const d = now.getDate();
@@ -68,7 +71,8 @@ for (const [sizeName, viewport] of SIZES) {
     });
     const page = await ctx.newPage();
     const url = 'file://' + resolve(here, 'cards/quote-motion.html')
-      + `?text=${encodeURIComponent(text)}&theme=${theme}&at=${encodeURIComponent(stamps[theme])}`;
+      + `?text=${encodeURIComponent(text)}&theme=${theme}&at=${encodeURIComponent(stamps[theme])}`
+      + (dateArg ? `&date=${dateArg}` : '');
     await page.goto(url);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
