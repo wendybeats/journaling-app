@@ -1,0 +1,153 @@
+<!doctype html>
+<!-- Quote motion card — a line typed onto the page the way the app types:
+     first word huge, shrinking as the entry grows, settling, then the
+     quiet SAVED ack. Driven by render-quote.mjs via ?text=&hold=&at=.
+     Designed at 1080-wide video scale; height flexes (1920 story, 1350 feed). -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader-italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Instrument Sans';
+    src: url('../../../fonts/InstrumentSans.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  :root {
+    --page: #E8E6E1; --ink: #1A1A1A; --written: #262320;
+    --meta: #A9A6A0; --hairline: #C9C6BF;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3;
+    --meta: #6B6862; --hairline: #332F2B;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body {
+    background: var(--page);
+    padding: 132px 96px;
+    display: flex; flex-direction: column;
+    font-family: 'Newsreader', serif;
+  }
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 30px; color: var(--ink);
+  }
+  header .date {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 22px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--meta);
+  }
+  .day {
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 500; font-size: 58px;
+    letter-spacing: -0.01em; color: var(--ink);
+    margin-top: 64px;
+  }
+  .rule { height: 2px; background: var(--hairline); margin-top: 36px; }
+  .write {
+    flex: 1;
+    margin-top: 56px;
+    font-size: 96px;             /* the first word arrives huge */
+    line-height: 1.4;
+    color: var(--written);
+    transition: font-size 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .caret {
+    display: inline-block;
+    width: 3px; height: 0.92em;
+    background: var(--ink);
+    vertical-align: -0.12em;
+    animation: blink 1.06s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .ack {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 24px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--meta);
+    opacity: 0;
+    transition: opacity 700ms ease;
+  }
+  .ack.on { opacity: 1; }
+  footer {
+    margin-top: 40px;
+    font-family: 'Fragment Mono', monospace;
+    font-size: 22px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--meta);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+  <header><span>Endpaper</span><span class="date" id="date"></span></header>
+  <div class="day" id="day"></div>
+  <div class="rule"></div>
+  <div class="write"><span id="text"></span><span class="caret" id="caret"></span></div>
+  <div class="ack" id="ack"></div>
+  <footer><span>Endpaper</span><span>endpaper.space</span></footer>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const QUOTE = params.get('text') || 'Those who commit to nothing are distracted by everything.';
+  const HOLD = Number(params.get('hold') || 5000);
+  const AT = params.get('at') || '9:41 PM';
+  if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
+
+  const now = new Date();
+  document.getElementById('day').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('date').textContent =
+    now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+
+  // The app's living write, at video scale: sizes step down as the entry
+  // grows — huge first word, medium first phrase, then the written register.
+  const SIZES = [[0, 96], [12, 80], [34, 64], [70, 54]];
+  const el = document.getElementById('text');
+  const write = document.querySelector('.write');
+  const ack = document.getElementById('ack');
+  const caret = document.getElementById('caret');
+
+  const pause = (ms) => new Promise(r => setTimeout(r, ms));
+
+  async function run() {
+    await pause(900);                          // the blank page, caret ready
+    let typed = '';
+    for (const ch of QUOTE) {
+      typed += ch;
+      el.textContent = typed;
+      let size = SIZES[0][1];
+      for (const [at, px] of SIZES) if (typed.length >= at) size = px;
+      write.style.fontSize = size + 'px';
+      // Human cadence: quick keystrokes, breath at spaces and stops.
+      let d = 46 + Math.random() * 46;
+      if (ch === ' ') d += 60;
+      if (',;'.includes(ch)) d += 240;
+      if ('.?!'.includes(ch)) d += 380;
+      await pause(d);
+    }
+    await pause(1100);                         // the settle — writing done
+    ack.textContent = 'SAVED ' + AT;
+    ack.classList.add('on');
+    await pause(600);
+    caret.style.display = 'none';              // pen down
+    await pause(HOLD);
+    window.__done = true;
+  }
+  run();
+</script>
+</body>
+</html>
