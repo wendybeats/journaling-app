@@ -92,6 +92,17 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   Stills recadenced to anchor/carousel/story duty. Story-frame results
   from 08-09 still pending — log when known.
 
+## Cadence & pipeline (2026-08-10)
+
+- **2x/day**: morning slot 07:05 (the "Thought of…" light quote Reel —
+  the daily franchise) and evening slot 21:45 (app clips, cards, dark
+  quote when nothing else fits). Europe/Helsinki. More signal > polish
+  while the account is cold; revisit if the second slot underperforms.
+- **Eden connected**: scheduling and first comments now run from the
+  session (workspace "hello's workspace", IG @endpaper.space; LinkedIn
+  present but never targeted without an explicit ask). Friday passes
+  can pull analytics directly.
+
 ## Live log
 
 | Date | Platform | Asset / format | Hook / role | Notes |
@@ -100,3 +111,4 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-09 | IG story | rule-no-ai-story-dark + link sticker (/ig) | no-AI angle | "launching this week" overlay |
 | 2026-08-09 | IG story | rule-open-write-close-story-light + poll | permanence question | Poll: "Could you keep a journal you can't edit?" |
 | 2026-08-10 | IG Reel | quote-motion "commit to nothing" | quotes pillar, video format test | 66 views / 5 min, 98.4% non-followers — early winner on reach |
+| 2026-08-10 | IG Reel (scheduled 21:51 EEST via Eden) | quote-motion Marcus Aurelius dark | quotes franchise, first machine-scheduled post | caption "Thought of Monday, Aug 10th at 9:51pm", first comment auto |
