@@ -39,7 +39,7 @@ const quotes = JSON.parse(readFileSync(resolve(here, 'cards/quotes.json'), 'utf8
 const weekNum = Number(week.slice(-2));
 const q = quotes[weekNum % quotes.length];
 console.log(`rendering quote video… ("${q.text.slice(0, 32)}…" — ${q.by})`);
-execFileSync('node', [resolve(here, 'render-quote.mjs'), q.text, pack, 'quote'], { stdio: 'inherit' });
+execFileSync('node', [resolve(here, 'render-quote.mjs'), q.text, pack, 'quote', '', 'none', q.by], { stdio: 'inherit' });
 
 const assets = readdirSync(pack).filter(f => f.endsWith('.png') || f.endsWith('.mp4')).sort();
 
@@ -50,10 +50,10 @@ Quote: "${q.text}" — ${q.by}
 - Light variant carries a morning SAVED time; dark carries evening.
   Post to match.
 - Caption (exact strings sit beside the videos in quote-*-caption.txt):
-  "Thought of {Weekday}, {Mon} {D}th at {time}" — the time matches the
-  variant's SAVED stamp.
+  "From {author last name} - Thought of {Weekday}, {Mon} {D}th at
+  {time}" — the time matches the variant's SAVED stamp; the From
+  prefix only when the author is known.
 - First comment, always: "I wrote this in the Endpaper app"
-  (attribution — ${q.by} — can join the first comment)
 - Reels are the reach surface; stills below are anchors, carousels,
   and story material.
 

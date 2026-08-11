@@ -3,7 +3,9 @@
 // then the SAVED ack — recorded as video. Story (1080×1920) and feed
 // (1080×1350) sizes, light and dark, H.264 for the platforms.
 //
-// Usage: node render-quote.mjs "The quote." [outDir] [slug] [YYYY-MM-DD] [music]
+// Usage: node render-quote.mjs "The quote." [outDir] [slug] [YYYY-MM-DD] [music] [author]
+// author: full name; a known author prefixes the caption with
+// "From {last name} - ". Omit for unattributed lines.
 // The optional date renders the page (and caption) for a future posting
 // day — the 07:05 franchise schedules the night before.
 // music: a file in tools/content/music/ (or any path), 'auto' to pick
@@ -26,6 +28,7 @@ const out = resolve(process.argv[3] || resolve(here, 'out'));
 const slug = process.argv[4] || 'quote';
 const dateArg = process.argv[5] || '';           // YYYY-MM-DD, optional
 const musicArg = process.argv[6] || 'auto';
+const author = process.argv[7] || '';
 mkdirSync(out, { recursive: true });
 
 // Music bed: one track per render (all four variants share it, so the
@@ -78,7 +81,8 @@ function captionFor(stamp) {
   const ord = (d % 10 === 1 && d !== 11) ? 'st' : (d % 10 === 2 && d !== 12) ? 'nd'
             : (d % 10 === 3 && d !== 13) ? 'rd' : 'th';
   const t = stamp.replace(' AM', 'am').replace(' PM', 'pm');
-  return `Thought of ${day}, ${mon} ${d}${ord} at ${t}`;
+  const from = author ? `From ${author.trim().split(/\s+/).pop()} - ` : '';
+  return `${from}Thought of ${day}, ${mon} ${d}${ord} at ${t}`;
 }
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
