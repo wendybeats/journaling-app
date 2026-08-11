@@ -91,6 +91,13 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   every week (make-pack renders it from cards/quotes.json, rotating).
   Stills recadenced to anchor/carousel/story duty. Story-frame results
   from 08-09 still pending — log when known.
+- 2026-08-11 (Wendell): quote bench read as too generic — rebuilt
+  around provocation (Dostoevsky, Kierkegaard, Kafka, Nietzsche tier;
+  greeting-card Emerson lines cut). Target state: mine quotes from
+  quote-posts that overperform their creator's baseline via Eden's
+  indexed search each week; until that pass runs, Wendell may also feed
+  a weekly library by hand. First comment rewritten — "I wrote this in
+  the Endpaper app" (the URL-bearing version read as bot).
 
 ## Cadence & pipeline (2026-08-10)
 
@@ -102,6 +109,15 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   session (workspace "hello's workspace", IG @endpaper.space; LinkedIn
   present but never targeted without an explicit ask). Friday passes
   can pull analytics directly.
+- **First comment (from 2026-08-11)**: "I wrote this in the Endpaper
+  app" — no URL, no dash-speak.
+- **Music (from 2026-08-11)**: Reels carry a neoclassical bed
+  (Jóhannsson / Alcocer / Hisaishi / Pamart / Richter register).
+  Tracks live untracked in tools/content/music/ — pull from the
+  GitHub release. render-quote.mjs muxes automatically (arg 6:
+  filename | auto | none), fade-in 1.2s, fade-out 2.2s. Rights are
+  Wendell's call; API-published Reels don't get Instagram's in-app
+  music license.
 
 ## Live log
 

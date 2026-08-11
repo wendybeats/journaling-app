@@ -52,8 +52,8 @@ Quote: "${q.text}" — ${q.by}
 - Caption (exact strings sit beside the videos in quote-*-caption.txt):
   "Thought of {Weekday}, {Mon} {D}th at {time}" — the time matches the
   variant's SAVED stamp.
-- First comment, always: "written in my Endpaper journal - find the app
-  endpaper.space" (attribution — ${q.by} — can join the first comment)
+- First comment, always: "I wrote this in the Endpaper app"
+  (attribution — ${q.by} — can join the first comment)
 - Reels are the reach surface; stills below are anchors, carousels,
   and story material.
 

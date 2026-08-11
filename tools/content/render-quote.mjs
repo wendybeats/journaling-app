@@ -3,13 +3,18 @@
 // then the SAVED ack — recorded as video. Story (1080×1920) and feed
 // (1080×1350) sizes, light and dark, H.264 for the platforms.
 //
-// Usage: node render-quote.mjs "The quote." [outDir] [slug] [YYYY-MM-DD]
+// Usage: node render-quote.mjs "The quote." [outDir] [slug] [YYYY-MM-DD] [music]
 // The optional date renders the page (and caption) for a future posting
 // day — the 07:05 franchise schedules the night before.
+// music: a file in tools/content/music/ (or any path), 'auto' to pick
+// one at random from that folder, or 'none'. Defaults to auto. Tracks
+// are muxed under the video with a fade-in and a fade-out at the end;
+// only use tracks Wendell holds rights to (music/ stays untracked —
+// pull it from the GitHub release).
 // Requires ffmpeg (auto-resolved from @ffmpeg-installer if present).
 
 import { chromium } from 'playwright';
-import { mkdirSync, renameSync, rmSync } from 'node:fs';
+import { mkdirSync, renameSync, rmSync, readdirSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -20,7 +25,26 @@ const text = process.argv[2] || 'Those who commit to nothing are distracted by e
 const out = resolve(process.argv[3] || resolve(here, 'out'));
 const slug = process.argv[4] || 'quote';
 const dateArg = process.argv[5] || '';           // YYYY-MM-DD, optional
+const musicArg = process.argv[6] || 'auto';
 mkdirSync(out, { recursive: true });
+
+// Music bed: one track per render (all four variants share it, so the
+// light/dark pair feel like the same post).
+const musicDir = resolve(here, 'music');
+let music = null;
+if (musicArg !== 'none') {
+  if (musicArg !== 'auto' && existsSync(resolve(musicDir, musicArg))) music = resolve(musicDir, musicArg);
+  else if (musicArg !== 'auto' && existsSync(musicArg)) music = resolve(musicArg);
+  else if (existsSync(musicDir)) {
+    const tracks = readdirSync(musicDir).filter(f => /\.(mp3|m4a|aac|wav|flac|ogg)$/i.test(f)).sort();
+    if (tracks.length) music = resolve(musicDir, tracks[Math.floor(Math.random() * tracks.length)]);
+  }
+  if (musicArg !== 'auto' && !music) {
+    console.error(`music not found: ${musicArg} (looked in ${musicDir} and as a path)`);
+    process.exit(1);
+  }
+}
+console.log(music ? `music: ${music.split('/').pop()}` : 'music: none');
 
 let ffmpeg = null;
 for (const p of [
@@ -81,15 +105,40 @@ for (const [sizeName, viewport] of SIZES) {
     const webm = await video.path();
     const name = `${slug}-${sizeName}-${theme}`;
     if (ffmpeg) {
+      const mp4 = resolve(out, `${name}.mp4`);
       execFileSync(ffmpeg, [
         '-y', '-hide_banner', '-loglevel', 'error',
         '-i', webm,
         '-c:v', 'libx264', '-crf', '19', '-preset', 'medium',
         '-pix_fmt', 'yuv420p', '-an',
-        resolve(out, `${name}.mp4`),
+        mp4,
       ]);
+      if (music) {
+        // Second pass: lay the track under the finished cut. The webm has
+        // no duration header, so probe the encoded mp4 for the fade-out.
+        let dur = 0;
+        try { execFileSync(ffmpeg, ['-i', mp4], { stdio: 'pipe' }); }
+        catch (e) {
+          const m = String(e.stderr).match(/Duration: (\d+):(\d+):([\d.]+)/);
+          if (m) dur = (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]);
+        }
+        const muxed = resolve(out, `${name}.muxed.mp4`);
+        const fade = dur > 4
+          ? `afade=t=in:st=0:d=1.2,afade=t=out:st=${(dur - 2.2).toFixed(2)}:d=2.2`
+          : 'afade=t=in:st=0:d=0.5';
+        execFileSync(ffmpeg, [
+          '-y', '-hide_banner', '-loglevel', 'error',
+          '-i', mp4, '-i', music,
+          '-map', '0:v', '-map', '1:a',
+          '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+          ...(dur ? ['-t', String(dur)] : ['-shortest']),
+          '-af', fade,
+          muxed,
+        ]);
+        renameSync(muxed, mp4);
+      }
       rmSync(vidDir, { recursive: true, force: true });
-      console.log(`${name}.mp4`);
+      console.log(`${name}.mp4${music ? ' (+music)' : ''}`);
     } else {
       renameSync(webm, resolve(out, `${name}.webm`));
       console.log(`${name}.webm (no ffmpeg found — left as webm)`);
@@ -101,7 +150,7 @@ for (const [sizeName, viewport] of SIZES) {
 import('node:fs').then(({ writeFileSync }) => {
   for (const theme of ['light', 'dark']) {
     writeFileSync(resolve(out, `${slug}-${theme}-caption.txt`),
-      `Caption:\n${captionFor(stamps[theme])}\n\nFirst comment:\nwritten in my Endpaper journal - find the app endpaper.space\n`);
+      `Caption:\n${captionFor(stamps[theme])}\n\nFirst comment:\nI wrote this in the Endpaper app\n`);
   }
 });
 
