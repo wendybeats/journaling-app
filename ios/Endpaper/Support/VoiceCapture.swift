@@ -20,6 +20,9 @@ final class VoiceCapture: ObservableObject {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
     private var base = ""
+    private var lastSpoken = ""
+    private var graceUntil = Date.distantPast
+    private var session = 0
 
     /// `base` is a provider, not a value — it's read the moment recording
     /// actually begins, after any permission flow. Capturing the text at
@@ -46,6 +49,10 @@ final class VoiceCapture: ObservableObject {
               let recognizer = SFSpeechRecognizer(), recognizer.isAvailable,
               recognizer.supportsOnDeviceRecognition else { return }
         self.base = base
+        lastSpoken = ""
+        graceUntil = .distantPast
+        session += 1
+        let mySession = session
 
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.record, mode: .measurement, options: .duckOthers)
@@ -68,36 +75,59 @@ final class VoiceCapture: ObservableObject {
         task = recognizer.recognitionTask(with: req) { [weak self] result, error in
             guard let self else { return }
             DispatchQueue.main.async {
-                // Once stopped, no late callback may touch the page —
-                // cancellation fires a final callback whose transcription
-                // can reset to (near) empty and would erase the dictation.
-                guard self.isRecording else { return }
+                // A callback from a superseded recording may never touch
+                // the page — its base and transcript belong to an old take.
+                guard self.session == mySession else { return }
                 if let result {
                     let spoken = result.bestTranscription.formattedString
-                    if !spoken.isEmpty {
+                    // Live partials apply while recording. After a user
+                    // stop, the recognizer's final consolidation may still
+                    // land — short takes sometimes deliver ALL their words
+                    // only there — but only inside the grace window and
+                    // only carrying at least what the page already shows.
+                    // Cancellation callbacks (commit path) pass neither
+                    // test, so they can never erase the dictation.
+                    let trailing = !self.isRecording
+                        && Date() < self.graceUntil
+                        && result.isFinal
+                        && spoken.count >= self.lastSpoken.count
+                    if self.isRecording || trailing, !spoken.isEmpty {
+                        self.lastSpoken = spoken
                         let joiner = self.base.isEmpty
                             || self.base.hasSuffix(" ") || self.base.hasSuffix("\n") ? "" : " "
                         self.onText?(self.base + joiner + spoken)
                     }
                 }
-                if error != nil || result?.isFinal == true {
+                if self.isRecording, error != nil || result?.isFinal == true {
                     self.stop()
                 }
             }
         }
     }
 
+    /// User-initiated stop (the REC pill): the take is over, but the final
+    /// consolidated transcription is still welcome for a moment.
     func stop() {
         guard isRecording else { return }
         isRecording = false
-        teardown()
+        graceUntil = Date().addingTimeInterval(1.5)
+        teardown(cancelTask: false)   // endAudio lets the task finish and file its final
     }
 
-    private func teardown() {
+    /// Hard stop for the commit path: the draft is about to be committed
+    /// and cleared, so nothing may write to it afterwards.
+    func cancel() {
+        graceUntil = .distantPast
+        guard isRecording else { return }
+        isRecording = false
+        teardown(cancelTask: true)
+    }
+
+    private func teardown(cancelTask: Bool) {
         if engine.isRunning { engine.stop() }
         engine.inputNode.removeTap(onBus: 0)
         request?.endAudio()
-        task?.cancel()
+        if cancelTask { task?.cancel() }
         request = nil
         task = nil
         try? AVAudioSession.sharedInstance()

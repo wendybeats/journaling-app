@@ -1,10 +1,11 @@
 // Endpaper — the entry. Plain text, day-keyed, timestamped: the same corpus
 // shape as the web prototype (endpaper.entries.v1), now as SwiftData + CloudKit.
 //
-// Permanence is a product rule ("what you write stays written"): nothing in
-// the app exposes an edit or delete path. The only mutation anywhere is
-// EntryStore's same-session append. CloudKit requires defaults on every
-// property, hence the initializer-side values.
+// Permanence is a product rule ("what you write stays written"), and its
+// boundary is the day: same-day revision exists (EntryStore.revise), but at
+// midnight the day archives and nothing can touch it again. There is no
+// delete path anywhere. CloudKit requires defaults on every property,
+// hence the initializer-side values.
 
 import Foundation
 import SwiftData

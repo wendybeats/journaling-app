@@ -183,9 +183,10 @@ struct ReflectionFlowHost: View {
                         // that first.
                         let corpus = ReflectionStore.corpus(from: context)
                         if let weekly = ReflectionStore.shared.pendingWeekly(corpus: corpus) {
-                            presented = .weekly(weekly)
+                            present(.weekly(weekly), archiving: .weekly(weekly))
                         } else if let monthly = ReflectionStore.shared.pendingMonthly(corpus: corpus) {
-                            presented = .monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus))
+                            present(.monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus)),
+                                    archiving: .monthly(monthly))
                         }
                     }
                 }
@@ -218,11 +219,11 @@ struct ReflectionFlowHost: View {
         if let monthly = store.pendingMonthly(corpus: corpus) {
             let days = writtenDayNumbers(of: monthly, corpus: corpus)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                presented = .monthly(monthly, writtenDays: days)
+                present(.monthly(monthly, writtenDays: days), archiving: .monthly(monthly))
             }
         } else if let weekly = store.pendingWeekly(corpus: corpus) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                presented = .weekly(weekly)
+                present(.weekly(weekly), archiving: .weekly(weekly))
             }
         }
 
@@ -235,17 +236,24 @@ struct ReflectionFlowHost: View {
         }
     }
 
+    /// An arrival is marked seen (and archived) the moment it presents —
+    /// backgrounding or killing the app mid-sequence must not re-arrive
+    /// the same card on the next open. Nothing is lost: the full signal
+    /// already rests in the Notebook archive.
+    private func present(_ item: PresentedReflection, archiving reflection: ArchivedReflection) {
+        ReflectionStore.shared.markSeen(reflection)
+        presented = item
+    }
+
     @ViewBuilder
     private func reflectionCover(_ item: PresentedReflection) -> some View {
         switch item {
         case .weekly(let signal):
             WeeklyCardView(signal: signal) {
-                ReflectionStore.shared.markSeen(.weekly(signal))
                 presented = nil
             }
         case .monthly(let signal, let writtenDays):
             RecapView(signal: signal, writtenDays: writtenDays) {
-                ReflectionStore.shared.markSeen(.monthly(signal))
                 presented = nil
             }
         case .yearly(let signal):

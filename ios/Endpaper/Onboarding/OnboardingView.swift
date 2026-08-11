@@ -39,7 +39,7 @@ struct OnboardingView: View {
                     TutorialSlide(
                         index: 1,
                         title: "This is Endpaper.",
-                        body: "Open it, write or speak, close it. What you write stays written — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.",
+                        body: "Open it, write or speak, close it. When the day ends, the page is sealed — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.",
                         onSkip: { jump(to: accountIndex) }
                     ) { DemoDotGrid() }
                 case 2:

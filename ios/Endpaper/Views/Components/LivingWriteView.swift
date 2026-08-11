@@ -27,14 +27,17 @@ struct LivingWriteView: UIViewRepresentable {
         tv.delegate = context.coordinator
         tv.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         tv.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        Self.restyle(tv, to: text)
+        Self.restyle(tv, to: text, caretToEnd: true)   // a restored draft opens ready to continue
         return tv
     }
 
     func updateUIView(_ tv: UITextView, context: Context) {
         context.coordinator.parent = self
         if tv.text != text {
-            Self.restyle(tv, to: text)
+            // Text arriving from outside the keyboard (dictation partials,
+            // the post-commit clear) writes at the end — the caret rides
+            // ahead of it, never stranded behind mid-text.
+            Self.restyle(tv, to: text, caretToEnd: true)
         }
         if focused, !tv.isFirstResponder {
             tv.becomeFirstResponder()
@@ -78,14 +81,16 @@ struct LivingWriteView: UIViewRepresentable {
 
     /// Re-derives every line's attributes, preserving the caret. Skipped
     /// while marked text is in flight (CJK composition, dictation marks).
-    static func restyle(_ tv: UITextView, to newText: String? = nil) {
+    static func restyle(_ tv: UITextView, to newText: String? = nil, caretToEnd: Bool = false) {
         guard tv.markedTextRange == nil else {
             if let newText, tv.text != newText { tv.text = newText }
             return
         }
         let string = newText ?? tv.text ?? ""
         let ns = string as NSString
-        let caret = tv.selectedRange
+        let caret = caretToEnd
+            ? NSRange(location: ns.length, length: 0)
+            : tv.selectedRange
         let attr = NSMutableAttributedString(string: string)
         var loc = 0
         for line in string.components(separatedBy: "\n") {

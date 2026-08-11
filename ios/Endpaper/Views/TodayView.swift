@@ -1,8 +1,9 @@
 // Today — the blank page is the home screen. Heading, mono meta row, the
 // day's committed sections, and the writing surface with the cursor ready.
-// Entries auto-commit (5 s idle / backgrounding / navigating away); a faint
-// "SAVED 9:41 AM" is the only acknowledgment. Committed text is permanent —
-// there is no edit path, matching the product rule taught in onboarding.
+// Entries auto-commit (idle / backgrounding / navigating away); a faint
+// "SAVED 9:41 AM" is the only acknowledgment. Committed sections can be
+// revised until the day ends (long-press → Edit); at midnight the day
+// archives and becomes permanent — the product rule taught in onboarding.
 
 import SwiftUI
 import SwiftData
@@ -65,7 +66,7 @@ struct TodayView: View {
                 // The day's committed sections
                 VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                     ForEach(todayEntries, id: \.id) { entry in
-                        EntrySection(entry: entry)
+                        EntrySection(entry: entry, onEdited: { refresh() })
                             .opacity(settlingID == entry.id ? 0 : 1)
                             .animation(Tokens.Motion.fast, value: settlingID)
                     }
@@ -221,7 +222,9 @@ struct TodayView: View {
     // MARK: - Commit choreography
 
     private func commit() {
-        voice.stop()
+        // Hard cancel, not stop: the draft is about to be committed and
+        // cleared, so no trailing transcription may resurrect it.
+        voice.cancel()
         idleCommit?.cancel()
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -313,10 +316,15 @@ struct RecPill: View {
 /// One committed session: a small time stamp and the serif lines, each
 /// resting at exactly the size it was written — per-line WrittenScale,
 /// the same classifier as the writing surface, so a preserved big line
-/// stays big on the page forever. Long-press to copy or share
-/// (read-only outbound — permanence holds).
+/// stays big on the page forever. Long-press to copy or share — and,
+/// while the section's day is still today, to edit. At midnight the day
+/// archives and the menu goes read-only: permanence begins when the day
+/// ends.
 struct EntrySection: View {
     let entry: Entry
+    var onEdited: (() -> Void)? = nil
+
+    @State private var editing = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
@@ -332,6 +340,13 @@ struct EntrySection: View {
             }
         }
         .contextMenu {
+            if EntryStore.isEditable(entry) {
+                Button {
+                    editing = true
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+            }
             Button {
                 UIPasteboard.general.string = entry.text
             } label: {
@@ -340,6 +355,9 @@ struct EntrySection: View {
             ShareLink(item: shareText) {
                 Label("Share", systemImage: "square.and.arrow.up")
             }
+        }
+        .sheet(isPresented: $editing) {
+            EditSessionSheet(entry: entry) { onEdited?() }
         }
     }
 

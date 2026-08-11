@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage(AppKeys.faceLock) private var faceLock = false
     @State private var reminderOn = ReminderManager.enabled
     @State private var reminderTime = Date()
+    @State private var editsCloseOn = ReminderManager.editsCloseEnabled
     @State private var replaying = false
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
@@ -52,6 +53,17 @@ struct SettingsView: View {
                                 Task { await ReminderManager.rearm(in: context) }
                             }
                         Text("Skipped on days you've already written")
+                            .typeMetaSmall()
+
+                        Toggle(isOn: $editsCloseOn) {
+                            Text("A last call at 11 PM").typeWritten()
+                        }
+                        .tint(Tokens.Surface.inverted)
+                        .padding(.top, Tokens.Space.sm)
+                        .onChange(of: editsCloseOn) { _, on in
+                            Task { await ReminderManager.setEditsCloseEnabled(on) }
+                        }
+                        Text("Anything else from today? Edits end at midnight")
                             .typeMetaSmall()
                     }
                 }

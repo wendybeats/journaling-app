@@ -1,6 +1,11 @@
 // Endpaper — the append-only store, ported from js/store.js.
 // A pause under 30 minutes continues the same timestamped section; a longer
-// gap starts a new one. There is no update or delete API on purpose.
+// gap starts a new one.
+//
+// The permanence boundary is the day: while a day is still today, its
+// sections may be revised (text and, through the line classifier, format).
+// At midnight the day archives and becomes permanent. There is no delete
+// API anywhere, ever.
 
 import Foundation
 import SwiftData
@@ -27,6 +32,23 @@ enum EntryStore {
         context.insert(entry)
         try? context.save()
         return entry
+    }
+
+    /// Editable while its day is still today; permanent after midnight.
+    static func isEditable(_ entry: Entry, now: Date = .now) -> Bool {
+        entry.dayKey == DayFormat.key(for: now)
+    }
+
+    /// Same-day revision — the only mutation besides the session append.
+    /// Guarded here, not just in the UI, so no surface can edit the past.
+    /// `lastAt` is left alone: revising at 11 PM must not pull a morning
+    /// section into the evening's session-merge window.
+    static func revise(_ entry: Entry, to text: String, in context: ModelContext) {
+        guard isEditable(entry) else { return }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        entry.text = trimmed
+        try? context.save()
     }
 
     static func entries(forDay key: String, in context: ModelContext) -> [Entry] {

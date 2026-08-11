@@ -13,6 +13,7 @@ enum AppKeys {
     static let reminder = "endpaper.reminder.v1"      // "yes" | "no" — the pre-prompt answer
     static let reminderHour = "endpaper.reminder.hour.v1"     // Int, default 8
     static let reminderMinute = "endpaper.reminder.minute.v1" // Int, default 0
+    static let editsClose = "endpaper.editsclose.v1"  // Bool — the 11 PM "edits end in 1 hour" note
     static let reflection = "endpaper.reflection.v1"  // consent state (round 2 port)
     static let faceLock = "endpaper.facelock.v1"      // Bool — lock the app behind Face ID
     static let reviewAsk = "endpaper.reviewask.v1"    // "itIs" | "notYet" — answered once, kept forever

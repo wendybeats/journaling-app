@@ -11,6 +11,7 @@ enum ReminderManager {
 
     static let defaultHour = 8
     private static let requestID = "endpaper.reminder.daily"
+    private static let editsCloseID = "endpaper.editsclose.daily"
 
     /// Copy pool — one line, no title, no emoji, never streak language.
     /// Rotation seeded by day-of-year: deterministic, testable.
@@ -84,6 +85,38 @@ enum ReminderManager {
         let components = cal.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         try? await center.add(UNNotificationRequest(identifier: requestID, content: content, trigger: trigger))
+
+        await rearmEditsClose()
+    }
+
+    // MARK: - The day's last call (11 PM)
+
+    /// The permanence boundary is midnight; this is its one-hour warning —
+    /// and the evening's quiet invitation to add a line. Rides the same
+    /// opt-in as the morning reminder (no separate permission ask), with
+    /// its own Settings switch. A repeating calendar trigger: every day at
+    /// 23:00, no day-skipping — "anything else?" reads right whether the
+    /// day is written or blank.
+    static var editsCloseEnabled: Bool {
+        UserDefaults.standard.object(forKey: AppKeys.editsClose) as? Bool ?? true
+    }
+
+    static func setEditsCloseEnabled(_ on: Bool) async {
+        UserDefaults.standard.set(on, forKey: AppKeys.editsClose)
+        await rearmEditsClose()
+    }
+
+    private static func rearmEditsClose() async {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [editsCloseID])
+        guard UserDefaults.standard.string(forKey: AppKeys.reminder) == "yes",
+              editsCloseEnabled else { return }
+
+        let content = UNMutableNotificationContent()
+        content.body = "Anything else to say from today? Edits end in 1 hour."
+        var at = DateComponents(); at.hour = 23; at.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: at, repeats: true)
+        try? await center.add(UNNotificationRequest(identifier: editsCloseID, content: content, trigger: trigger))
     }
 
     /// Called after every commit: if today's reminder is still pending and
@@ -107,7 +140,7 @@ enum ReminderManager {
             await accepted(in: context)
         } else {
             UNUserNotificationCenter.current()
-                .removePendingNotificationRequests(withIdentifiers: [requestID])
+                .removePendingNotificationRequests(withIdentifiers: [requestID, editsCloseID])
         }
     }
 }

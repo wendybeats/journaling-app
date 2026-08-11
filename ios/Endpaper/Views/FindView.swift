@@ -55,6 +55,17 @@ struct FindView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            // Long-press copies the found block right here —
+                            // no need to open the day just to grab the text.
+                            // A single tap still opens the day as always.
+                            .contextMenu {
+                                Button {
+                                    UIPasteboard.general.string =
+                                        group.snippets.joined(separator: "\n\n")
+                                } label: {
+                                    Label("Copy", systemImage: "doc.on.doc")
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, Tokens.Space.screenX)
