@@ -56,22 +56,23 @@
     justify-content: center; align-items: center;
     text-align: center;
     margin-top: 24px;
-    font-size: 210px;
+    font-size: 252px;
     line-height: 1.4;
     color: var(--written);
     transition: font-size 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
   }
   .line { max-width: 100%; }
+  /* The press must never reflow the line — a wrap change mid-animation
+     breaks the effect. True italic/bold have different glyph widths, so
+     emphasis is drawn with transforms and stroke instead: zero layout
+     impact, same read. */
   .emph {
     display: inline-block;
-    transition: font-weight 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
-                transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-  .emph.on {
-    font-style: italic;
-    font-weight: 500;
-  }
+  .emph.on { transform: skewX(-9deg); -webkit-text-stroke: 0.6px currentColor; }
   .emph.pulse { transform: scale(1.07); }
+  .emph.on.pulse { transform: skewX(-9deg) scale(1.07); }
   .caret {
     display: inline-block;
     width: 3px; height: 0.92em;
@@ -131,7 +132,7 @@
 
   // The app's living write, at video scale: sizes step down as the entry
   // grows — huge first word, medium first phrase, then the written register.
-  const SIZES = [[0, 210], [2, 96], [12, 80], [34, 64], [70, 54]];
+  const SIZES = [[0, 252], [2, 96], [12, 80], [34, 64], [70, 54]];
   const el = document.getElementById('text');
   const write = document.querySelector('.write');
   const ack = document.getElementById('ack');
@@ -148,7 +149,10 @@
   });
 
   async function run() {
-    await pause(900);                          // the blank page, caret ready
+    // The first frame must already carry the huge first letter — a feed
+    // scroll that catches frame one should never see an empty page.
+    // (render-quote.mjs trims the pre-font-load frames off the front.)
+    await document.fonts.ready;
     let typedLen = 0;
     let first = true;
     for (let i = 0; i < segs.length; i++) {
@@ -163,7 +167,7 @@
         if (ch === ' ') d += 60;
         if (',;'.includes(ch)) d += 240;
         if ('.?!'.includes(ch)) d += 380;
-        if (first) { first = false; await pause(1000); continue; }  // the HUGE first letter hangs
+        if (first) { first = false; await pause(700); continue; }  // the hang — ~0.5s after the front trim
         await pause(d);
       }
     }

@@ -108,6 +108,9 @@ for (const [sizeName, viewport] of SIZES) {
       const mp4 = resolve(out, `${name}.mp4`);
       execFileSync(ffmpeg, [
         '-y', '-hide_banner', '-loglevel', 'error',
+        // Trim the page-load frames so frame one already shows the huge
+        // first letter (the template waits for fonts, then types it).
+        '-ss', '0.4',
         '-i', webm,
         '-c:v', 'libx264', '-crf', '19', '-preset', 'medium',
         '-pix_fmt', 'yuv420p', '-an',
@@ -147,10 +150,11 @@ for (const [sizeName, viewport] of SIZES) {
 }
 
 // Paste-ready words, matching each variant's SAVED stamp exactly.
+// Bare text only — line 1 is the caption, line 3 the first comment.
 import('node:fs').then(({ writeFileSync }) => {
   for (const theme of ['light', 'dark']) {
     writeFileSync(resolve(out, `${slug}-${theme}-caption.txt`),
-      `Caption:\n${captionFor(stamps[theme])}\n\nFirst comment:\nI wrote this in the Endpaper app\n`);
+      `${captionFor(stamps[theme])}\n\nI wrote this in the Endpaper app\n`);
   }
 });
 

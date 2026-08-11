@@ -82,9 +82,11 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   surface; stills are anchors/carousel/story material.** Reels-first
   cadence from here.
 - Watch-the-metric: avg watch on the Reel opened at ~1.3s/view (83s
-  over 66). If completion stays that low by Friday, shorten the
-  first-letter hang (1s → 0.5s) and test. Decide with a full day's
-  data, not five minutes'.
+  over 66). RESOLVED 2026-08-11 (Wendell called it early): hang cut to
+  ~0.5s, first letter +20% (252px) and on frame one — a feed scroll
+  must never catch an empty page. Emphasis press rebuilt reflow-free
+  (skew + stroke, not italic/weight) so the line never re-wraps
+  mid-effect.
 - W33 pass (2026-08-10, same-day data): quotes family promoted to
   winner on the reach signal; two same-family variants spawned (series
   framing, weekly cadence framing). Packs now include a quote video
@@ -131,3 +133,5 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-10 | IG Reel | quote-motion "commit to nothing" | quotes pillar, video format test | 66 views / 5 min, 98.4% non-followers — early winner on reach |
 | 2026-08-10 | IG Reel (scheduled 21:51 EEST via Eden) | quote-motion Marcus Aurelius dark | quotes franchise, first machine-scheduled post | caption "Thought of Monday, Aug 10th at 9:51pm", first comment auto |
 | 2026-08-11 | IG Reel (scheduled 07:08 EEST via Eden) | quote-motion Seneca "everywhere is *nowhere*" light | morning franchise slot 1, first emphasis-press post live | 14.7s runtime (short — watch-time test), caption "Thought of Tuesday, Aug 11th at 7:08am", first comment auto. Renderer takes a date arg now — render the night before, dated to posting day |
+| 2026-08-11 | IG Reel (manual, midday) | quote-motion Seneca "imagination / *reality*" light | replaces the 07:08 post — v4 template debut (frame-one letter, 0.5s hang, no-reflow press) + catalog audio | caption "Thought of Tuesday, Aug 11th at 7:18am" |
+| 2026-08-11 | IG Reel (manual, ~21:15) | quote-motion Dostoevsky "own way" dark | evening slot, first prep-kit post with catalog audio + human first comment | caption "Thought of Tuesday, Aug 11th at 9:15pm" |
