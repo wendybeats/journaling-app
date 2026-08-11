@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var reminderOn = ReminderManager.enabled
     @State private var reminderTime = Date()
     @State private var editsCloseOn = ReminderManager.editsCloseEnabled
+    @State private var reflectionsOn = ReflectionStore.shared.consent == "yes"
     @State private var replaying = false
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
@@ -66,6 +67,25 @@ struct SettingsView: View {
                         Text("Anything else from today? Edits end at midnight")
                             .typeMetaSmall()
                     }
+                }
+
+                rule
+
+                // --- Reflections ---
+                // The same consent the in-page card asks for, revisitable.
+                // Off means silence: no weekly card, no monthly recap, no
+                // January invite. Already-archived reflections stay in the
+                // Notebook — they're part of the record.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Toggle(isOn: $reflectionsOn) {
+                        Text("Reflections").typeWritten()
+                    }
+                    .tint(Tokens.Surface.inverted)
+                    .onChange(of: reflectionsOn) { _, on in
+                        ReflectionStore.shared.setConsent(on ? "yes" : "no")
+                    }
+                    Text("Your week and month, in your own words — always private")
+                        .typeMetaSmall()
                 }
 
                 rule
