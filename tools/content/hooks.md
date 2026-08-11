@@ -111,6 +111,11 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   session (workspace "hello's workspace", IG @endpaper.space; LinkedIn
   present but never targeted without an explicit ask). Friday passes
   can pull analytics directly.
+- **Daily kit run (from 2026-08-12)**: automated routine fires at
+  06:00 Helsinki every morning and delivers both day-kits to the chat
+  (light for the ~7am slot, dark for the evening), rendered dated to
+  the day, standard format: mp4 → bare caption → bare comment. Wendell
+  posts in-app with catalog audio. Eden queue stays empty by default.
 - **First comment (from 2026-08-11)**: "I wrote this in the Endpaper
   app" — no URL, no dash-speak.
 - **Music (from 2026-08-11)**: quote Reels get Instagram catalog
