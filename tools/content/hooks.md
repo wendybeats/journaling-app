@@ -111,13 +111,15 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   can pull analytics directly.
 - **First comment (from 2026-08-11)**: "I wrote this in the Endpaper
   app" — no URL, no dash-speak.
-- **Music (from 2026-08-11)**: Reels carry a neoclassical bed
-  (Jóhannsson / Alcocer / Hisaishi / Pamart / Richter register).
-  Tracks live untracked in tools/content/music/ — pull from the
-  GitHub release. render-quote.mjs muxes automatically (arg 6:
-  filename | auto | none), fade-in 1.2s, fade-out 2.2s. Rights are
-  Wendell's call; API-published Reels don't get Instagram's in-app
-  music license.
+- **Music (from 2026-08-11)**: quote Reels get Instagram catalog
+  audio — neoclassical register (Jóhannsson / Alcocer / Hisaishi /
+  Pamart / Richter). Catalog tracks attach only in-app (Meta's API has
+  no music parameter), so music Reels are posted by Wendell from a
+  prep kit delivered the night before: silent video + caption + first
+  comment, paste-ready. Eden scheduling is the fallback for missed
+  slots (silent > skipped). render-quote.mjs can also mux a local
+  track from tools/content/music/ (arg 6) — dormant unless licensed
+  files ever land there.
 
 ## Live log
 
