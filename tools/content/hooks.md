@@ -100,6 +100,13 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   indexed search each week; until that pass runs, Wendell may also feed
   a weekly library by hand. First comment rewritten — "I wrote this in
   the Endpaper app" (the URL-bearing version read as bot).
+- 2026-08-12: first Eden mining pass ran (global corpus, outlier-ranked,
+  last quarter). Four lines lifted from 5x–115x overperformers onto the
+  bench (control/mind, emotions/button, ships/water, defeat is
+  psychological — all posted unattributed; the Aurelius attribution on
+  the last is shaky and we don't fake attributions). Validation: "You
+  become what you give your attention to" — already on our bench — ran
+  6.7x on Daily Stoic; schedule it soon. Repeatable Friday step now.
 
 ## Cadence & pipeline (2026-08-10)
 
