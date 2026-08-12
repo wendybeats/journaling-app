@@ -43,7 +43,8 @@ waste the reach we're buying with the value posts.
 
 **Gate to Arc 2 — all three:**
 - App approved and stable on the App Store (no review-blocking bugs
-  two consecutive weeks).
+  two consecutive weeks). ✅ *Approved & live 2026-08-12 —
+  apps.apple.com/app/id6795154721; stability clock starts now.*
 - Reels drive ≥25 endpaper.space clicks/week (attribution links
   /ig, /th) for two consecutive weeks.
 - Founding-thirty offer fully claimed, or 30 days post-launch —

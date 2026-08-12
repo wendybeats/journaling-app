@@ -111,6 +111,13 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 
 ## Cadence & pipeline (2026-08-10)
 
+- **LIVE (2026-08-12)**: approved and on the store —
+  https://apps.apple.com/app/endpaper-journal-in-ink/id6795154721.
+  Site badges wired. Launch post gated on the listing showing "Get"
+  (price was misconfigured $39.99 → corrected to free; propagation
+  up to a few hours). Founding offer code: FOUNDING / free / 1 yr /
+  30 redemptions — create in ASC before the launch post goes out.
+
 - **2x/day**: morning slot 07:05 (the "Thought of…" light quote Reel —
   the daily franchise) and evening slot 21:45 (app clips, cards, dark
   quote when nothing else fits). Europe/Helsinki. More signal > polish
