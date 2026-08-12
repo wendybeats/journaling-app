@@ -35,6 +35,7 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | Wrote this one down so it would stop following me around | quotes | everyone | quote-motion caption | live |
 | Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | fresh |
 | One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | fresh |
+| One insight a week — dots that tell it, my voice over it | dots + founder | everyone | dot-motion Reel + VO, weekly | fresh |
 | Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | fresh |
 | This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
 | Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |

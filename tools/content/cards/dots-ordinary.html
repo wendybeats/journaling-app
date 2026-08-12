@@ -1,0 +1,154 @@
+<!doctype html>
+<!-- Dot-matrix motion — weekly insight piece #1: "ordinary days."
+     Topic mined from Eden (212x outlier: "your future is not shaped by
+     your best day; it is shaped by the ordinary days nobody will ever
+     remember"). A hollow month fills one day at a time, unevenly; the
+     one big day swells — and settles back to the same size as every
+     other dot. The gaps stay. Closing line in the written register.
+     Paced for a ~35 s voiceover (see script beats in the kit).
+     Driven by render-dots.mjs via ?theme=. Designed at 1080×1920. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1; --ink: #1A1A1A; --written: #262320;
+    --meta: #A9A6A0; --hairline: #C9C6BF;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3;
+    --meta: #6B6862; --hairline: #332F2B;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body { background: var(--page); overflow: hidden; }
+  canvas { display: block; }
+  .cap {
+    position: absolute; left: 0; right: 0;
+    font-family: 'Fragment Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--meta); text-align: center;
+    opacity: 0; transition: opacity 900ms ease;
+  }
+  .cap.on { opacity: 1; }
+  #open { top: 320px; font-size: 26px; }
+  #close {
+    top: 1440px;
+    font-family: 'Newsreader', serif;
+    text-transform: none; letter-spacing: 0;
+    font-size: 56px; color: var(--written);
+    transition: opacity 1200ms ease;
+  }
+  #foot { bottom: 128px; font-size: 22px; opacity: 1; }
+</style>
+</head>
+<body>
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div class="cap" id="open">One month, one day at a time</div>
+  <div class="cap" id="close">The ordinary days are the record.</div>
+  <div class="cap" id="foot">endpaper.space</div>
+
+<script>
+  const dark = new URLSearchParams(location.search).get('theme') === 'dark';
+  if (dark) document.documentElement.classList.add('dark');
+
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const ctx = document.getElementById('c').getContext('2d');
+
+  const COLS = 7, ROWS = 5, GAP = 100;
+  const gx0 = (1080 - (COLS - 1) * GAP) / 2;
+  const gy0 = 700;
+  const days = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      days.push({ x: gx0 + c * GAP, y: gy0 + r * GAP });
+
+  // A lived-in month: most days written, a few honest gaps that never
+  // fill. Day 16 is "the big day" — it swells, then settles to the
+  // same size as all the others. That settling IS the insight.
+  const SKIPPED = new Set([4, 11, 22, 29]);
+  const BIG = 16;
+  const fillOrder = [...Array(days.length).keys()].filter(i => !SKIPPED.has(i));
+
+  const T = {
+    fillStart: 4000,
+    fillGap: 580,          // one day at a time — patient, not a montage
+    bigSwellDur: 1400,     // the big day's moment…
+    bigSettleDur: 1600,    // …and its return to ordinary size
+    closeAt: 28500,
+    doneAt: 36000,
+  };
+  const fillAt = (i) => {
+    const k = fillOrder.indexOf(i);
+    return k < 0 ? Infinity : T.fillStart + k * T.fillGap;
+  };
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+
+  document.getElementById('open').classList.add('on');
+  let openHidden = false;
+
+  const t0 = performance.now();
+  function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, 1080, 1920);
+    const ink = css('--ink'), meta = css('--meta'), hair = css('--hairline');
+
+    if (t > 6500 && !openHidden) {
+      document.getElementById('open').classList.remove('on');
+      openHidden = true;
+    }
+    if (t > T.closeAt) document.getElementById('close').classList.add('on');
+
+    for (let i = 0; i < days.length; i++) {
+      const d = days[i];
+      const at = fillAt(i);
+
+      if (t < at) {
+        // Unwritten (or never written): the hollow day.
+        ctx.strokeStyle = hair;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 9, 0, Math.PI * 2);
+        ctx.stroke();
+        continue;
+      }
+
+      // Written: arrives with a small settle.
+      const age = t - at;
+      let r = 9 * Math.min(1, 0.6 + 0.4 * easeOut(Math.min(1, age / 350)));
+
+      if (i === BIG) {
+        // The big day: swells to twice the size — then becomes one dot
+        // like all the others.
+        if (age < T.bigSwellDur) {
+          r = 9 + 13 * easeOut(age / T.bigSwellDur);
+        } else if (age < T.bigSwellDur + T.bigSettleDur) {
+          const p = easeOut((age - T.bigSwellDur) / T.bigSettleDur);
+          r = 22 - 13 * p;
+        } else {
+          r = 9;
+        }
+      }
+
+      ctx.fillStyle = ink;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (t < T.doneAt) requestAnimationFrame(frame);
+    else window.__done = true;
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
