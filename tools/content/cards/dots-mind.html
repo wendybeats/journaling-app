@@ -1,0 +1,161 @@
+<!doctype html>
+<!-- Dot-matrix motion — the moat format (growth-arcs doc, Arc 1.2).
+     Piece 1: "what's really going on inside your mind." A cloud of
+     drifting noise-dots (the unwritten head) settles, thought by
+     thought, into the month grid; the noise that never lands fades.
+     Closing line in the written register. Driven by render-dots.mjs
+     via ?theme=. Designed at 1080×1920. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1; --ink: #1A1A1A; --written: #262320;
+    --meta: #A9A6A0;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3;
+    --meta: #6B6862;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body { background: var(--page); overflow: hidden; }
+  canvas { display: block; }
+  .cap {
+    position: absolute; left: 0; right: 0;
+    font-family: 'Fragment Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--meta); text-align: center;
+    opacity: 0; transition: opacity 900ms ease;
+  }
+  .cap.on { opacity: 1; }
+  #open { top: 300px; font-size: 26px; }
+  #close {
+    top: 1470px;
+    font-family: 'Newsreader', serif;
+    text-transform: none; letter-spacing: 0;
+    font-size: 56px; color: var(--written);
+    transition: opacity 1200ms ease;
+  }
+  #foot { bottom: 128px; font-size: 22px; opacity: 1; }
+</style>
+</head>
+<body>
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div class="cap" id="open">What’s really going on in there?</div>
+  <div class="cap" id="close">Written down, it has a shape.</div>
+  <div class="cap" id="foot">endpaper.space</div>
+
+<script>
+  const dark = new URLSearchParams(location.search).get('theme') === 'dark';
+  if (dark) document.documentElement.classList.add('dark');
+
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const ctx = document.getElementById('c').getContext('2d');
+
+  // The month grid the mind settles into: 7 × 5, centered.
+  const COLS = 7, ROWS = 5, GAP = 100;
+  const gx0 = (1080 - (COLS - 1) * GAP) / 2;
+  const gy0 = 700;
+  const targets = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      targets.push({ x: gx0 + c * GAP, y: gy0 + r * GAP });
+
+  // 90 thoughts adrift; 35 become days, the rest never land.
+  const N = 90;
+  const dots = [];
+  for (let i = 0; i < N; i++) {
+    dots.push({
+      x: 140 + Math.random() * 800,
+      y: 430 + Math.random() * 900,
+      vx: (Math.random() - 0.5) * 1.6,
+      vy: (Math.random() - 0.5) * 1.6,
+      captured: i < targets.length ? i : -1,
+    });
+  }
+  // Capture order is shuffled so the grid fills like a month does —
+  // out of sequence, one honest day at a time.
+  const order = [...Array(targets.length).keys()].sort(() => Math.random() - 0.5);
+
+  const T = {
+    capStart: 3600,      // first dot leaves the cloud
+    capStagger: 105,     // one capture at a time
+    capDur: 1100,        // each dot's glide
+    fadeStart: 4200,     // unlanded noise starts thinning
+    fadeEnd: 8600,
+    closeAt: 9600,       // the written line
+    doneAt: 13800,
+  };
+  const ease = (p) => 1 - Math.pow(1 - p, 3);
+
+  document.getElementById('open').classList.add('on');
+  let openHidden = false;
+
+  const t0 = performance.now();
+  function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, 1080, 1920);
+    const ink = css('--ink'), meta = css('--meta');
+
+    if (t > 3000 && !openHidden) {
+      document.getElementById('open').classList.remove('on');
+      openHidden = true;
+    }
+    if (t > T.closeAt) document.getElementById('close').classList.add('on');
+
+    for (let i = 0; i < N; i++) {
+      const d = dots[i];
+      const slot = d.captured >= 0 ? order.indexOf(d.captured) : -1;
+      const capAt = slot >= 0 ? T.capStart + slot * T.capStagger : Infinity;
+
+      let alpha = 1, r = 5, color = meta, x, y;
+
+      if (t < capAt) {
+        // Adrift: jittery, aimless, the unwritten head.
+        d.vx += (Math.random() - 0.5) * 0.22;
+        d.vy += (Math.random() - 0.5) * 0.22;
+        d.vx *= 0.985; d.vy *= 0.985;
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 100 || d.x > 980) d.vx *= -1;
+        if (d.y < 400 || d.y > 1360) d.vy *= -1;
+        x = d.x; y = d.y;
+        if (d.captured < 0 && t > T.fadeStart) {
+          alpha = Math.max(0, 1 - (t - T.fadeStart) / (T.fadeEnd - T.fadeStart));
+        }
+      } else {
+        // Captured: one thought, written, gliding to its day.
+        if (d.hx === undefined) { d.hx = d.x; d.hy = d.y; }
+        const p = ease(Math.min(1, (t - capAt) / T.capDur));
+        const tg = targets[d.captured];
+        x = d.hx + (tg.x - d.hx) * p;
+        y = d.hy + (tg.y - d.hy) * p;
+        r = 5 + 4 * p;
+        color = p > 0.55 ? ink : meta;
+      }
+
+      if (alpha <= 0) continue;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (t < T.doneAt) requestAnimationFrame(frame);
+    else window.__done = true;
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
