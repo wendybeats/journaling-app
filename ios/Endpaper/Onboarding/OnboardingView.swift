@@ -78,8 +78,20 @@ struct OnboardingView: View {
         }
         .contentShape(Rectangle())
         // Tap anywhere advances every tutorial slide (incl. past "Go forth.");
-        // the account and trial moments require their buttons.
+        // swiping works too — back a page as well as forward. The account
+        // and trial moments require their buttons.
         .onTapGesture { if index < tutorialPages { advance() } }
+        .gesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { g in
+                    guard index < tutorialPages else { return }
+                    if g.translation.width < -40 {
+                        advance()
+                    } else if g.translation.width > 40, index > 0 {
+                        withAnimation(Tokens.Motion.base) { index -= 1 }
+                    }
+                }
+        )
         .animation(Tokens.Motion.base, value: index)
     }
 
@@ -273,10 +285,8 @@ private struct TrialSlide: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                Task {
-                    if live { await TrialGate.shared.startTrial() }
-                    start(false)
-                }
+                if live { TrialGate.shared.startTrial() }   // local stamp — no sheet, no card
+                start(false)
             } label: {
                 Text("Start my free week")
                     .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))

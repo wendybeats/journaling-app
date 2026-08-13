@@ -23,7 +23,7 @@ struct PaywallView: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                Task { await gate.startTrial() }   // purchases the yearly product
+                Task { await gate.subscribe() }   // plain yearly purchase — the week is spent
             } label: {
                 Text("Keep writing")
                     .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))

@@ -1,13 +1,10 @@
-// The trial gate — StoreKit 2 scaffolding for the decided model: 7-day free
-// trial, then a required paid subscription. Hard paywall, no freemium. The
-// yearly product carries a 7-day introductory offer, so the trial converts
-// automatically — no separate expiry paywall logic is needed once StoreKit
-// is live. Price points are placeholders until the pre-submission pass.
-//
-// Until the app has an App Store Connect record, product loading fails in
-// plain builds; the gate then falls back to the locally stamped trial date
-// (the same behavior the web prototype mocks). Run with Endpaper.storekit as
-// the scheme's StoreKit configuration to exercise the real purchase flow.
+// The trial gate — StoreKit 2 for the decided model (rev. 2026-08-13):
+// the free week is the app's own, stamped locally at onboarding with no
+// purchase sheet and no card up front. When the week ends, the paywall is
+// hard: one plain $39.99/year purchase. No freemium, and no introductory
+// offer on the product — a user who already had their free week must not
+// be offered a second one by Apple's sheet (the ASC intro offer is
+// removed to match; offer codes are separate and unaffected).
 
 import Foundation
 import StoreKit
@@ -50,19 +47,18 @@ final class TrialGate: ObservableObject {
         return false
     }
 
-    /// "Start my free week" — purchases the yearly subscription, whose
-    /// introductory offer makes the first 7 days free.
-    func startTrial() async {
-        guard let product else {
-            // No App Store record yet: stamp the trial locally, exactly as
-            // the web prototype does. Replaced by the purchase above once
-            // the product exists.
-            UserDefaults.standard.set(
-                ISO8601DateFormatter().string(from: .now),
-                forKey: AppKeys.trial
-            )
-            return
-        }
+    /// "Start my free week" — the app's own week, no purchase, no sheet.
+    /// The store is not involved until the week is over.
+    func startTrial() {
+        UserDefaults.standard.set(
+            ISO8601DateFormatter().string(from: .now),
+            forKey: AppKeys.trial
+        )
+    }
+
+    /// "Keep writing" — the paywall's plain yearly purchase.
+    func subscribe() async {
+        guard let product else { return }
         if let result = try? await product.purchase(),
            case .success(.verified(let transaction)) = result {
             await transaction.finish()
