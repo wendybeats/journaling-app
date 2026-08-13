@@ -182,7 +182,7 @@ struct SettingsView: View {
     /// or the entitlement is absent in this build.
     private func refreshSyncLine() {
         guard accountMode == AccountMode.icloud.rawValue else {
-            syncLine = "Saved on this device only"
+            syncLine = "Saved on this device only — deleting the app deletes the notebook"
             return
         }
         if FileManager.default.ubiquityIdentityToken != nil {

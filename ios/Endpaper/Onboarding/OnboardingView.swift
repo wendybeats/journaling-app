@@ -260,7 +260,9 @@ private struct AccountSlide: View {
             }
             .padding(.top, Tokens.Space.md)
 
-            Text("Saved on this device only").typeMetaSmall()
+            Text("Saved on this device only — deleting the app deletes the notebook")
+                .typeMetaSmall()
+                .multilineTextAlignment(.center)
             Spacer()
         }
         .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
