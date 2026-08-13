@@ -285,8 +285,14 @@ private struct TrialSlide: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                if live { TrialGate.shared.startTrial() }   // local stamp — no sheet, no card
-                start(false)
+                Task {
+                    // Proceed only when the subscription verifies — a
+                    // dismissed sheet keeps us on this slide (no shadow
+                    // week; the double-trial bug lived here).
+                    if !live || (await TrialGate.shared.startTrial()) {
+                        start(false)
+                    }
+                }
             } label: {
                 Text("Start my free week")
                     .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))

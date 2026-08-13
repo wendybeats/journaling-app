@@ -76,10 +76,9 @@ once the 30 codes are gone.)
 > Made by one person, slowly. A human reads every email:
 > hello@endpaper.space
 >
-> Endpaper is free for your first week — no purchase required to start.
-> Continuing is $39.99/year. The subscription renews automatically
-> unless cancelled at least 24 hours before the period ends — manage it
-> anytime in iOS Settings → Subscriptions.
+> Endpaper is $39.99/year after a 7-day free trial. The subscription
+> renews automatically unless cancelled at least 24 hours before the
+> period ends — manage it anytime in iOS Settings → Subscriptions.
 >
 > Privacy Policy: https://endpaper.space/privacy.html
 > Terms of Use (EULA): https://endpaper.space/terms.html
@@ -114,11 +113,10 @@ the processor, not us). Revisit this label before ever adding telemetry.
 > Users can export their full notebook as plain text from Settings.
 >
 > The app is fully usable without an account — there are no accounts.
-> Subscription model: the first week is free inside the app (no purchase
-> and no introductory offer involved); after it, a hard paywall offers
-> the $39.99/year subscription. The paywall and Settings both include
-> offer-code redemption. To review the full experience without waiting a
-> week, redeem the review offer code or use the seeded demo noted below.
+> Subscription: purchased at onboarding — a 7-day free trial via the
+> introductory offer on the yearly subscription, converting
+> automatically; a hard paywall covers lapsed users. The paywall and
+> Settings both include offer-code redemption.
 >
 > Nothing requires special configuration to review. Dictation uses the
 > system speech recognizer with standard permission prompts.

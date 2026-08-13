@@ -1,10 +1,12 @@
-// The trial gate — StoreKit 2 for the decided model (rev. 2026-08-13):
-// the free week is the app's own, stamped locally at onboarding with no
-// purchase sheet and no card up front. When the week ends, the paywall is
-// hard: one plain $39.99/year purchase. No freemium, and no introductory
-// offer on the product — a user who already had their free week must not
-// be offered a second one by Apple's sheet (the ASC intro offer is
-// removed to match; offer codes are separate and unaffected).
+// The trial gate — StoreKit 2 for the decided model (rev. 2026-08-13b,
+// upfront conversion): onboarding purchases the yearly subscription on
+// day one; the ASC introductory offer makes the first week free and the
+// trial converts automatically unless cancelled. Onboarding proceeds
+// ONLY when the purchase verifies — dismissing the sheet must not grant
+// a shadow week (that was the double-free-week bug: local stamp, then
+// Apple's trial again at the paywall). The local stamp survives solely
+// as the offline-first-run fallback; the paywall then runs the real
+// purchase, where Apple decides intro-offer eligibility per account.
 
 import Foundation
 import StoreKit
@@ -47,16 +49,34 @@ final class TrialGate: ObservableObject {
         return false
     }
 
-    /// "Start my free week" — the app's own week, no purchase, no sheet.
-    /// The store is not involved until the week is over.
-    func startTrial() {
-        UserDefaults.standard.set(
-            ISO8601DateFormatter().string(from: .now),
-            forKey: AppKeys.trial
-        )
+    /// "Start my free week" — purchases the yearly subscription; the
+    /// introductory offer makes the first week free and it converts
+    /// automatically. Returns whether the gate actually opened — a
+    /// dismissed sheet returns false and onboarding stays put.
+    func startTrial() async -> Bool {
+        if product == nil { await refresh() }
+        guard let product else {
+            // Store unreachable (offline first run): the app's own week,
+            // so onboarding can't brick. The paywall at its end runs the
+            // real purchase.
+            UserDefaults.standard.set(
+                ISO8601DateFormatter().string(from: .now),
+                forKey: AppKeys.trial
+            )
+            return true
+        }
+        if let result = try? await product.purchase(),
+           case .success(.verified(let transaction)) = result {
+            await transaction.finish()
+            await refresh()
+            return true
+        }
+        return false
     }
 
-    /// "Keep writing" — the paywall's plain yearly purchase.
+    /// "Keep writing" — the paywall's purchase for lapsed/offline-onboarded
+    /// users. Apple applies the intro offer only if this account never
+    /// used it, so nobody is promised a second free week.
     func subscribe() async {
         guard let product else { return }
         if let result = try? await product.purchase(),
