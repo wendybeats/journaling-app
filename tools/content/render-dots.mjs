@@ -2,8 +2,9 @@
 // Records a cards/dots-*.html animation as H.264 video, light and dark,
 // story size (1080×1920 — the Reel surface).
 //
-// Usage: node render-dots.mjs [card] [outDir] [slug]
+// Usage: node render-dots.mjs [card] [outDir] [slug] [durSeconds]
 //   card: file in cards/ (default dots-mind.html)
+//   durSeconds: passed to the card as ?dur= (voiceover cuts run longer)
 
 import { chromium } from 'playwright';
 import { mkdirSync, renameSync, rmSync } from 'node:fs';
@@ -16,6 +17,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const card = process.argv[2] || 'dots-mind.html';
 const out = resolve(process.argv[3] || resolve(here, 'out'));
 const slug = process.argv[4] || card.replace(/\.html$/, '');
+const dur = process.argv[5] || '';
 mkdirSync(out, { recursive: true });
 
 let ffmpeg = null;
@@ -34,7 +36,7 @@ for (const theme of ['light', 'dark']) {
   rmSync(vidDir, { recursive: true, force: true });
   const ctx = await browser.newContext({ viewport, recordVideo: { dir: vidDir, size: viewport } });
   const page = await ctx.newPage();
-  await page.goto('file://' + resolve(here, 'cards', card) + `?theme=${theme}`);
+  await page.goto('file://' + resolve(here, 'cards', card) + `?theme=${theme}` + (dur ? `&dur=${dur}` : ''));
   await page.evaluate(() => document.fonts.ready);
   await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
   const video = page.video();

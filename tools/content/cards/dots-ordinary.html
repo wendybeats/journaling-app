@@ -58,8 +58,12 @@
   <div class="cap" id="foot">endpaper.space</div>
 
 <script>
-  const dark = new URLSearchParams(location.search).get('theme') === 'dark';
+  const params = new URLSearchParams(location.search);
+  const dark = params.get('theme') === 'dark';
   if (dark) document.documentElement.classList.add('dark');
+  // ?dur= (seconds) extends the final hold — for a voiceover cut, run a
+  // few seconds past the audio so the closing line breathes in silence.
+  const DUR = Number(params.get('dur') || 36);
 
   const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const ctx = document.getElementById('c').getContext('2d');
@@ -85,7 +89,7 @@
     bigSwellDur: 1400,     // the big day's moment…
     bigSettleDur: 1600,    // …and its return to ordinary size
     closeAt: 28500,
-    doneAt: 36000,
+    doneAt: DUR * 1000,
   };
   const fillAt = (i) => {
     const k = fillOrder.indexOf(i);
