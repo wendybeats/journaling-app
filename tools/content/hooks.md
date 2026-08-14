@@ -155,6 +155,18 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   track from tools/content/music/ (arg 6) — dormant unless licensed
   files ever land there.
 
+## Ops rules (learned the hard way)
+
+- **Never delete-and-repost for timing.** IG fingerprints video; a
+  same-day re-upload starts throttled (insight #1, 2026-08-14: AM post
+  deleted, PM re-upload seeded to 2 views). Archive if something must
+  move; otherwise post once and let it sit.
+- **Flagship formats get their own slot** — no other post within ~3
+  hours, ideally their own morning. The second Reel in a window gets
+  starved while the first is still in test.
+- If a throttled post must be retried: re-cut it (different length,
+  different opening) so it fingerprints as new — never the same file.
+
 ## Live log
 
 | Date | Platform | Asset / format | Hook / role | Notes |
