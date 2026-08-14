@@ -1,3 +1,9 @@
 # Netlify config — the site is static, no build step.
+#
+# This repo carries far more than the site (iOS app, content engine,
+# docs), and most pushes never touch site/. The ignore command makes
+# Netlify skip those deploys entirely: exit 0 = nothing site-relevant
+# changed = no build, no credits burned.
 [build]
   publish = "site"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- site/ netlify.toml"
