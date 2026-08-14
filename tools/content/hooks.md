@@ -101,6 +101,18 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   indexed search each week; until that pass runs, Wendell may also feed
   a weekly library by hand. First comment rewritten — "I wrote this in
   the Endpaper app" (the URL-bearing version read as bot).
+- **W33 Friday pass (2026-08-14, first full week of 2x/day)**: 7 Reels,
+  49–140 views each (median ~111), 23 likes, 5 comments, 4 followers.
+  Reach is PLATEAUED in the cold-start pool — no outliers (max 1.16x).
+  Verdicts: template micro-tests (hang / emphasis / music) undetectable
+  at this sample — v4 frozen, tuning stopped. Quotes demoted to
+  maintenance spine; growth burden moves to format variance (dots+VO
+  insight Reel next, founder one-take after). Engagement hypothesis to
+  watch: confrontational line + dark + evening (Dostoevsky 12.5% ER, 6
+  likes / 56 views — best of week by 2x). Ops: Wed evening slot went
+  unposted (fallback offer stands); pinned post caption still says "in
+  review" — needs the live link + founding update; launch Reel pending
+  the price flip to Get.
 - 2026-08-12: first Eden mining pass ran (global corpus, outlier-ranked,
   last quarter). Four lines lifted from 5x–115x overperformers onto the
   bench (control/mind, emotions/button, ships/water, defeat is
