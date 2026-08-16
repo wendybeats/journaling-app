@@ -64,6 +64,10 @@
   // ?dur= (seconds) extends the final hold — for a voiceover cut, run a
   // few seconds past the audio so the closing line breathes in silence.
   const DUR = Number(params.get('dur') || 36);
+  // ?open=cold — the re-cut opening (ops rule: a retry is a different
+  // cut): the big day is already on the page and swelling in frame one,
+  // the title arrives after, the fill runs compressed underneath.
+  const COLD = params.get('open') === 'cold';
 
   const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const ctx = document.getElementById('c').getContext('2d');
@@ -83,7 +87,14 @@
   const BIG = 16;
   const fillOrder = [...Array(days.length).keys()].filter(i => !SKIPPED.has(i));
 
-  const T = {
+  const T = COLD ? {
+    fillStart: 3000,
+    fillGap: 480,          // compressed — the hook already happened
+    bigSwellDur: 1400,
+    bigSettleDur: 1600,
+    closeAt: 26000,
+    doneAt: DUR * 1000,
+  } : {
     fillStart: 4000,
     fillGap: 580,          // one day at a time — patient, not a montage
     bigSwellDur: 1400,     // the big day's moment…
@@ -92,12 +103,15 @@
     doneAt: DUR * 1000,
   };
   const fillAt = (i) => {
-    const k = fillOrder.indexOf(i);
+    if (COLD && i === BIG) return -500;  // clock runs early: frame one lands mid-swell
+    const k = fillOrder.filter(x => !(COLD && x === BIG)).indexOf(i);
     return k < 0 ? Infinity : T.fillStart + k * T.fillGap;
   };
   const easeOut = (p) => 1 - Math.pow(1 - p, 3);
 
-  document.getElementById('open').classList.add('on');
+  // Cold open: the title waits for the swell to land, then visits.
+  if (!COLD) document.getElementById('open').classList.add('on');
+  let openShown = !COLD;
   let openHidden = false;
 
   const t0 = performance.now();
@@ -106,7 +120,11 @@
     ctx.clearRect(0, 0, 1080, 1920);
     const ink = css('--ink'), meta = css('--meta'), hair = css('--hairline');
 
-    if (t > 6500 && !openHidden) {
+    if (COLD && !openShown && t > 3300) {
+      document.getElementById('open').classList.add('on');
+      openShown = true;
+    }
+    if (t > (COLD ? 7300 : 6500) && !openHidden) {
       document.getElementById('open').classList.remove('on');
       openHidden = true;
     }

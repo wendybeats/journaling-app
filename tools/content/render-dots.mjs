@@ -18,6 +18,7 @@ const card = process.argv[2] || 'dots-mind.html';
 const out = resolve(process.argv[3] || resolve(here, 'out'));
 const slug = process.argv[4] || card.replace(/\.html$/, '');
 const dur = process.argv[5] || '';
+const extra = process.argv[6] || '';   // extra query params, e.g. "open=cold"
 mkdirSync(out, { recursive: true });
 
 let ffmpeg = null;
@@ -36,7 +37,8 @@ for (const theme of ['light', 'dark']) {
   rmSync(vidDir, { recursive: true, force: true });
   const ctx = await browser.newContext({ viewport, recordVideo: { dir: vidDir, size: viewport } });
   const page = await ctx.newPage();
-  await page.goto('file://' + resolve(here, 'cards', card) + `?theme=${theme}` + (dur ? `&dur=${dur}` : ''));
+  await page.goto('file://' + resolve(here, 'cards', card) + `?theme=${theme}`
+    + (dur ? `&dur=${dur}` : '') + (extra ? `&${extra}` : ''));
   await page.evaluate(() => document.fonts.ready);
   await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
   const video = page.video();
