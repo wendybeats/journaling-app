@@ -291,7 +291,9 @@ private struct TrialSlide: View {
                     // Proceed only when the subscription verifies — a
                     // dismissed sheet keeps us on this slide (no shadow
                     // week; the double-trial bug lived here).
-                    if !live || (await TrialGate.shared.startTrial()) {
+                    if live {
+                        if await TrialGate.shared.startTrial() { start(false) }
+                    } else {
                         start(false)
                     }
                 }

@@ -69,7 +69,7 @@ final class VoiceCapture: ObservableObject {
             self?.request?.append(buffer)
         }
         engine.prepare()
-        do { try engine.start() } catch { teardown(); return }
+        do { try engine.start() } catch { teardown(cancelTask: true); return }
         isRecording = true
 
         task = recognizer.recognitionTask(with: req) { [weak self] result, error in
