@@ -191,3 +191,5 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-16 | IG Reel (manual, ~6:59) | quote-motion "watering your own *grass*" light | morning slot | caption "Thought of Sunday, Aug 16th at 6:59am", catalog audio |
 | 2026-08-16 | IG Reel (manual, ~21:57) | quote-motion "out of your control / *mind*" dark | evening slot — 115x-mined line | caption "Thought of Sunday, Aug 16th at 9:57pm", catalog audio |
 | 2026-08-17 (planned) | IG Reel, Monday AM flagship slot | insight #1 RE-CUT (cold open, 38.6s, Wendell VO) | second attempt after throttled original — fresh fingerprint, clean air | caption "The ordinary days are the record."; nothing else within 3h |
+| 2026-08-17 | — no morning quote — | flagship isolation: the re-cut owns the AM | | |
+| 2026-08-17 | IG Reel (manual, ~21:29) | quote-motion "ships / water that gets *in*" dark | evening slot — 12x-mined line | caption "Thought of Monday, Aug 17th at 9:29pm", catalog audio |
