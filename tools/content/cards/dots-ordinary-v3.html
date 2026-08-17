@@ -41,22 +41,20 @@
     opacity: 0; transition: opacity 900ms ease;
   }
   .cap.on { opacity: 1; }
-  #open { top: 320px; font-size: 26px; }
+  #open { top: 190px; font-size: 28px; }
   #close {
-    top: 1440px;
+    top: 1150px;
     font-family: 'Newsreader', serif;
     text-transform: none; letter-spacing: 0;
     font-size: 56px; color: var(--written);
     transition: opacity 1200ms ease;
   }
-  #foot { bottom: 128px; font-size: 22px; opacity: 1; }
 </style>
 </head>
 <body>
   <canvas id="c" width="1080" height="1920"></canvas>
   <div class="cap" id="open">One month, one day at a time</div>
   <div class="cap" id="close">The ordinary days are the record.</div>
-  <div class="cap" id="foot">endpaper.space</div>
 
 <script>
   const params = new URLSearchParams(location.search);
@@ -67,9 +65,9 @@
   const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const ctx = document.getElementById('c').getContext('2d');
 
-  const COLS = 7, ROWS = 5, GAP = 100;
+  const COLS = 7, ROWS = 5, GAP = 130;
   const gx0 = (1080 - (COLS - 1) * GAP) / 2;
-  const gy0 = 700;
+  const gy0 = 440;   // the month lives in the top two-thirds; captions get the bottom
   const days = [];
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++)
@@ -79,10 +77,11 @@
   const GIANT = 0;             // day one arrives as the opening shot
   const BIG = 16;              // the "big day" that settles back to size
 
-  const shuffle = (a) => a.sort(() => Math.random() - 0.5);
-  const fillOrder = shuffle([...Array(days.length).keys()]
-    .filter(i => !SKIPPED.has(i) && i !== GIANT));
-  const flyOrder = shuffle([...Array(days.length).keys()].filter(i => i !== GIANT));
+  // Days count in, in calendar order — the entrance directions vary,
+  // the sequence never does. Skipped days stay hollow forever.
+  const fillOrder = [...Array(days.length).keys()]
+    .filter(i => !SKIPPED.has(i) && i !== GIANT);
+  const flyOrder = [...Array(days.length).keys()].filter(i => i !== GIANT);
 
   // Every hollow dot enters from its own edge of the screen.
   const origins = days.map((d, i) => {
@@ -95,7 +94,7 @@
 
   const T = {
     giantAt: 950, giantDur: 1300,   // holds full-size past the front trim, then springs into day one
-    flyStart: 700, flyGap: 55, flyDur: 750,
+    flyStart: 700, flyGap: 70, flyDur: 750,
     fillStart: 4600, fillGap: 450,
     bigSwellDur: 1100, bigSettleDur: 1400,
     closeAt: 26000,
@@ -143,11 +142,11 @@
         const p = clamp01((t - T.giantAt) / T.giantDur);
         const pp = back(p);
         const x = 540 + (d.x - 540) * pp;
-        const y = 930 + (d.y - 930) * pp;
-        const r = 162 + (9 - 162) * cubic(p);
+        const y = 860 + (d.y - 860) * pp;
+        const r = 170 + (13 - 170) * cubic(p);
         ctx.fillStyle = ink;
         ctx.beginPath();
-        ctx.arc(x, y, Math.max(9, r), 0, Math.PI * 2);
+        ctx.arc(x, y, Math.max(13, r), 0, Math.PI * 2);
         ctx.fill();
         continue;
       }
@@ -165,25 +164,25 @@
       const at = fillAt(i);
       if (t < at) {
         ctx.strokeStyle = hair;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.arc(x, y, 13, 0, Math.PI * 2);
         ctx.stroke();
         continue;
       }
 
       // Written: the day pops in — fast, slightly past size, snap.
       const age = t - at;
-      let r = 9 * (0.3 + 0.7 * back(clamp01(age / 320)));
+      let r = 13 * (0.3 + 0.7 * back(clamp01(age / 320)));
 
       if (i === BIG) {
         if (age < T.bigSwellDur) {
-          r = 9 + 13 * back(clamp01(age / T.bigSwellDur));
+          r = 13 + 18 * back(clamp01(age / T.bigSwellDur));
         } else if (age < T.bigSwellDur + T.bigSettleDur) {
           const p = cubic((age - T.bigSwellDur) / T.bigSettleDur);
-          r = 22 - 13 * p;
+          r = 31 - 18 * p;
         } else {
-          r = 9;
+          r = 13;
         }
       }
 
