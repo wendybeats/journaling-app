@@ -29,7 +29,7 @@ const HIDE = 'footer.type-meta-small,.consent-card{display:none!important}';
 const SHOTS = [
   { slug: 'gets-to-know-you', view: '#today', scheme: 'light',
     headline: 'The journal that gets to know you.',
-    kicker: '', sub: '', accent: 'right' },
+    kicker: '', sub: '', accent: 'right', tilt: 'right' },
   { slug: 'reads-you-back', view: null, scheme: 'light',
     headline: 'You write. It reads you back.',
     kicker: '', sub: 'your own words · every week · no AI',
@@ -39,7 +39,7 @@ const SHOTS = [
     kicker: 'for the ones in therapy', sub: '', accent: 'left' },
   { slug: 'untangle-then-act', view: '#archive', scheme: 'dark',
     headline: 'Untangle it. Then act.',
-    kicker: 'for founders & overthinkers', sub: '', accent: 'right' },
+    kicker: 'for founders & overthinkers', sub: '', accent: '', tilt: 'left' },
   { slug: 'one-honest-line', view: '#archive/calendar', scheme: 'light',
     headline: 'One honest line a day.',
     kicker: '', sub: 'each day, a dot fills in', accent: '' },
@@ -119,6 +119,7 @@ for (const [sizeName, viewport] of SIZES) {
       document.body.className = [
         shot.accent ? `accent-${shot.accent}` : '',
         shot.reflection ? 'show-reflection no-device' : '',
+        shot.tilt ? `tilt-${shot.tilt}` : '',
       ].join(' ').trim();
       document.getElementById('kicker').textContent = shot.kicker || '';
       document.getElementById('headline').textContent = shot.headline;

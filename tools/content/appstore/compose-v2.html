@@ -94,6 +94,27 @@
   .device img { display: block; width: 100%; }
   body.no-device .device { display: none; }
 
+  /* Angled variants — the phone as an object, tilted in space, cropped
+     by the frame. A real bezel sells the angle. */
+  body.tilt-right .device, body.tilt-left .device {
+    width: 96vw;
+    border-radius: 10vw;
+    border: 2.6vw solid #121212;
+    box-shadow:
+      0 0 0 0.2vw var(--meta),
+      0 5vw 12vw rgba(0,0,0,0.32);
+  }
+  body.tilt-right .device {
+    margin-top: 9vw; margin-left: 10vw;
+    transform: perspective(190vw) rotateY(-13deg) rotateZ(-7deg);
+    transform-origin: top center;
+  }
+  body.tilt-left .device {
+    margin-top: 9vw; margin-right: 6vw;
+    transform: perspective(190vw) rotateY(11deg) rotateZ(5deg);
+    transform-origin: top center;
+  }
+
   /* Shot 2: the weekly reflection card, as the product draws it —
      inverted surface, the surfaced word huge, the count beneath. */
   .reflection {
