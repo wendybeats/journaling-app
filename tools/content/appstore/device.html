@@ -1,0 +1,113 @@
+<!doctype html>
+<!-- Hardware device mockup — an iPhone as an object: titanium band,
+     black bezel, Dynamic Island, side buttons, tilted in space on a
+     transparent canvas. Driven by render-device.mjs (?blank for the
+     empty white screen, ?flat for no tilt; screen image injected).
+     Output is meant for compositing anywhere — store shots, site,
+     social. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: transparent; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .scene { perspective: 2600px; }
+  .phone {
+    position: relative;
+    width: 660px;
+    transform: rotateX(6deg) rotateY(24deg) rotateZ(-16deg);
+    transform-style: preserve-3d;
+    filter: drop-shadow(50px 70px 90px rgba(0,0,0,0.28));
+  }
+  body.flat .phone { transform: none; filter: drop-shadow(0 40px 80px rgba(0,0,0,0.22)); }
+
+  /* Titanium band */
+  .band {
+    border-radius: 104px;
+    padding: 9px;
+    background: linear-gradient(115deg,
+      #b9b7b2 0%, #f5f4f1 18%, #d6d4d0 38%,
+      #a9a7a2 55%, #e9e7e3 78%, #c2c0bb 100%);
+  }
+  /* Black bezel */
+  .bezel {
+    position: relative;
+    border-radius: 96px;
+    background: #050505;
+    padding: 20px;
+  }
+  .screen {
+    position: relative;
+    border-radius: 78px;
+    overflow: hidden;
+    background: #E8E6E1;
+  }
+  body.dark .screen { background: #161514; }
+  /* Status-bar inset: the web capture starts at y=0, but a real screen
+     keeps content below the island. */
+  .screen img { display: block; width: 100%; margin-top: 96px; }
+  .screen .white { width: 100%; aspect-ratio: 390/844; background: #fff; }
+  body.blank .screen img { display: none; }
+  body:not(.blank) .screen .white { display: none; }
+
+  /* Dynamic Island */
+  .island {
+    position: absolute; top: 26px; left: 50%;
+    transform: translateX(-50%);
+    width: 186px; height: 56px;
+    border-radius: 32px;
+    background: #050505;
+    z-index: 3;
+  }
+  /* A soft glass sheen across the screen */
+  .sheen {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: linear-gradient(115deg,
+      rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 28%,
+      rgba(255,255,255,0) 45%);
+  }
+
+  /* Side buttons — thin titanium slugs off the band edges */
+  .btn {
+    position: absolute;
+    background: linear-gradient(180deg, #d9d7d3, #a8a6a1);
+    border-radius: 6px;
+    z-index: -1;
+  }
+  .btn.action { left: -5px; top: 190px;  width: 10px; height: 64px; }
+  .btn.vol1   { left: -5px; top: 292px;  width: 10px; height: 110px; }
+  .btn.vol2   { left: -5px; top: 424px;  width: 10px; height: 110px; }
+  .btn.power  { right: -5px; top: 330px; width: 10px; height: 176px; }
+</style>
+</head>
+<body>
+  <div class="scene">
+    <div class="phone">
+      <div class="btn action"></div>
+      <div class="btn vol1"></div>
+      <div class="btn vol2"></div>
+      <div class="btn power"></div>
+      <div class="band">
+        <div class="bezel">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="sheen"></div>
+            <img id="shot" alt="">
+            <div class="white"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+  const q = new URLSearchParams(location.search);
+  if (q.has('blank')) document.body.classList.add('blank');
+  if (q.has('flat')) document.body.classList.add('flat');
+  if (q.get('bg') === 'dark') document.body.classList.add('dark');
+</script>
+</body>
+</html>
