@@ -32,7 +32,7 @@
     font-weight: 500; font-size: 84px; line-height: 1.14;
     letter-spacing: -0.015em; text-align: center;
     color: #1A1A1A;
-    opacity: 1; transition: opacity 260ms ease;
+    opacity: 1; transition: opacity 110ms ease;
     z-index: 2;
   }
   body.dark #hero { color: #E8E6E1; }
@@ -84,10 +84,10 @@
   const fallDrift = days.map(() => (Math.random() - 0.5) * 70);
 
   // The hero dot — the site's dot, below the copy. The dive starts here.
-  const DOT = { x: 540, y: 1180, r: 46 };
+  const DOT = { x: 540, y: 960, r: 46 };   // dead center — the dive starts from the middle of the screen
 
   const T = {
-    diveAt: 1100, diveDur: 950,
+    diveAt: 1100, diveDur: 620,   // fast, ease-out: explosive start, settles as it covers
     flyStart: 2700, flyGap: 70, flyDur: 750,
     fillStart: 5300, fillGap: 450,
     bigSwellDur: 1100, bigSettleDur: 1400,
@@ -123,7 +123,7 @@
       ctx.fillRect(0, 0, 1080, 1920);
       const p = clamp01((t - T.diveAt) / T.diveDur);
       if (p > 0 && !heroOff) { hero.classList.add('off'); heroOff = true; }
-      const r = DOT.r + (2350 - DOT.r) * easeIn(p);
+      const r = DOT.r + (1250 - DOT.r) * cubic(p);
       ctx.fillStyle = outer.ink;
       ctx.beginPath();
       ctx.arc(DOT.x, DOT.y, r, 0, Math.PI * 2);
