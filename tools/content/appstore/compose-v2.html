@@ -1,0 +1,153 @@
+<!doctype html>
+<!-- App Store screenshot compositor v2 (2026-08-17) — the value-first
+     set. Coconote/Tolan pacing in the Endpaper register: big sans
+     headline, optional mono kicker chip and sub-line, the device
+     bleeding off the bottom edge, one huge ink dot breaking the frame
+     behind it (Von Restorff — one element off the grid). Shot 2 swaps
+     the device for a reflection-card graphic mirroring the real weekly
+     card. Driven by render-appstore-v2.mjs. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Instrument Sans';
+    src: url('../../../fonts/InstrumentSans.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader-italic.woff2') format('woff2');
+    font-weight: 400; font-style: italic;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1; --ink: #1A1A1A; --written: #262320;
+    --meta: #A9A6A0; --hairline: #C9C6BF;
+    --inv: #1A1A1A; --on-inv: #E8E6E1;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3;
+    --meta: #6B6862; --hairline: #332F2B;
+    --inv: #E8E6E1; --on-inv: #1A1A1A;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body {
+    background: var(--page);
+    overflow: hidden; position: relative;
+    font-family: 'Instrument Sans', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 6vw 7vw 0;
+  }
+  header {
+    width: 100%; display: flex; flex-direction: column;
+    align-items: center; text-align: center; gap: 2.6vw;
+    z-index: 2;
+  }
+  .kicker {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 2.5vw; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--written);
+    padding: 1.3vw 3vw;
+    border-radius: 50vw;
+    box-shadow: inset 0 0 0 0.16vw var(--hairline);
+  }
+  .kicker:empty { display: none; }
+  .headline {
+    font-weight: 500; font-size: 8.6vw; line-height: 1.08;
+    letter-spacing: -0.018em; color: var(--ink);
+    text-wrap: balance;
+  }
+  .sub {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 2.7vw; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--meta);
+  }
+  .sub:empty { display: none; }
+
+  /* The accent: one huge ink dot breaking the frame behind the device. */
+  .bigdot {
+    position: absolute; width: 52vw; height: 52vw; border-radius: 50%;
+    background: var(--ink); z-index: 0; display: none;
+  }
+  body.accent-right .bigdot { display: block; right: -20vw; top: 20vh; }
+  body.accent-left  .bigdot { display: block; left: -20vw; top: 18vh; }
+
+  /* The device bleeds off the bottom — the screen keeps going. */
+  .device {
+    width: 84vw; margin-top: 5vw;
+    border-radius: 7vw 7vw 0 0;
+    overflow: hidden; z-index: 1;
+    box-shadow:
+      0 0 0 0.18vw var(--meta),
+      0 2.4vw 8vw rgba(0,0,0,0.22);
+  }
+  .device img { display: block; width: 100%; }
+  body.no-device .device { display: none; }
+
+  /* Shot 2: the weekly reflection card, as the product draws it —
+     inverted surface, the surfaced word huge, the count beneath. */
+  .reflection {
+    display: none;
+    width: 84vw; margin-top: 14vw; z-index: 1;
+    background: var(--inv); color: var(--on-inv);
+    border-radius: 5vw;
+    padding: 13vw 8vw 14vw;
+    text-align: center;
+    box-shadow: 0 2.4vw 8vw rgba(0,0,0,0.25);
+  }
+  body.show-reflection .reflection { display: block; }
+  .r-label {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 2.9vw; letter-spacing: 0.16em; text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .r-word {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 15.5vw; margin-top: 6vw;
+  }
+  .r-count {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 3vw; letter-spacing: 0.15em; text-transform: uppercase;
+    opacity: 0.55; margin-top: 4.4vw;
+  }
+  .r-quote {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 5.4vw; line-height: 1.55;
+    margin-top: 10vw; opacity: 0.92;
+    text-wrap: balance;
+  }
+  .r-dots { display: flex; justify-content: center; gap: 2.4vw; margin-top: 12vw; }
+  .r-dots span {
+    width: 2vw; height: 2vw; border-radius: 50%;
+    background: var(--on-inv);
+  }
+  .r-dots span.empty { background: transparent; box-shadow: inset 0 0 0 0.22vw rgba(233,230,225,0.4); }
+</style>
+</head>
+<body>
+  <div class="bigdot" aria-hidden="true"></div>
+  <header>
+    <div class="kicker" id="kicker"></div>
+    <div class="headline" id="headline">The journal that gets to know you.</div>
+    <div class="sub" id="sub"></div>
+  </header>
+  <div class="device"><img id="screen" alt=""></div>
+  <div class="reflection" aria-hidden="true">
+    <div class="r-label">Reflections — your week</div>
+    <div class="r-word">“the boat”</div>
+    <div class="r-count">kept surfacing — 6 times, across 4 days</div>
+    <div class="r-quote">The boat again. I keep going back to it like a question I haven’t answered.</div>
+    <div class="r-dots"><span></span><span></span><span class="empty"></span><span></span><span></span><span></span><span class="empty"></span><span></span></div>
+  </div>
+</body>
+</html>
