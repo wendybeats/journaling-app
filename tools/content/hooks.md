@@ -36,11 +36,53 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | fresh |
 | One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | fresh |
 | One insight a week — dots that tell it, my voice over it | dots + founder | everyone | dot-motion Reel + VO, weekly | fresh |
+| There's one thing your journal knows that you don't | curiosity gap | everyone | insight VO / founder | fresh |
+| You forget most of your days — not the big ones, the ones that made you | information gap + loss | everyone | insight VO | fresh |
+| Your best day and your worst day end up the same size. One dot | prediction error | practice crowd | dots + VO | fresh |
+| If you can't remember what you were worried about last Tuesday, this is for you | self-relevance | everyone | founder / caption | fresh |
+| Guess how many of your own days you actually remember | generation effect | everyone | caption / cover | fresh |
+| Your notes app vs. your journal — only one matters in ten years | contrast | fence-sitters | card / VO | fresh |
+| A journal is your head, on paper | cognitive fluency | everyone | card / bio / VO close | fresh |
 | Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | fresh |
 | This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
 | Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |
 | A writing exercise for the day you have nothing to say | recs | lapsed journalers | list card | fresh |
 | Journaling prompts that don't ask how you feel | recs | skeptics | list card / carousel | fresh |
+
+## Hook psychology (ingested 2026-08-17, from viral-hooks research)
+
+The principles behind hooks that hold a 1-second scroll — translated
+into Endpaper's register. **The rule: intensity lives in the claim,
+never the delivery.** Calm voice, sharp sentence. No exclamation
+marks, ever; a quiet accusation outperforms a loud invitation.
+
+| Principle | The move | In our voice |
+|---|---|---|
+| Curiosity gap | Raise a question, withhold the answer | "There's one thing your journal knows that you don't." |
+| Information gap | Reveal they're missing something | "You forget most of your days. Not the big ones — the ones that made you." |
+| Open loop | Start unresolved, close late | VO: "Three things happen when the same worry shows up five weeks in a row…" (resolve at the end) |
+| Pattern interrupt | Open visually wrong | The giant dot; the dive; a journal page with no delete key |
+| Prediction error | Contradict the expected | "Your best day and your worst day end up the same size. One dot." |
+| Novelty | Familiar thing, unseen angle | "A year of your mind, on one screen." |
+| Von Restorff | One element breaks the field | The BIG-day swell; 30 ink dots, one hollow |
+| Negativity bias / loss aversion | Name what doing nothing costs | "Every unwritten day is gone by Thursday. Not the events — the person you were during them." |
+| Self-relevance | Describe them, not the topic | "If you can't remember what you were worried about last Tuesday, this is for you." |
+| Generation effect | Make them solve something | "Guess how many of your own days you actually remember." |
+| Specificity | Numbers and timeframes | "214 days in a row. Here's what came back." (the SAVED stamps already do this) |
+| Contrast | Two extremes side by side | "Your notes app vs. your journal: only one of them matters in ten years." |
+| Cognitive fluency | Graspable in one beat | "A journal is your head, on paper." |
+
+**Application rules:**
+- Every flagship piece (insight VO, founder video, demo) must open on a
+  named principle — first 1.5 s of audio AND first frame of visuals.
+  If you can't name the principle, the hook isn't done.
+- Quote Reels stay clean (the huge letter IS the pattern interrupt);
+  the principles go into flagship captions and VO scripts, not overlaid
+  on the quote aesthetic.
+- Captions can carry a second principle the visual doesn't
+  (generation effect and self-relevance work well in text).
+- Social proof and authority unlock later — real numbers only, once we
+  have them (founding-thirty full, rating count, day-streak stats).
 
 ## Family notes
 
