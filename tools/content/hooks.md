@@ -138,11 +138,14 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
   session (workspace "hello's workspace", IG @endpaper.space; LinkedIn
   present but never targeted without an explicit ask). Friday passes
   can pull analytics directly.
-- **Daily kit run (from 2026-08-12)**: automated routine fires at
-  06:00 Helsinki every morning and delivers both day-kits to the chat
-  (light for the ~7am slot, dark for the evening), rendered dated to
-  the day, standard format: mp4 → bare caption → bare comment. Wendell
-  posts in-app with catalog audio. Eden queue stays empty by default.
+- **Daily kit run (from 2026-08-12; US-FLIPPED 2026-08-17)**: audience
+  is US, Wendell posts from EEST. Routine fires 06:00 Helsinki and
+  delivers: KIT 1 dark, dated YESTERDAY (~9-10pm stamp) → posted
+  immediately (his morning = US West evening); KIT 2 light, dated
+  today (~7am stamp) → posted his evening ~21:00 (= US morning).
+  Standard format: mp4 → bare caption → bare comment; catalog audio
+  in-app; Eden queue stays empty by default. Flagship pieces take the
+  evening (US-morning) slot and displace that day's light quote.
 - **First comment (from 2026-08-11)**: "I wrote this in the Endpaper
   app" — no URL, no dash-speak.
 - **Music (from 2026-08-11)**: quote Reels get Instagram catalog
@@ -191,5 +194,6 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-16 | IG Reel (manual, ~6:59) | quote-motion "watering your own *grass*" light | morning slot | caption "Thought of Sunday, Aug 16th at 6:59am", catalog audio |
 | 2026-08-16 | IG Reel (manual, ~21:57) | quote-motion "out of your control / *mind*" dark | evening slot — 115x-mined line | caption "Thought of Sunday, Aug 16th at 9:57pm", catalog audio |
 | 2026-08-17 (planned) | IG Reel, Monday AM flagship slot | insight #1 RE-CUT (cold open, 38.6s, Wendell VO) | second attempt after throttled original — fresh fingerprint, clean air | caption "The ordinary days are the record."; nothing else within 3h |
-| 2026-08-17 | — no morning quote — | flagship isolation: the re-cut owns the AM | | |
-| 2026-08-17 | IG Reel (manual, ~21:29) | quote-motion "ships / water that gets *in*" dark | evening slot — 12x-mined line | caption "Thought of Monday, Aug 17th at 9:29pm", catalog audio |
+| 2026-08-17 | IG Reel (manual, posted his AM = US Sun night) | quote-motion "ships / water that gets *in*" dark | first US-flip post | caption "Thought of Monday, Aug 17th at 9:29pm", catalog audio |
+| 2026-08-17 | IG Reel (planned: his ~21:00 = US Mon morning) | insight #1 RE-CUT — flagship in the US-morning prime slot | ≥3h air after the ships post | caption "The ordinary days are the record." |
+| 2026-08-18 | (planned) his morning: SKIP the dark quote | insight owns US Monday; avoid crowding it | resume flipped cadence Tue evening | |
