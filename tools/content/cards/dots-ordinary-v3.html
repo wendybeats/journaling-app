@@ -1,0 +1,202 @@
+<!doctype html>
+<!-- Dot-matrix motion — insight #1, v3 "magnetic" cut (2026-08-17).
+     Wendell's notes on v2: visuals must grab inside a 1-second scroll,
+     motion should jump and snap, not glide. So:
+     frame one = one huge ink dot (≈30% of screen) that SPRINGS down
+     into day one; the hollow month flies in from off-screen, every dot
+     from its own direction, overshooting its slot and snapping back
+     (easeOutBack everywhere); days fill with a pop, not a fade.
+     Same closing line, same ?dur= for the voiceover hold.
+     Driven by render-dots.mjs via ?theme=&dur=. 1080×1920. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+  :root {
+    --page: #E8E6E1; --ink: #1A1A1A; --written: #262320;
+    --meta: #A9A6A0; --hairline: #C9C6BF;
+  }
+  html.dark {
+    --page: #161514; --ink: #E8E6E1; --written: #DEDAD3;
+    --meta: #6B6862; --hairline: #332F2B;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body { background: var(--page); overflow: hidden; }
+  canvas { display: block; }
+  .cap {
+    position: absolute; left: 0; right: 0;
+    font-family: 'Fragment Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--meta); text-align: center;
+    opacity: 0; transition: opacity 900ms ease;
+  }
+  .cap.on { opacity: 1; }
+  #open { top: 320px; font-size: 26px; }
+  #close {
+    top: 1440px;
+    font-family: 'Newsreader', serif;
+    text-transform: none; letter-spacing: 0;
+    font-size: 56px; color: var(--written);
+    transition: opacity 1200ms ease;
+  }
+  #foot { bottom: 128px; font-size: 22px; opacity: 1; }
+</style>
+</head>
+<body>
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div class="cap" id="open">One month, one day at a time</div>
+  <div class="cap" id="close">The ordinary days are the record.</div>
+  <div class="cap" id="foot">endpaper.space</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const dark = params.get('theme') === 'dark';
+  if (dark) document.documentElement.classList.add('dark');
+  const DUR = Number(params.get('dur') || 36);
+
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const ctx = document.getElementById('c').getContext('2d');
+
+  const COLS = 7, ROWS = 5, GAP = 100;
+  const gx0 = (1080 - (COLS - 1) * GAP) / 2;
+  const gy0 = 700;
+  const days = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      days.push({ x: gx0 + c * GAP, y: gy0 + r * GAP });
+
+  const SKIPPED = new Set([4, 11, 22, 29]);
+  const GIANT = 0;             // day one arrives as the opening shot
+  const BIG = 16;              // the "big day" that settles back to size
+
+  const shuffle = (a) => a.sort(() => Math.random() - 0.5);
+  const fillOrder = shuffle([...Array(days.length).keys()]
+    .filter(i => !SKIPPED.has(i) && i !== GIANT));
+  const flyOrder = shuffle([...Array(days.length).keys()].filter(i => i !== GIANT));
+
+  // Every hollow dot enters from its own edge of the screen.
+  const origins = days.map((d, i) => {
+    const side = Math.floor(Math.random() * 4);
+    if (side === 0) return { x: -120, y: Math.random() * 1920 };
+    if (side === 1) return { x: 1200, y: Math.random() * 1920 };
+    if (side === 2) return { x: Math.random() * 1080, y: -120 };
+    return { x: Math.random() * 1080, y: 2040 };
+  });
+
+  const T = {
+    giantAt: 950, giantDur: 1300,   // holds full-size past the front trim, then springs into day one
+    flyStart: 700, flyGap: 55, flyDur: 750,
+    fillStart: 4600, fillGap: 450,
+    bigSwellDur: 1100, bigSettleDur: 1400,
+    closeAt: 26000,
+    doneAt: DUR * 1000,
+  };
+  const flyAt = (i) => T.flyStart + flyOrder.indexOf(i) * T.flyGap;
+  const fillAt = (i) => {
+    const k = fillOrder.indexOf(i);
+    return k < 0 ? Infinity : T.fillStart + k * T.fillGap;
+  };
+
+  // The magnetic ease: overshoot the slot, snap back.
+  const back = (p) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+  };
+  const cubic = (p) => 1 - Math.pow(1 - p, 3);
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+  document.getElementById('open');
+  let openShown = false, openHidden = false;
+
+  const t0 = performance.now();
+  function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, 1080, 1920);
+    const ink = css('--ink'), hair = css('--hairline');
+
+    if (!openShown && t > 3600) {
+      document.getElementById('open').classList.add('on');
+      openShown = true;
+    }
+    if (!openHidden && t > 7600) {
+      document.getElementById('open').classList.remove('on');
+      openHidden = true;
+    }
+    if (t > T.closeAt) document.getElementById('close').classList.add('on');
+
+    for (let i = 0; i < days.length; i++) {
+      const d = days[i];
+
+      if (i === GIANT) {
+        // Frame one: a dot a third of the screen wide, already ink.
+        // Then it springs down into day one — the month's first entry.
+        const p = clamp01((t - T.giantAt) / T.giantDur);
+        const pp = back(p);
+        const x = 540 + (d.x - 540) * pp;
+        const y = 930 + (d.y - 930) * pp;
+        const r = 162 + (9 - 162) * cubic(p);
+        ctx.fillStyle = ink;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(9, r), 0, Math.PI * 2);
+        ctx.fill();
+        continue;
+      }
+
+      const fa = flyAt(i);
+      if (t < fa) continue;                       // not on screen yet
+
+      // Fly in from off-screen, overshoot, snap into the slot.
+      const fp = clamp01((t - fa) / T.flyDur);
+      const pp = back(fp);
+      const o = origins[i];
+      const x = o.x + (d.x - o.x) * pp;
+      const y = o.y + (d.y - o.y) * pp;
+
+      const at = fillAt(i);
+      if (t < at) {
+        ctx.strokeStyle = hair;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.stroke();
+        continue;
+      }
+
+      // Written: the day pops in — fast, slightly past size, snap.
+      const age = t - at;
+      let r = 9 * (0.3 + 0.7 * back(clamp01(age / 320)));
+
+      if (i === BIG) {
+        if (age < T.bigSwellDur) {
+          r = 9 + 13 * back(clamp01(age / T.bigSwellDur));
+        } else if (age < T.bigSwellDur + T.bigSettleDur) {
+          const p = cubic((age - T.bigSwellDur) / T.bigSettleDur);
+          r = 22 - 13 * p;
+        } else {
+          r = 9;
+        }
+      }
+
+      ctx.fillStyle = ink;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(2, r), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (t < T.doneAt) requestAnimationFrame(frame);
+    else window.__done = true;
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
