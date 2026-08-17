@@ -1,0 +1,192 @@
+<!doctype html>
+<!-- Dot-matrix motion — insight piece, v4 "dive" cut (2026-08-17).
+     The site hero is the opening shot: "What's really going on in your
+     head?" with the big dot beneath. At ~0.5s the dot swallows the
+     screen (the endpaper.space dive) and the world flips to the
+     opposite theme. The hollow month flies in on the far side, days
+     count in with the magnetic pop, the big day swells and settles —
+     and at the end gravity fails: every dot drops off the bottom of
+     the screen, unevenly, leaving the page empty. No closing copy, no
+     footer — captions own the bottom third.
+     ?theme= is the STARTING side (light hero → dark interior; dark
+     hero → light interior). ?dur= holds for the voiceover.
+     Driven by render-dots.mjs. 1080×1920. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Instrument Sans';
+    src: url('../../../fonts/InstrumentSans.woff2') format('woff2');
+    font-weight: 400 500;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body { background: #E8E6E1; overflow: hidden; }
+  body.dark { background: #161514; }
+  canvas { position: absolute; inset: 0; display: block; }
+  /* The hero copy — the site's register, over the canvas until the dive. */
+  #hero {
+    position: absolute; left: 60px; right: 60px; top: 560px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 500; font-size: 84px; line-height: 1.14;
+    letter-spacing: -0.015em; text-align: center;
+    color: #1A1A1A;
+    opacity: 1; transition: opacity 260ms ease;
+    z-index: 2;
+  }
+  body.dark #hero { color: #E8E6E1; }
+  #hero.off { opacity: 0; }
+</style>
+</head>
+<body>
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div id="hero">What’s really going on in&nbsp;your&nbsp;head?</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const START = params.get('theme') === 'dark' ? 'dark' : 'light';
+  if (START === 'dark') document.body.classList.add('dark');
+  const DUR = Number(params.get('dur') || 36);
+
+  const PAL = {
+    light: { page: '#E8E6E1', ink: '#1A1A1A', hair: '#C9C6BF' },
+    dark:  { page: '#161514', ink: '#E8E6E1', hair: '#332F2B' },
+  };
+  const outer = PAL[START];
+  const inner = PAL[START === 'light' ? 'dark' : 'light'];
+
+  const ctx = document.getElementById('c').getContext('2d');
+
+  // The month grid — top two-thirds, captions keep the bottom.
+  const COLS = 7, ROWS = 5, GAP = 130;
+  const gx0 = (1080 - (COLS - 1) * GAP) / 2;
+  const gy0 = 440;
+  const days = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      days.push({ x: gx0 + c * GAP, y: gy0 + r * GAP });
+
+  const SKIPPED = new Set([4, 11, 22, 29]);
+  const BIG = 16;
+
+  // Calendar order everywhere: fly in counting, fill counting.
+  const fillOrder = [...Array(days.length).keys()].filter(i => !SKIPPED.has(i));
+  const origins = days.map(() => {
+    const side = Math.floor(Math.random() * 4);
+    if (side === 0) return { x: -120, y: Math.random() * 1920 };
+    if (side === 1) return { x: 1200, y: Math.random() * 1920 };
+    if (side === 2) return { x: Math.random() * 1080, y: -120 };
+    return { x: Math.random() * 1080, y: 2040 };
+  });
+  // Gravity fails unevenly.
+  const fallDelay = days.map(() => Math.random() * 1800);
+  const fallDrift = days.map(() => (Math.random() - 0.5) * 70);
+
+  // The hero dot — the site's dot, below the copy. The dive starts here.
+  const DOT = { x: 540, y: 1180, r: 46 };
+
+  const T = {
+    diveAt: 1100, diveDur: 950,
+    flyStart: 2700, flyGap: 70, flyDur: 750,
+    fillStart: 5300, fillGap: 450,
+    bigSwellDur: 1100, bigSettleDur: 1400,
+    fallAt: 33500,
+    doneAt: DUR * 1000,
+  };
+  const flyAt = (i) => T.flyStart + i * T.flyGap;
+  const fillAt = (i) => {
+    const k = fillOrder.indexOf(i);
+    return k < 0 ? Infinity : T.fillStart + k * T.fillGap;
+  };
+
+  const back = (p) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+  };
+  const cubic = (p) => 1 - Math.pow(1 - p, 3);
+  const easeIn = (p) => p * p * p;
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+  const hero = document.getElementById('hero');
+  let heroOff = false;
+
+  const t0 = performance.now();
+  function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, 1080, 1920);
+
+    if (t < T.diveAt + T.diveDur) {
+      // Phase 1–2: the hero page, then the dive. The dot swallows the
+      // screen and becomes the far side's sky.
+      ctx.fillStyle = outer.page;
+      ctx.fillRect(0, 0, 1080, 1920);
+      const p = clamp01((t - T.diveAt) / T.diveDur);
+      if (p > 0 && !heroOff) { hero.classList.add('off'); heroOff = true; }
+      const r = DOT.r + (2350 - DOT.r) * easeIn(p);
+      ctx.fillStyle = outer.ink;
+      ctx.beginPath();
+      ctx.arc(DOT.x, DOT.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Phase 3+: inside the dot — the opposite world.
+      ctx.fillStyle = inner.page;
+      ctx.fillRect(0, 0, 1080, 1920);
+
+      for (let i = 0; i < days.length; i++) {
+        const d = days[i];
+        const fa = flyAt(i);
+        if (t < fa) continue;
+
+        // Entrance: fly in, overshoot, snap.
+        const fp = clamp01((t - fa) / T.flyDur);
+        const pp = back(fp);
+        const o = origins[i];
+        let x = o.x + (d.x - o.x) * pp;
+        let y = o.y + (d.y - o.y) * pp;
+
+        // The ending: gravity fails, unevenly.
+        const fallStart = T.fallAt + fallDelay[i];
+        if (t > fallStart) {
+          const ft = (t - fallStart) / 1000;
+          y += 0.5 * 3800 * ft * ft;
+          x += fallDrift[i] * ft;
+          if (y > 2120) continue;
+        }
+
+        const at = fillAt(i);
+        if (t < at) {
+          ctx.strokeStyle = inner.hair;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(x, y, 13, 0, Math.PI * 2);
+          ctx.stroke();
+          continue;
+        }
+
+        const age = t - at;
+        let r = 13 * (0.3 + 0.7 * back(clamp01(age / 320)));
+        if (i === BIG) {
+          if (age < T.bigSwellDur) {
+            r = 13 + 18 * back(clamp01(age / T.bigSwellDur));
+          } else if (age < T.bigSwellDur + T.bigSettleDur) {
+            const p = cubic((age - T.bigSwellDur) / T.bigSettleDur);
+            r = 31 - 18 * p;
+          } else {
+            r = 13;
+          }
+        }
+        ctx.fillStyle = inner.ink;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(2, r), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    if (t < T.doneAt) requestAnimationFrame(frame);
+    else window.__done = true;
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
