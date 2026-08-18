@@ -123,6 +123,13 @@ this feature:
   "now" (the monthly "turn" slide).
 - **Splits juxtapose without commentary** — two moments stacked across a
   hairline; the reader draws the conclusion.
+- **The prompt choreography** (Wendell, 2026-08-18): each beat opens with
+  its prompt ("You asked yourself") centered, ~1.5× size, full ink. Hold
+  ~1s, slide up ~400ms (ease-out, the house curve 0.22/0.61/0.36/1) into
+  its small seat at the top, settling to the muted-but-contrasted meta
+  color (~62% ink — brighter than the old stone). Only then does the
+  metric rise in. Question before answer, every time. Reduce Motion:
+  prompt sits at rest, metric appears without travel.
 
 Card studies artifact (approved direction pending Wendell's review):
 weekly = five-beat swipeable mini deck in the Today feed (shape /
