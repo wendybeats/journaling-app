@@ -151,6 +151,11 @@ struct TodayView: View {
                 if voice.isRecording {
                     voice.stop()
                 } else {
+                    // The keyboard stands down while the mic is up — typing
+                    // (or Return) mid-dictation mutated the draft underneath
+                    // the transcript and overwrote spoken words (QA
+                    // 2026-08-18). One writer at a time.
+                    writingFocused = false
                     // The base is read when recording actually begins (after
                     // any permission flow), never captured at tap time.
                     voice.start { draft }

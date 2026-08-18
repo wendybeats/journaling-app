@@ -92,10 +92,21 @@ final class VoiceCapture: ObservableObject {
                         && result.isFinal
                         && spoken.count >= self.lastSpoken.count
                     if self.isRecording || trailing, !spoken.isEmpty {
+                        let joiner = { (b: String) -> String in
+                            b.isEmpty || b.hasSuffix(" ") || b.hasSuffix("\n") ? "" : " "
+                        }
+                        // A pause makes on-device recognition start a fresh
+                        // utterance: the transcription RESETS instead of
+                        // extending. Detect the reset (shorter, not a
+                        // revision of what we had) and fold the finished
+                        // words into the base — a breath must never erase
+                        // the sentence before it. (QA 2026-08-18.)
+                        if spoken.count < self.lastSpoken.count,
+                           !self.lastSpoken.hasPrefix(spoken) {
+                            self.base += joiner(self.base) + self.lastSpoken
+                        }
                         self.lastSpoken = spoken
-                        let joiner = self.base.isEmpty
-                            || self.base.hasSuffix(" ") || self.base.hasSuffix("\n") ? "" : " "
-                        self.onText?(self.base + joiner + spoken)
+                        self.onText?(self.base + joiner(self.base) + spoken)
                     }
                 }
                 if self.isRecording, error != nil || result?.isFinal == true {
