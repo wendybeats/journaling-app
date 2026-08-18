@@ -100,6 +100,36 @@ most-discussed reveal with its first mention, share card. Add:
   month/day names, ≥4 letters, appearing on ≥3 distinct days. Show at
   most 2; silence otherwise.
 
+## Card design direction (Wendell's Figma pass, 2026-08-18)
+
+Ingested from his store-shot Figma round — applies to ALL dynamic
+layouts (recap cards, sequences, share cards) going forward, not just
+this feature:
+
+- **Less on every screen.** His screens carry one statement + one visual
+  against our tendency to stack; the old three-stat slide becomes three
+  fast one-number beats.
+- **One focal element per screen.** Everything else is a whisper around
+  it.
+- **Three registers do the hierarchy.** Mono (small, tracked) frames;
+  Newsreader italic speaks the user's words; Instrument Sans semibold
+  states findings. The size gap between registers is the design.
+- **Vary the layout beat to beat** so the eye stays interested: type-only
+  → graphic → number → split → ghost/ink. No two adjacent screens share
+  a shape.
+- **The dot punctuates.** Huge, cropped off-edge, exactly once per
+  sequence — an exclamation, not wallpaper.
+- **Ghost → ink** renders time: outlined type is "before," solid is
+  "now" (the monthly "turn" slide).
+- **Splits juxtapose without commentary** — two moments stacked across a
+  hairline; the reader draws the conclusion.
+
+Card studies artifact (approved direction pending Wendell's review):
+weekly = five-beat swipeable mini deck in the Today feed (shape /
+thread / written-large / question / sitting); monthly sequence pacing =
+dot opener → grid → fast numbers → opened-closed split → ghost-ink turn
+→ name → mono bars → spoken (the rose's one recap appearance) → outro.
+
 ## Sequencing
 
 1. **1.0.2/1.0.3** — weekly upgrade (shape, big line, question, sitting)
