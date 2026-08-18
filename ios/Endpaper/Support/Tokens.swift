@@ -43,6 +43,8 @@ private enum Primitive {
     static let graphiteDk: UInt32  = 0xB8B5AE
     static let stoneDk: UInt32     = 0x6B6862
     static let hairlineDk: UInt32  = 0x332F2B
+    static let rose: UInt32        = 0xC2685C   // capture accent (voice/scan)
+    static let roseDk: UInt32      = 0xD07A6C
 }
 
 // MARK: - Semantic tokens
@@ -72,6 +74,14 @@ enum Tokens {
     enum Line {
         static let rule   = dynamic(light: Primitive.hairline, dark: Primitive.hairlineDk)
         static let cursor = dynamic(light: Primitive.ink,      dark: Primitive.boneType)
+    }
+
+    // The one warm accent in the system: the vintage rose of the voice
+    // card's waveform and the capture markers ("· spoken"). Approved in
+    // the 1.0.2 voice-capture prototype — used only for capture, never
+    // as a general highlight.
+    enum Accent {
+        static let capture = dynamic(light: Primitive.rose, dark: Primitive.roseDk)
     }
 
     // 3. Spacing

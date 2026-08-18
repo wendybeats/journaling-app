@@ -15,20 +15,25 @@ enum EntryStore {
     static let sessionGap: TimeInterval = 30 * 60
 
     /// Commit a piece of writing. Merges into the day's last session when the
-    /// gap is under 30 minutes, exactly like the prototype.
+    /// gap is under 30 minutes, exactly like the prototype. Captured sections
+    /// (spoken / scanned / imported) stand alone: they never merge into a
+    /// typed session and typed writing never merges into them — each arrival
+    /// is its own block on the page.
     @discardableResult
-    static func commit(_ text: String, at: Date = .now, in context: ModelContext) -> Entry {
+    static func commit(_ text: String, at: Date = .now, origin: String = "", in context: ModelContext) -> Entry {
         let key = DayFormat.key(for: at)
         let day = entries(forDay: key, in: context)
 
-        if let last = day.last, at.timeIntervalSince(last.lastAt) < sessionGap {
+        if origin.isEmpty,
+           let last = day.last, last.origin.isEmpty,
+           at.timeIntervalSince(last.lastAt) < sessionGap {
             last.text += "\n\n" + text
             last.lastAt = at
             try? context.save()
             return last
         }
 
-        let entry = Entry(dayKey: key, at: at, text: text)
+        let entry = Entry(dayKey: key, at: at, text: text, origin: origin)
         context.insert(entry)
         try? context.save()
         return entry

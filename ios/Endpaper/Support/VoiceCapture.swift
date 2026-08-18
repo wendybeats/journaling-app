@@ -1,8 +1,12 @@
-// Voice capture — simple speech-to-text that appears on the page.
+// Voice capture — speech-to-text that arrives as its own section.
 // Apple's Speech framework, on-device whenever the device supports it
 // (requiresOnDeviceRecognition), so the privacy story holds: nothing
-// leaves the phone. No audio is stored — the words land in the draft and
-// follow the normal commit rules like anything typed.
+// leaves the phone. No audio is stored — only the words.
+//
+// 1.0.2 redesign: the capture owns its whole transcript. It never touches
+// the typed draft — the two surfaces share nothing, so neither can
+// overwrite the other (the root of every voice bug before this).
+// The card renders `transcript` live and `level` drives the waveform.
 //
 // Permission asks (mic + speech) are deferred until the first tap on REC.
 
@@ -12,44 +16,44 @@ import Speech
 
 final class VoiceCapture: ObservableObject {
     @Published private(set) var isRecording = false
-
-    /// Receives the full replacement draft text on every partial result.
-    var onText: ((String) -> Void)?
+    /// The full take so far: folded finished utterances + the live one.
+    @Published private(set) var transcript = ""
+    /// Mic RMS, 0…1-ish — the waveform's pulse. Updated per audio buffer.
+    @Published private(set) var level: Float = 0
+    /// When the take began — the card's timer counts from here.
+    @Published private(set) var startedAt: Date?
 
     private let engine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
-    private var base = ""
-    private var lastSpoken = ""
+    private var folded = ""       // finished utterances, already joined
+    private var lastSpoken = ""   // the live utterance's latest partial
     private var graceUntil = Date.distantPast
     private var session = 0
 
-    /// `base` is a provider, not a value — it's read the moment recording
-    /// actually begins, after any permission flow. Capturing the text at
-    /// tap time went stale when the permission alert's scene-phase dance
-    /// changed the draft underneath it.
-    func start(base: @escaping () -> String) {
+    func start() {
         SFSpeechRecognizer.requestAuthorization { status in
             DispatchQueue.main.async {
                 guard status == .authorized else { return }
                 AVAudioApplication.requestRecordPermission { granted in
                     DispatchQueue.main.async {
-                        if granted { self.begin(base: base()) }
+                        if granted { self.begin() }
                     }
                 }
             }
         }
     }
 
-    private func begin(base: String) {
+    private func begin() {
         // On-device is a requirement, not a preference — the permission
         // copy promises "nothing leaves your phone," so a locale without
         // on-device support gets no recording rather than a server fallback.
         guard !isRecording,
               let recognizer = SFSpeechRecognizer(), recognizer.isAvailable,
               recognizer.supportsOnDeviceRecognition else { return }
-        self.base = base
+        folded = ""
         lastSpoken = ""
+        transcript = ""
         graceUntil = .distantPast
         session += 1
         let mySession = session
@@ -66,17 +70,22 @@ final class VoiceCapture: ObservableObject {
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         input.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
-            self?.request?.append(buffer)
+            guard let self else { return }
+            self.request?.append(buffer)
+            if let rms = Self.rms(of: buffer) {
+                DispatchQueue.main.async { self.level = rms }
+            }
         }
         engine.prepare()
         do { try engine.start() } catch { teardown(cancelTask: true); return }
         isRecording = true
+        startedAt = Date()
 
         task = recognizer.recognitionTask(with: req) { [weak self] result, error in
             guard let self else { return }
             DispatchQueue.main.async {
-                // A callback from a superseded recording may never touch
-                // the page — its base and transcript belong to an old take.
+                // A callback from a superseded take may never land — its
+                // transcript belongs to an old recording.
                 guard self.session == mySession else { return }
                 if let result {
                     let spoken = result.bestTranscription.formattedString
@@ -84,54 +93,61 @@ final class VoiceCapture: ObservableObject {
                     // stop, the recognizer's final consolidation may still
                     // land — short takes sometimes deliver ALL their words
                     // only there — but only inside the grace window and
-                    // only carrying at least what the page already shows.
-                    // Cancellation callbacks (commit path) pass neither
-                    // test, so they can never erase the dictation.
+                    // only carrying at least what the take already holds.
                     let trailing = !self.isRecording
                         && Date() < self.graceUntil
                         && result.isFinal
                         && spoken.count >= self.lastSpoken.count
                     if self.isRecording || trailing, !spoken.isEmpty {
-                        let joiner = { (b: String) -> String in
-                            b.isEmpty || b.hasSuffix(" ") || b.hasSuffix("\n") ? "" : " "
-                        }
                         // A pause makes on-device recognition start a fresh
                         // utterance: the transcription RESETS instead of
                         // extending. Detect the reset (shorter, not a
                         // revision of what we had) and fold the finished
-                        // words into the base — a breath must never erase
-                        // the sentence before it. (QA 2026-08-18.)
+                        // words in — a breath never erases the sentence
+                        // before it. (QA 2026-08-18.)
                         if spoken.count < self.lastSpoken.count,
                            !self.lastSpoken.hasPrefix(spoken) {
-                            self.base += joiner(self.base) + self.lastSpoken
+                            self.folded = Self.join(self.folded, self.lastSpoken)
                         }
                         self.lastSpoken = spoken
-                        self.onText?(self.base + joiner(self.base) + spoken)
+                        self.transcript = Self.join(self.folded, spoken)
                     }
                 }
                 if self.isRecording, error != nil || result?.isFinal == true {
-                    self.stop()
+                    self.stopListening()
                 }
             }
         }
     }
 
-    /// User-initiated stop (the REC pill): the take is over, but the final
-    /// consolidated transcription is still welcome for a moment.
-    func stop() {
-        guard isRecording else { return }
-        isRecording = false
-        graceUntil = Date().addingTimeInterval(1.5)
-        teardown(cancelTask: false)   // endAudio lets the task finish and file its final
+    /// User-initiated stop: end the take, hold briefly for the recognizer's
+    /// final consolidated transcription, then deliver the finished text.
+    func finish(_ done: @escaping (String) -> Void) {
+        stopListening()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            guard let self else { return }
+            self.graceUntil = .distantPast
+            done(self.transcript.trimmingCharacters(in: .whitespacesAndNewlines))
+            self.transcript = ""
+            self.startedAt = nil
+        }
     }
 
-    /// Hard stop for the commit path: the draft is about to be committed
-    /// and cleared, so nothing may write to it afterwards.
+    /// Hard stop (backgrounding, navigation): no grace window, no delivery
+    /// beyond what the take already holds.
     func cancel() {
         graceUntil = .distantPast
         guard isRecording else { return }
         isRecording = false
         teardown(cancelTask: true)
+    }
+
+    private func stopListening() {
+        guard isRecording else { return }
+        isRecording = false
+        graceUntil = Date().addingTimeInterval(1.5)
+        level = 0
+        teardown(cancelTask: false)   // endAudio lets the task file its final
     }
 
     private func teardown(cancelTask: Bool) {
@@ -143,5 +159,20 @@ final class VoiceCapture: ObservableObject {
         task = nil
         try? AVAudioSession.sharedInstance()
             .setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    private static func join(_ a: String, _ b: String) -> String {
+        if a.isEmpty { return b }
+        if b.isEmpty { return a }
+        return a.hasSuffix(" ") || a.hasSuffix("\n") ? a + b : a + " " + b
+    }
+
+    private static func rms(of buffer: AVAudioPCMBuffer) -> Float? {
+        guard let data = buffer.floatChannelData?[0] else { return nil }
+        let n = Int(buffer.frameLength)
+        guard n > 0 else { return nil }
+        var sum: Float = 0
+        for i in 0..<n { sum += data[i] * data[i] }
+        return sqrt(sum / Float(n))
     }
 }

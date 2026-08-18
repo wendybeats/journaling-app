@@ -1,5 +1,14 @@
 # Voice as sections — 1.0.2 redesign plan
 
+> **STATUS 2026-08-18: BUILT.** Shipped on the branch with one spec
+> change: `Entry.spoken: Bool` became `Entry.origin: String` ("" typed /
+> "spoken" / "scanned" / "imported") because photo-and-file import
+> landed in the same release and shares the discrete-section commit
+> path. The recording card follows the approved interactive prototype
+> (rose seismograph waveform on live mic RMS, centered layout, mono
+> timer, stop button). Same CloudKit-safe migration story — a String
+> with a default instead of a Bool.
+
 *2026-08-18 · from Wendell's QA: "anything that is voice recorded onto the
 page remains in place… we could redesign the feature to be voice capture
 and place it as a section (and subtly note it was voice). Honestly maybe

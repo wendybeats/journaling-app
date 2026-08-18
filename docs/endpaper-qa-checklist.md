@@ -123,6 +123,45 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 
 ---
 
+## 12. Capture (1.0.2): voice card, photo, file import
+
+Voice — the card, not the draft:
+
+- [ ] Type a line → REC → keyboard slides down, card rises, waveform moves
+      with your voice (flat in silence, spikes in speech), timer runs
+- [ ] Speak → pause 3s → speak → stop: the committed section contains ALL
+      words; the typed draft above is untouched
+- [ ] Stop with zero words: no empty section, card just dismisses
+- [ ] Background the app mid-take: what was said so far commits as a section
+- [ ] Committed section meta reads "9:41 PM · SPOKEN" (rose marker);
+      same-day edit works and the marker persists; next day it locks
+- [ ] Two takes in a row → two separate sections (no session merge);
+      typing after a take starts a fresh typed section
+- [ ] Long take (>1 min): recognizer may file its final early — words to
+      that point survive; stop still commits (known edge, note behavior)
+- [ ] Deny mic or speech permission → no card, no crash; re-ask flow sane
+
+Import — UPLOAD pill:
+
+- [ ] UPLOAD → menu: Take a photo / From your photos / Choose a file
+- [ ] Photograph a handwritten page → words land as one flowing section
+      (paragraphs joined, not one line per photographed line), meta
+      "· SCANNED"
+- [ ] Multi-page scan in one camera session → one section, pages joined
+- [ ] Photo-library image of writing → same path
+- [ ] .txt and .md files → text lands (md markup stripped: #, **, links,
+      bullets), meta "· IMPORTED"
+- [ ] Text-layer PDF → paragraphs land clean; scanned PDF → OCR fallback
+      reads the pages
+- [ ] .doc/.docx → quiet message: "Word files can't be opened here —
+      export as PDF or text first." — no crash
+- [ ] "reading your writing…" shows while OCR runs; failure messages show
+      in the same quiet register and fade
+- [ ] Device B (iCloud): origin markers sync; a pre-1.0.2 client shows
+      captured sections as plain text without crashing
+
+---
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

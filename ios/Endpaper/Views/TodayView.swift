@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct TodayView: View {
     @Environment(\.modelContext) private var context
@@ -24,6 +25,12 @@ struct TodayView: View {
     @State private var idleCommit: Task<Void, Never>?
     @State private var writingFocused = false   // UIKit truth via LivingWriteView
     @StateObject private var voice = VoiceCapture()
+    @State private var takingVoice = false      // the card is up (incl. grace hold)
+    @State private var importMenu = false
+    @State private var scanning = false
+    @State private var pickingPhoto = false
+    @State private var photoPick: PhotosPickerItem?
+    @State private var pickingFile = false
 
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
@@ -109,13 +116,44 @@ struct TodayView: View {
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .bottom) { writingBar }
         .onChange(of: draft) { _, _ in
-            guard writingFocused || voice.isRecording else { return }
+            guard writingFocused else { return }
             withAnimation(.easeOut(duration: 0.15)) {
                 proxy.scrollTo("caret", anchor: .bottom)
             }
         }
+        .onChange(of: voice.isRecording) { _, on in
+            // The card rises only once recording truly begins — after the
+            // permission flow, and never on a denied ask.
+            if on { withAnimation(Tokens.Motion.base) { takingVoice = true } }
+        }
+        .overlay(alignment: .bottom) {
+            if takingVoice {
+                VoiceCard(voice: voice) { finishVoiceTake() }
+                    .padding(.bottom, Tokens.Space.sm)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .confirmationDialog("Add writing", isPresented: $importMenu, titleVisibility: .visible) {
+            if DocScanner.isAvailable {
+                Button("Take a photo") { scanning = true }
+            }
+            Button("From your photos") { pickingPhoto = true }
+            Button("Choose a file") { pickingFile = true }
+        }
+        .sheet(isPresented: $scanning) {
+            DocScanner { pages in importPages(pages) }
+                .ignoresSafeArea()
+        }
+        .photosPicker(isPresented: $pickingPhoto, selection: $photoPick, matching: .images)
+        .onChange(of: photoPick) { _, item in
+            guard let item else { return }
+            photoPick = nil
+            importPhoto(item)
+        }
+        .fileImporter(isPresented: $pickingFile, allowedContentTypes: ImportCapture.fileTypes) { result in
+            if case .success(let url) = result { importFile(url) }
+        }
         .onAppear {
-            voice.onText = { draft = $0 }
             adoptStaleDraft()
             refresh()
             let consentPending = ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
@@ -128,6 +166,7 @@ struct TodayView: View {
             // Control Center, and notification pulls, and committing there
             // once resurrected a just-committed draft mid-dictation.
             if phase == .background {
+                abandonVoiceTake()
                 commit()
                 // Release focus cleanly on background so the resign/become
                 // cycle starts fresh on return.
@@ -136,7 +175,10 @@ struct TodayView: View {
                 focusSoon()
             }
         }
-        .onDisappear { commit() }   // navigating away commits the session
+        .onDisappear {              // navigating away commits the session
+            abandonVoiceTake()
+            commit()
+        }
     }
 
     // MARK: - The writing bar
@@ -147,23 +189,34 @@ struct TodayView: View {
 
     private var writingBar: some View {
         ZStack {
-            RecPill(recording: voice.isRecording) {
-                if voice.isRecording {
-                    voice.stop()
-                } else {
-                    // The keyboard stands down while the mic is up — typing
-                    // (or Return) mid-dictation mutated the draft underneath
-                    // the transcript and overwrote spoken words (QA
-                    // 2026-08-18). One writer at a time.
+            HStack(spacing: Tokens.Space.sm) {
+                RecPill(recording: voice.isRecording) {
+                    guard !takingVoice else { return }
+                    // The keyboard stands down while the mic is up — one
+                    // writer at a time. Voice never touches the draft: the
+                    // take lives on the card and commits as its own section.
                     writingFocused = false
-                    // The base is read when recording actually begins (after
-                    // any permission flow), never captured at tap time.
-                    voice.start { draft }
+                    voice.start()
                 }
+                Button {
+                    writingFocused = false
+                    importMenu = true
+                } label: {
+                    HStack(spacing: Tokens.Space.xs) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundStyle(Tokens.Dot.filled)
+                        Text("Upload")
+                    }
+                    .barPill()
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Add writing from a photo or file")
             }
+            .opacity(takingVoice ? 0 : 1)
             // Done hides while recording — only one control may look like
             // it stops the take.
-            if writingFocused && !voice.isRecording {
+            if writingFocused && !takingVoice {
                 HStack {
                     Spacer()
                     Button {
@@ -179,7 +232,7 @@ struct TodayView: View {
         .padding(.vertical, Tokens.Space.sm)
         .background(Tokens.Surface.page)
         .animation(Tokens.Motion.fast, value: writingFocused)
-        .animation(Tokens.Motion.fast, value: voice.isRecording)
+        .animation(Tokens.Motion.fast, value: takingVoice)
     }
 
     /// Focus the writing surface once the view has settled. The false→true
@@ -224,12 +277,89 @@ struct TodayView: View {
         }
     }
 
+    // MARK: - Voice take
+
+    /// The card's stop button: end the take, hold for the recognizer's
+    /// trailing final, then commit the words as their own section.
+    private func finishVoiceTake() {
+        voice.finish { text in
+            withAnimation(Tokens.Motion.base) { takingVoice = false }
+            commitCaptured(text, origin: "spoken")
+            focusSoon()   // the pen comes back once the card is down
+        }
+    }
+
+    /// Backgrounding or navigating away mid-take: no grace window — keep
+    /// what the take already holds and put it on the page.
+    private func abandonVoiceTake() {
+        guard takingVoice else { return }
+        let text = voice.transcript
+        voice.cancel()
+        takingVoice = false
+        commitCaptured(text, origin: "spoken")
+    }
+
+    // MARK: - Photo & file import
+
+    private func importPages(_ pages: [UIImage]) {
+        readCaptured(origin: "scanned") { try await ImportCapture.text(fromPages: pages) }
+    }
+
+    private func importPhoto(_ item: PhotosPickerItem) {
+        readCaptured(origin: "scanned") {
+            guard let data = try? await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data) else { throw ImportCapture.Failure.unreadable }
+            return try await ImportCapture.text(from: image)
+        }
+    }
+
+    private func importFile(_ url: URL) {
+        readCaptured(origin: "imported") { try await ImportCapture.text(fromFile: url) }
+    }
+
+    /// Shared read → commit choreography: a quiet "reading…" while OCR or
+    /// extraction runs, then the section settles onto the page — or the
+    /// failure explains itself in the same quiet register.
+    private func readCaptured(origin: String, _ read: @escaping () async throws -> String) {
+        ack = "reading your writing…"
+        ackVisible = true
+        Task { @MainActor in
+            do {
+                let text = try await read()
+                commitCaptured(text, origin: origin)
+            } catch {
+                ack = (error as? ImportCapture.Failure)?.errorDescription ?? "Couldn't read that."
+                ackVisible = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) { ackVisible = false }
+            }
+        }
+    }
+
+    /// Commit words that arrived by capture (voice, photo, file). Always a
+    /// discrete section — never merged into the typed session.
+    private func commitCaptured(_ text: String, origin: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            ackVisible = false
+            return
+        }
+        let entry = EntryStore.commit(trimmed, origin: origin, in: context)
+        refresh()
+
+        settlingID = entry.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + Tokens.Motion.fastDuration) {
+            settlingID = nil
+        }
+        ack = "saved \(DayFormat.timeOfDay(entry.at))"
+        ackVisible = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) { ackVisible = false }
+
+        ReminderManager.suppressTodayIfWritten(in: context)
+    }
+
     // MARK: - Commit choreography
 
     private func commit() {
-        // Hard cancel, not stop: the draft is about to be committed and
-        // cleared, so no trailing transcription may resurrect it.
-        voice.cancel()
         idleCommit?.cancel()
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
@@ -333,8 +463,20 @@ struct EntrySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
-            Text(DayFormat.timeOfDay(entry.at))
-                .typeMetaSmall()
+            HStack(spacing: Tokens.Space.xs) {
+                Text(DayFormat.timeOfDay(entry.at))
+                    .typeMetaSmall()
+                // The quiet arrival marker: "· spoken" / "· scanned" /
+                // "· imported", in the capture rose. Meta register by hand —
+                // the modifier's own color would override the accent.
+                if !entry.origin.isEmpty {
+                    Text("· \(entry.origin)")
+                        .font(.custom(EndpaperFont.meta, size: 10))
+                        .tracking(10 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Accent.capture)
+                }
+            }
             ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                 let size = WrittenScale.size(for: line)
                 Text(line)

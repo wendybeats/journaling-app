@@ -33,6 +33,12 @@ enum DayFormat {
         return "\(days[c.weekday! - 1]), \(months[c.month! - 1]) \(c.day!)"
     }
 
+    /// "Aug 18" — the voice card's compact date.
+    static func shortDay(_ date: Date, calendar: Calendar = .current) -> String {
+        let c = calendar.dateComponents([.month, .day], from: date)
+        return "\(months[c.month! - 1].prefix(3)) \(c.day!)"
+    }
+
     /// "July 5, 2026" (the mono register applies the uppercase).
     static func dayMetaDate(_ date: Date, calendar: Calendar = .current) -> String {
         let c = calendar.dateComponents([.year, .month, .day], from: date)

@@ -17,12 +17,18 @@ final class Entry {
     var at: Date = Date()        // session start
     var lastAt: Date = Date()    // last append within the session
     var text: String = ""
+    // How the words arrived: "" = typed, "spoken" = voice capture,
+    // "scanned" = photographed writing, "imported" = a file. Recorded
+    // once at commit and never changed — editing a section revises its
+    // words, not their arrival.
+    var origin: String = ""
 
-    init(id: UUID = UUID(), dayKey: String, at: Date, text: String) {
+    init(id: UUID = UUID(), dayKey: String, at: Date, text: String, origin: String = "") {
         self.id = id
         self.dayKey = dayKey
         self.at = at
         self.lastAt = at
         self.text = text
+        self.origin = origin
     }
 }
