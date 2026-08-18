@@ -123,6 +123,40 @@ Legend: ☐ pass · ✗ fail (paste details in the session) · ~ known limitatio
 
 ---
 
+## Payment flow — reliable testing recipe (2026-08-18)
+
+The confusing sightings post-launch were all environment artifacts, not
+bugs: TestFlight builds hit the **sandbox** store, where trial
+eligibility resets per sandbox account and canceled subs expire in
+minutes — while a **production** sub canceled on a real account persists
+to period end, and a production lapsed user is (correctly) never
+re-offered the intro trial. Three tiers, in order of usefulness:
+
+1. **Deterministic (daily driver): local StoreKit config.** Xcode scheme
+   → Run → Options → StoreKit Configuration → `Endpaper.storekit`. Then
+   Debug → StoreKit → Manage Transactions gives full control: delete the
+   transaction to become a brand-new user, expire it to test the lapsed
+   paywall, refund it, toggle intro-offer eligibility. Every path in
+   section 9, on demand, no waiting.
+   - [ ] New user: onboarding purchase sheet → trial starts only on a
+         verified transaction (dismiss the sheet → still gated)
+   - [ ] Expire the transaction → lapsed paywall appears → "Keep
+         writing" re-subscribes and unlocks
+   - [ ] Delete transaction + relaunch → clean new-user state again
+2. **Realistic (before each submission): fresh ASC sandbox tester.**
+   Users and Access → Sandbox Testers → new tester (any +tag email).
+   On device: Settings → App Store → Sandbox Account. Delete/reinstall
+   the app between runs for a clean slate. Sandbox clock: trial burns in
+   minutes, so a full trial→convert→lapse cycle is a coffee break.
+3. **Production truth (once, post-release): a friend's device** with an
+   account that has never bought Endpaper — the one thing sandbox can't
+   prove is the live ASC product configuration. One install, one
+   purchase-sheet sighting ("1 week free, then $39.99/year"), refund via
+   reportaproblem.apple.com if they don't want to keep it. Not a
+   regression tool — config verification only.
+
+---
+
 ## After this list: the road to TestFlight
 
 Everything left is **accounts and assets, not code**:
