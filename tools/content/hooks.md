@@ -238,4 +238,5 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-17 (planned) | IG Reel, Monday AM flagship slot | insight #1 RE-CUT (cold open, 38.6s, Wendell VO) | second attempt after throttled original — fresh fingerprint, clean air | caption "The ordinary days are the record."; nothing else within 3h |
 | 2026-08-17 | IG Reel (manual, posted his AM = US Sun night) | quote-motion "ships / water that gets *in*" dark | first US-flip post | caption "Thought of Monday, Aug 17th at 9:29pm", catalog audio |
 | 2026-08-17 | IG Reel (planned: his ~21:00 = US Mon morning) | insight #1 RE-CUT — flagship in the US-morning prime slot | ≥3h air after the ships post | caption "The ordinary days are the record." |
-| 2026-08-18 | (planned) his morning: SKIP the dark quote | insight owns US Monday; avoid crowding it | resume flipped cadence Tue evening | |
+| 2026-08-18 | (his morning) SKIPPED dark quote — flagship isolation, insight v4 owns US Monday | | | |
+| 2026-08-18 | IG Reel (manual, his ~21:00 = US Tue morning) | quote-motion "defeat is *psychological*" light | US-flip evening slot | caption "Thought of Tuesday, Aug 18th at 7:00am", catalog audio, 25x-mined line |
