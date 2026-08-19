@@ -73,7 +73,14 @@ final class VoiceCapture: ObservableObject {
             guard let self else { return }
             self.request?.append(buffer)
             if let rms = Self.rms(of: buffer) {
-                DispatchQueue.main.async { self.level = rms }
+                // .measurement mode delivers the raw mic — no system gain —
+                // so linear RMS of normal speech is tiny (~0.02) and reads
+                // as silence. Map in dB space instead: -50 dB floor (room
+                // tone) to -10 dB ceiling (loud speech) → 0…1. (QA 8-18:
+                // the card's waveform rendered flat on device.)
+                let db = 20 * log10(max(rms, 0.00001))
+                let norm = min(1, max(0, (db + 50) / 40))
+                DispatchQueue.main.async { self.level = norm }
             }
         }
         engine.prepare()

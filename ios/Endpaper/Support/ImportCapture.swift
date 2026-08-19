@@ -43,6 +43,15 @@ enum ImportCapture {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
+        // Pin the strongest configuration for handwriting: the latest
+        // model revision, one explicit language (auto-detect wastes
+        // capacity guessing), and no minimum text height so small script
+        // still enters the pass. Vision is print-first; this is the
+        // ceiling of what it offers on-device.
+        request.revision = VNRecognizeTextRequestRevision3
+        request.recognitionLanguages = ["en-US"]
+        request.automaticallyDetectsLanguage = false
+        request.minimumTextHeight = 0
         let handler = VNImageRequestHandler(cgImage: cg, orientation: orientation(of: image))
         try await Task.detached(priority: .userInitiated) {
             try handler.perform([request])

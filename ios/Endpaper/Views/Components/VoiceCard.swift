@@ -95,7 +95,9 @@ struct VoiceCard: View {
             var path = Path()
             var x = size.width - CGFloat(visible.count) * step
             for (i, s) in visible.enumerated() {
-                let amp = s.a < 0.028 ? 0 : min(1, s.a * 8)
+                // level is dB-normalized 0…1: room tone sits ≈0.1–0.15,
+                // speech ≈0.4–0.8. Below the floor draws the flat baseline.
+                let amp = s.a < 0.18 ? 0 : min(1, (s.a - 0.18) * 2.0)
                 let y = mid - s.s * amp * s.j * (mid - 4)
                 if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
                 else { path.addLine(to: CGPoint(x: x, y: y)) }
