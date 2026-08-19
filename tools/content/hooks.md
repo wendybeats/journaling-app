@@ -240,3 +240,5 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 | 2026-08-17 | IG Reel (planned: his ~21:00 = US Mon morning) | insight #1 RE-CUT — flagship in the US-morning prime slot | ≥3h air after the ships post | caption "The ordinary days are the record." |
 | 2026-08-18 | (his morning) SKIPPED dark quote — flagship isolation, insight v4 owns US Monday | | | |
 | 2026-08-18 | IG Reel (manual, his ~21:00 = US Tue morning) | quote-motion "defeat is *psychological*" light | US-flip evening slot | caption "Thought of Tuesday, Aug 18th at 7:00am", catalog audio, 25x-mined line |
+| 2026-08-19 | IG Reel (manual, his AM = US Tue evening) | quote-motion Marcus Aurelius "never beginning to *live*" dark | US-flip morning slot — author caption | caption "From Aurelius - Thought of Tuesday, Aug 18th at 9:52pm", catalog audio, manual post |
+| 2026-08-19 | IG Reel (manual, his ~21:00 = US Wed morning) | quote-motion Kierkegaard "dizziness of *freedom*" light | US-flip evening slot — author caption | caption "From Kierkegaard - Thought of Wednesday, Aug 19th at 6:52am", catalog audio, manual post |
