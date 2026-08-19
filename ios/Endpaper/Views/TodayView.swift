@@ -31,6 +31,13 @@ struct TodayView: View {
     @State private var pickingPhoto = false
     @State private var photoPick: PhotosPickerItem?
     @State private var pickingFile = false
+    @State private var pendingImport: PendingImport?
+
+    struct PendingImport: Identifiable {
+        let id = UUID()
+        let text: String
+        let origin: String
+    }
 
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
@@ -139,6 +146,13 @@ struct TodayView: View {
             }
             Button("From your photos") { pickingPhoto = true }
             Button("Choose a file") { pickingFile = true }
+        } message: {
+            Text("Works best with printed or neatly written text. You'll review before it lands.")
+        }
+        .sheet(item: $pendingImport) { pending in
+            ImportReviewSheet(origin: pending.origin, initialText: pending.text) { final in
+                commitCaptured(final, origin: pending.origin)
+            }
         }
         .sheet(isPresented: $scanning) {
             DocScanner { pages in importPages(pages) }
@@ -326,7 +340,11 @@ struct TodayView: View {
         Task { @MainActor in
             do {
                 let text = try await read()
-                commitCaptured(text, origin: origin)
+                // Recognition is fallible (handwriting especially) — the
+                // words pause on a review sheet before they become a
+                // section. Committing happens there, never sight-unseen.
+                ackVisible = false
+                pendingImport = PendingImport(text: text, origin: origin)
             } catch {
                 ack = (error as? ImportCapture.Failure)?.errorDescription ?? "Couldn't read that."
                 ackVisible = true
