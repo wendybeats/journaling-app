@@ -10,6 +10,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @AppStorage(AppKeys.account) private var accountMode = ""
+    @AppStorage(AppKeys.voiceLocale) private var voiceLocale = ""
 
     @AppStorage(AppKeys.faceLock) private var faceLock = false
     @State private var reminderOn = ReminderManager.enabled
@@ -85,6 +86,24 @@ struct SettingsView: View {
                         ReflectionStore.shared.setConsent(on ? "yes" : "no")
                     }
                     Text("Your week and month, in your own words — always private")
+                        .typeMetaSmall()
+                }
+
+                rule
+
+                // --- Voice language ---
+                // "" follows the device; an explicit locale covers writing
+                // in a language the phone isn't set to (ru-RU per the
+                // Russian-audience ask, 2026-08-20). Transcription stays
+                // on-device in every language.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Text("Voice language").typeWritten()
+                    HStack(spacing: Tokens.Space.sm) {
+                        voiceLocaleChip("Match device", tag: "")
+                        voiceLocaleChip("English", tag: "en-US")
+                        voiceLocaleChip("Русский", tag: "ru-RU")
+                    }
+                    Text("Spoken notes are transcribed on this device")
                         .typeMetaSmall()
                 }
 
@@ -214,5 +233,27 @@ struct SettingsView: View {
         } catch {
             return nil
         }
+    }
+
+    /// One language choice as a small selectable pill — filled when active.
+    private func voiceLocaleChip(_ label: String, tag: String) -> some View {
+        Button {
+            voiceLocale = tag
+        } label: {
+            // Meta register by hand — the modifier's own color would
+            // override the selected state.
+            Text(label)
+                .font(.custom(EndpaperFont.meta, size: 11))
+                .tracking(11 * 0.14)
+                .textCase(.uppercase)
+                .foregroundStyle(voiceLocale == tag ? Tokens.Text.onInverted : Tokens.Text.meta)
+                .padding(.horizontal, Tokens.Space.md)
+                .padding(.vertical, Tokens.Space.xs + 2)
+                .background(
+                    Capsule().fill(voiceLocale == tag ? Tokens.Surface.inverted : .clear)
+                )
+                .overlay(Capsule().strokeBorder(Tokens.Line.rule, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 }

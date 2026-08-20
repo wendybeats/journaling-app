@@ -44,12 +44,26 @@ final class VoiceCapture: ObservableObject {
         }
     }
 
+    /// The recognizer honoring the Settings language choice: "" follows
+    /// the device; an explicit locale (e.g. ru-RU) overrides it. If the
+    /// chosen language can't run on-device on this hardware, fall back to
+    /// the device recognizer so REC still works rather than going dead.
+    private static func makeRecognizer() -> SFSpeechRecognizer? {
+        let chosen = UserDefaults.standard.string(forKey: AppKeys.voiceLocale) ?? ""
+        if !chosen.isEmpty,
+           let r = SFSpeechRecognizer(locale: Locale(identifier: chosen)),
+           r.isAvailable, r.supportsOnDeviceRecognition {
+            return r
+        }
+        return SFSpeechRecognizer()
+    }
+
     private func begin() {
         // On-device is a requirement, not a preference — the permission
         // copy promises "nothing leaves your phone," so a locale without
         // on-device support gets no recording rather than a server fallback.
         guard !isRecording,
-              let recognizer = SFSpeechRecognizer(), recognizer.isAvailable,
+              let recognizer = Self.makeRecognizer(), recognizer.isAvailable,
               recognizer.supportsOnDeviceRecognition else { return }
         folded = ""
         lastSpoken = ""

@@ -206,6 +206,19 @@ Round 2 (2026-08-20, build 11):
 - [ ] Review sheet meta fits one line on iPhone 15 ("From your photo ·
       tap to edit or fix")
 
+Round 3 — production candidate (2026-08-20, build 12):
+
+- [ ] Type a line, record a voice note mid-draft, let the draft idle-commit:
+      the typed section sorts ABOVE the spoken one (writing-start ordering)
+- [ ] UPLOAD pill absent in an App Store/Release build; present on TestFlight
+- [ ] Settings → Voice language: chips select; ru-RU actually transcribes
+      Russian speech on device; "Match device" restores default; a language
+      without on-device support falls back to the device recognizer (REC
+      still works)
+- [ ] Known limitation (accepted for now): the 180s idle commit delays
+      iCloud sync by up to 3 minutes — an uncommitted draft has nothing to
+      sync. Revisit if cross-device users complain.
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

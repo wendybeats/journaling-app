@@ -15,6 +15,7 @@ struct TodayView: View {
 
     @AppStorage(AppKeys.draft) private var draft = ""
     @AppStorage(AppKeys.draftDay) private var draftDay = ""
+    @AppStorage(AppKeys.draftStart) private var draftStart = ""
 
     @State private var todayEntries: [Entry] = []
     @State private var reminderOffer = false
@@ -219,20 +220,27 @@ struct TodayView: View {
                 writingFocused = false
                 voice.start()
             }
-            Button {
-                writingFocused = false
-                importMenu = true
-            } label: {
-                HStack(spacing: Tokens.Space.xs) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 8, weight: .semibold))
-                        .foregroundStyle(Tokens.Dot.filled)
-                    Text("Upload")
+            // Import capture is held back from production for now — the
+            // handwriting expectation isn't ready for the people who'd
+            // reach for it first (decided 2026-08-20). TestFlight and
+            // debug builds keep it so the flow stays tested; everything
+            // behind it ships dormant.
+            if AppEnv.demoControls {
+                Button {
+                    writingFocused = false
+                    importMenu = true
+                } label: {
+                    HStack(spacing: Tokens.Space.xs) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundStyle(Tokens.Dot.filled)
+                        Text("Upload")
+                    }
+                    .barPill()
                 }
-                .barPill()
+                .buttonStyle(.plain)
+                .accessibilityLabel("Add writing from a photo or file")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Add writing from a photo or file")
             Spacer()
             // Done hides while recording — only one control may look like
             // it stops the take.
@@ -280,6 +288,12 @@ struct TodayView: View {
                 draftDay = key
                 idleCommit?.cancel()
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                // Stamp the session's start on the first real words — the
+                // committed section sorts by when writing BEGAN, so a
+                // voice note taken mid-draft lands after these words.
+                if draftStart.isEmpty {
+                    draftStart = ISO8601DateFormatter().string(from: .now)
+                }
                 // Three minutes: a pause to think is not an event. Commit
                 // still fires instantly on Done, leaving, or backgrounding.
                 idleCommit = Task {
@@ -385,9 +399,11 @@ struct TodayView: View {
         idleCommit?.cancel()
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        let entry = EntryStore.commit(text, in: context)
+        let started = ISO8601DateFormatter().date(from: draftStart) ?? .now
+        let entry = EntryStore.commit(text, at: started, lastAt: .now, in: context)
         draft = ""
         draftDay = ""
+        draftStart = ""
         refresh()
 
         // The 180 ms settle: the new section arrives faint, then takes ink.
@@ -412,6 +428,7 @@ struct TodayView: View {
         EntryStore.commit(draft.trimmingCharacters(in: .whitespacesAndNewlines), at: lateThatDay, in: context)
         draft = ""
         draftDay = ""
+        draftStart = ""
     }
 
     private func refresh() {

@@ -7,7 +7,7 @@ Build-focused; marketing ops live in tools/content/hooks.md.*
 
 | Item | Status |
 |---|---|
-| Fix or cut upload feature | **Mostly shipped in build 10** — menu pre-note ("works best with printed or neatly written text") + review-before-commit sheet. Remaining: his verdict after testing the mitigated version. "More advanced AI" conflicts with the no-AI promise — parked until on-device multimodal exists. |
+| Fix or cut upload feature | **DECIDED 2026-08-20: hidden in production** (build 12) — the Upload pill shows only in DEBUG/TestFlight (`AppEnv.demoControls`); all code ships dormant. Mitigations (pre-note + review sheet) stay built for when it returns. "More advanced AI" parked until on-device multimodal exists. |
 | Ensure payment system works | Recipe documented (QA checklist §payment). Needs: his tier-1 pass (local StoreKit config) + one sandbox-tester run before submitting; friend's-device production sight-check post-release. |
 | Record content | On him — founder reflections script delivered + beat-mapped; W34 pack waiting on his footage. |
 | Global strategy: reflection over permanence | **NEW directive — biggest item on the board.** Reflection becomes the messaging spine; permanence becomes the supporting trait. Touches: hooks.md pillars, onboarding tutorial (P1), ASC screenshots + listing (P1), site hero, founder video (already reflections-first). Recap redesign (shipped) is the product-side proof. Needs one coherent messaging pass, not piecemeal edits. |

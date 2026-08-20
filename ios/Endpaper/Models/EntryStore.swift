@@ -19,8 +19,14 @@ enum EntryStore {
     /// (spoken / scanned / imported) stand alone: they never merge into a
     /// typed session and typed writing never merges into them — each arrival
     /// is its own block on the page.
+    /// `at` is when the writing STARTED (the draft's first keystroke), not
+    /// when it committed — the page sorts by `at`, and a voice note taken
+    /// mid-draft must land after the words that were already in progress
+    /// (QA 2026-08-20: the idle-commit delay put spoken sections above
+    /// older typed ones). `lastAt` is when the writing ended.
     @discardableResult
-    static func commit(_ text: String, at: Date = .now, origin: String = "", in context: ModelContext) -> Entry {
+    static func commit(_ text: String, at: Date = .now, lastAt: Date? = nil,
+                       origin: String = "", in context: ModelContext) -> Entry {
         let key = DayFormat.key(for: at)
         let day = entries(forDay: key, in: context)
 
@@ -28,12 +34,13 @@ enum EntryStore {
            let last = day.last, last.origin.isEmpty,
            at.timeIntervalSince(last.lastAt) < sessionGap {
             last.text += "\n\n" + text
-            last.lastAt = at
+            last.lastAt = lastAt ?? at
             try? context.save()
             return last
         }
 
         let entry = Entry(dayKey: key, at: at, text: text, origin: origin)
+        entry.lastAt = lastAt ?? at
         context.insert(entry)
         try? context.save()
         return entry
