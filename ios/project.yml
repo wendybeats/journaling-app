@@ -38,6 +38,12 @@ targets:
       path: Endpaper/Info.plist
       properties:
         CFBundleDisplayName: Endpaper            # decided July 24 (pending trademark screen)
+        # Version wiring — without these, xcodegen writes a static 1.0/1
+        # into Info.plist and MARKETING_VERSION/CURRENT_PROJECT_VERSION
+        # never reach the bundle (ASC rejected an upload as "train '1.0'
+        # is closed", 2026-08-20). Bump versions in settings.base only.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen:
           UIColorName: LaunchBackground          # bone / char, from the asset catalog
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
@@ -63,6 +69,7 @@ targets:
         MARKETING_VERSION: 1.0.2
         CURRENT_PROJECT_VERSION: 10
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"            # iPhone-first, like the PDP
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic

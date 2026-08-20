@@ -102,3 +102,29 @@ privacy/terms URLs are all in place.
 - Grandfathering decision for beta testers (default: 1-year promo codes)
 - Swap the site's drawn App Store badge for Apple's official asset +
   real store URL
+
+## Command-line archive & upload (verified 2026-08-20)
+
+```bash
+cd ios && xcodegen
+xcodebuild -project Endpaper.xcodeproj -scheme Endpaper -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath build/Endpaper.xcarchive \
+  archive -allowProvisioningUpdates
+xcodebuild -exportArchive -archivePath build/Endpaper.xcarchive \
+  -exportOptionsPlist build/upload.plist -allowProvisioningUpdates
+# upload.plist: method=app-store-connect, destination=upload
+```
+
+Gotchas hit on the first real run (all now fixed in project.yml):
+
+- `xcodebuild` may resolve to Command Line Tools, not Xcode. One-off:
+  prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+  Permanent: `sudo xcode-select -s /Applications/Xcode.app`.
+- Signing team is committed (`DEVELOPMENT_TEAM: DW5Z7N8HF9`) so no
+  command-line override is needed.
+- Version wiring: `CFBundleShortVersionString`/`CFBundleVersion` in the
+  info block reference `$(MARKETING_VERSION)`/`$(CURRENT_PROJECT_VERSION)`.
+  Without that, the bundle ships as 1.0/1 and ASC rejects the upload
+  ("train '1.0' is closed"). Bump versions ONLY in settings.base;
+  verify after archiving with:
+  `plutil -p build/Endpaper.xcarchive/Products/Applications/Endpaper.app/Info.plist | grep -i version`
