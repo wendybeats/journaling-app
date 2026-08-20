@@ -119,6 +119,16 @@ Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 
 ## Signals
 
+- 2026-08-20: **Kierkegaard "anxiety/freedom" light: 1.5x baseline
+  reach** (posted Aug 19 ~21:00 EEST, US Wed morning). First bench line
+  opening on a single charged noun ("Anxiety…") — and the frame-one
+  thumbnail shows the giant first letter. Working hypothesis: loaded
+  first word + author caption + first-letter thumbnail is the strongest
+  quote-kit combination so far. Bias future mining toward lines whose
+  FIRST word carries the punch (Anxiety, Ships, Defeat…); prefer known
+  authors when available; watch whether Kafka ("A book must be…" — weak
+  opener) underperforms as the natural A/B.
+
 - 2026-08-10: First reach data. Pinned still post: 7 views in ~24h,
   mostly followers. Quote-motion Reel ("commit to nothing"): 66 views
   in 5 minutes, 98.4% non-followers. **Video is the distribution
