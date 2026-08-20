@@ -138,6 +138,49 @@ struct SequenceStat: View {
     }
 }
 
+/// A big number that counts up to its value — the stats register with a
+/// pulse. Ease-out over ~0.9s so the last digits land softly; the final
+/// frame always shows the exact value. Reduce Motion: static.
+struct CounterStat: View {
+    let value: Int
+    let label: String
+    var size: CGFloat = 100
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown = 0
+
+    var body: some View {
+        VStack(spacing: Tokens.Space.md) {
+            Text(shown.formatted())
+                .font(.custom(EndpaperFont.meta, size: size))
+                .monospacedDigit()
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .foregroundStyle(Tokens.Text.onInverted)
+            Text(label)
+                .font(.custom(EndpaperFont.meta, size: 10))
+                .tracking(10 * 0.14)
+                .textCase(.uppercase)
+                .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+        }
+        .padding(.horizontal, Tokens.Space.screenX)
+        .task {
+            if reduceMotion || value <= 0 {
+                shown = value
+                return
+            }
+            let steps = 28
+            for i in 1...steps {
+                let t = Double(i) / Double(steps)
+                let eased = 1 - pow(1 - t, 3)          // ease-out cubic
+                shown = Int((Double(value) * eased).rounded())
+                try? await Task.sleep(for: .milliseconds(32))
+            }
+            shown = value
+        }
+    }
+}
+
 /// A pull-quote with its day stamp, on the inverted surface.
 struct SequenceQuote: View {
     let quote: RQuote

@@ -32,6 +32,7 @@ struct TodayView: View {
     @State private var photoPick: PhotosPickerItem?
     @State private var pickingFile = false
     @State private var pendingImport: PendingImport?
+    @State private var barStamp = 0
 
     struct PendingImport: Identifiable {
         let id = UUID()
@@ -121,7 +122,10 @@ struct TodayView: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.Surface.page)
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .bottom) { writingBar }
+        // barStamp forces the inset to re-install after a navigation
+        // round-trip — QA 8-20 hit a state where the keyboard returned but
+        // the bar never re-anchored above it (Archive → seed → back).
+        .safeAreaInset(edge: .bottom) { writingBar.id(barStamp) }
         .onChange(of: draft) { _, _ in
             guard writingFocused else { return }
             withAnimation(.easeOut(duration: 0.15)) {
@@ -168,6 +172,7 @@ struct TodayView: View {
             if case .success(let url) = result { importFile(url) }
         }
         .onAppear {
+            barStamp += 1
             adoptStaleDraft()
             refresh()
             let consentPending = ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
@@ -201,47 +206,46 @@ struct TodayView: View {
     // above the keyboard when writing and at the page foot when not —
     // the two resting states from Wendell's markups.
 
+    // One uniform row: actions (REC, UPLOAD) lead, Done trails. No
+    // overlay — the old centered-group-plus-trailing-Done collided on
+    // smaller devices (QA 8-20, iPhone 15).
     private var writingBar: some View {
-        ZStack {
-            HStack(spacing: Tokens.Space.sm) {
-                RecPill(recording: voice.isRecording) {
-                    guard !takingVoice else { return }
-                    // The keyboard stands down while the mic is up — one
-                    // writer at a time. Voice never touches the draft: the
-                    // take lives on the card and commits as its own section.
-                    writingFocused = false
-                    voice.start()
-                }
-                Button {
-                    writingFocused = false
-                    importMenu = true
-                } label: {
-                    HStack(spacing: Tokens.Space.xs) {
-                        Image(systemName: "arrow.up")
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundStyle(Tokens.Dot.filled)
-                        Text("Upload")
-                    }
-                    .barPill()
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Add writing from a photo or file")
+        HStack(spacing: Tokens.Space.sm) {
+            RecPill(recording: voice.isRecording) {
+                guard !takingVoice else { return }
+                // The keyboard stands down while the mic is up — one
+                // writer at a time. Voice never touches the draft: the
+                // take lives on the card and commits as its own section.
+                writingFocused = false
+                voice.start()
             }
-            .opacity(takingVoice ? 0 : 1)
+            Button {
+                writingFocused = false
+                importMenu = true
+            } label: {
+                HStack(spacing: Tokens.Space.xs) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundStyle(Tokens.Dot.filled)
+                    Text("Upload")
+                }
+                .barPill()
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Add writing from a photo or file")
+            Spacer()
             // Done hides while recording — only one control may look like
             // it stops the take.
             if writingFocused && !takingVoice {
-                HStack {
-                    Spacer()
-                    Button {
-                        writingFocused = false
-                    } label: {
-                        Text("Done").barPill()
-                    }
-                    .buttonStyle(.plain)
+                Button {
+                    writingFocused = false
+                } label: {
+                    Text("Done").barPill()
                 }
+                .buttonStyle(.plain)
             }
         }
+        .opacity(takingVoice ? 0 : 1)
         .padding(.horizontal, Tokens.Space.screenX)
         .padding(.vertical, Tokens.Space.sm)
         .background(Tokens.Surface.page)

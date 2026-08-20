@@ -58,24 +58,12 @@ struct RecapView: View {
             RecapGridSlide(signal: signal, writtenDays: writtenDays)
         })
 
-        // 3 — the numbers as three fast beats, one per screen
-        for (value, label) in [("\(signal.days)", "days written"),
-                               (signal.words.formatted(), "words"),
-                               ("\(signal.longestRun)", "longest run")] {
-            s.append(SequenceSlide(duration: 2.2) {
-                VStack(spacing: Tokens.Space.md) {
-                    Text(value)
-                        .font(.custom(EndpaperFont.meta, size: 100))
-                        .monospacedDigit()
-                        .minimumScaleFactor(0.4)
-                        .foregroundStyle(Tokens.Text.onInverted)
-                    Text(label)
-                        .font(.custom(EndpaperFont.meta, size: 10))
-                        .tracking(10 * 0.14)
-                        .textCase(.uppercase)
-                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
-                }
-                .padding(.horizontal, Tokens.Space.screenX)
+        // 3 — the numbers as three fast beats, counting up to hold focus
+        for (value, label) in [(signal.days, "days written"),
+                               (signal.words, "words"),
+                               (signal.longestRun, "longest run")] {
+            s.append(SequenceSlide(duration: 2.4) {
+                CounterStat(value: value, label: label)
             })
         }
 
@@ -101,7 +89,74 @@ struct RecapView: View {
                 })
             }
 
-            // 5 — the turn: ghost is before, ink is now. Weight renders time.
+            // 5 — people: a name in roman — people aren't quotes. Named so
+            // it can't be confused with "Your word" (a feeling, not a person).
+            if let person = signal.people?.first {
+                s.append(SequenceSlide(duration: 5.5) {
+                    PromptBeat(prompt: "One name kept appearing") {
+                        VStack(spacing: Tokens.Space.md) {
+                            Text(person.name)
+                                .font(.custom("Newsreader", size: 58).weight(.medium))
+                                .foregroundStyle(Tokens.Text.onInverted)
+                                .minimumScaleFactor(0.5)
+                            beatMeta("\(person.days) days this month")
+                        }
+                        .padding(.horizontal, Tokens.Space.screenX)
+                    }
+                })
+            }
+
+            // 6 — rhythm: the product's only chart, in type-weight strokes.
+            if let rhythm = signal.rhythm {
+                s.append(SequenceSlide(duration: 6.5) {
+                    PromptBeat(prompt: "Your rhythm") {
+                        RecapRhythm(rhythm: rhythm)
+                    }
+                })
+            }
+
+            // 7 — spoken: the capture rose's one appearance in the recap.
+            if let spoken = signal.spokenCount {
+                s.append(SequenceSlide(duration: 5.5) {
+                    PromptBeat(prompt: "Said out loud") {
+                        VStack(spacing: Tokens.Space.md) {
+                            RecapWaveGlyph()
+                            Text("\(spoken)")
+                                .font(.custom(EndpaperFont.meta, size: 72))
+                                .monospacedDigit()
+                                .foregroundStyle(Tokens.Text.onInverted)
+                            beatMeta(spoken == 1 ? "section spoken this month" : "sections spoken\nthis month")
+                        }
+                    }
+                })
+            }
+
+            // 8 — recurring ideas, one topic per beat in the deck grammar
+            for topic in signal.topics {
+                s.append(SequenceSlide(duration: 6.5) {
+                    PromptBeat(prompt: "Kept surfacing") {
+                        RecapTopicSlide(topic: topic)
+                    }
+                })
+            }
+
+            // 9 — what seemed difficult (only when the writing says so)
+            if !signal.difficult.isEmpty {
+                s.append(SequenceSlide(duration: 6) {
+                    PromptBeat(prompt: "Challenges") {
+                        VStack(spacing: Tokens.Space.lg) {
+                            ForEach(signal.difficult, id: \.self) { q in
+                                SequenceQuote(quote: q, stampAsDate: true)
+                            }
+                        }
+                        .padding(.horizontal, Tokens.Space.screenX)
+                    }
+                })
+            }
+
+            // 10 — the closer: the tone, always last before the outro. The
+            // turn (ghost -> ink) when the leader changed; Your Word
+            // otherwise — a changed word says more than a counted one.
             if let turn = signal.turn {
                 s.append(SequenceSlide(duration: 6) {
                     PromptBeat(prompt: "Your word, turning") {
@@ -118,86 +173,17 @@ struct RecapView: View {
                         .padding(.horizontal, Tokens.Space.screenX)
                     }
                 })
-            }
-
-            // 6 — recurring ideas
-            if !signal.topics.isEmpty {
-                s.append(SequenceSlide(duration: 2.2) { Intertitle(text: "Recurring ideas") })
-                for topic in signal.topics {
-                    // Two quotes need reading time — slower than the stat slides.
-                    s.append(SequenceSlide(duration: 5.5) { RecapTopicSlide(topic: topic) })
-                }
-            }
-            // 7 — the tone, in the user's own word (the turn supersedes it —
-            // a changed word says more than a counted one)
-            if let tone = signal.tone, signal.turn == nil {
-                s.append(SequenceSlide(duration: 2.2) { Intertitle(text: "Your Word") })
-                s.append(SequenceSlide(duration: 4.5) {
-                    VStack(spacing: Tokens.Space.md) {
-                        Text("“\(tone.word)”")
-                            .font(.custom("Newsreader", size: 56).italic())
-                            .foregroundStyle(Tokens.Text.onInverted)
-                        Text("It appeared \(tone.count) times this month.")
-                            .font(.custom(EndpaperFont.meta, size: 11))
-                            .tracking(11 * 0.14)
-                            .textCase(.uppercase)
-                            .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
-                    }
-                    .padding(.horizontal, Tokens.Space.screenX)
-                })
-            }
-
-            // 8 — people: a name in roman — people aren't quotes.
-            if let person = signal.people?.first {
-                s.append(SequenceSlide(duration: 5.5) {
-                    PromptBeat(prompt: "Kept appearing") {
+            } else if let tone = signal.tone {
+                s.append(SequenceSlide(duration: 6) {
+                    PromptBeat(prompt: "Your word") {
                         VStack(spacing: Tokens.Space.md) {
-                            Text(person.name)
-                                .font(.custom("Newsreader", size: 58).weight(.medium))
+                            Text("“\(tone.word)”")
+                                .font(.custom("Newsreader", size: 56).italic())
                                 .foregroundStyle(Tokens.Text.onInverted)
-                                .minimumScaleFactor(0.5)
-                            beatMeta("\(person.days) days this month")
+                            beatMeta("it appeared \(tone.count) times this month")
                         }
                         .padding(.horizontal, Tokens.Space.screenX)
                     }
-                })
-            }
-
-            // 9 — rhythm: the product's only chart, in type-weight strokes.
-            if let rhythm = signal.rhythm {
-                s.append(SequenceSlide(duration: 6.5) {
-                    PromptBeat(prompt: "Your rhythm") {
-                        RecapRhythm(rhythm: rhythm)
-                    }
-                })
-            }
-
-            // 10 — spoken: the capture rose's one appearance in the recap.
-            if let spoken = signal.spokenCount {
-                s.append(SequenceSlide(duration: 5.5) {
-                    PromptBeat(prompt: "Said out loud") {
-                        VStack(spacing: Tokens.Space.md) {
-                            RecapWaveGlyph()
-                            Text("\(spoken)")
-                                .font(.custom(EndpaperFont.meta, size: 72))
-                                .monospacedDigit()
-                                .foregroundStyle(Tokens.Text.onInverted)
-                            beatMeta(spoken == 1 ? "section spoken this month" : "sections spoken\nthis month")
-                        }
-                    }
-                })
-            }
-
-            // 11 — what seemed difficult (only when the writing says so)
-            if !signal.difficult.isEmpty {
-                s.append(SequenceSlide(duration: 2.2) { Intertitle(text: "Challenges") })
-                s.append(SequenceSlide(duration: 4.5) {
-                    VStack(spacing: Tokens.Space.lg) {
-                        ForEach(signal.difficult, id: \.self) { q in
-                            SequenceQuote(quote: q, stampAsDate: true)
-                        }
-                    }
-                    .padding(.horizontal, Tokens.Space.screenX)
                 })
             }
         } else {

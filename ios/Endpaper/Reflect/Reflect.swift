@@ -52,6 +52,7 @@ struct WeeklySignal: Codable {
     var bigLine: RQuote? = nil         // the week's largest written line
     var question: RQuote? = nil        // a verbatim "?" sentence
     var sitting: Sitting? = nil        // longest single session
+    var challenge: RQuote? = nil       // one explicit hard moment (closer)
 }
 
 struct MonthlySignal: Codable {
@@ -313,6 +314,14 @@ enum Reflect {
         let weekSessions = keys.flatMap { corpus.sessions[$0] ?? [] }
         signal.shape = shape(of: weekSessions, writtenDayCount: writtenDays.count)
         signal.sitting = longestSitting(in: weekSessions)
+        // One explicit hard moment — same marker rule as the monthly
+        // Challenges section, a single quote, closing the deck.
+        for entry in all {
+            if let hit = sentences(entry.text).first(where: isDifficult) {
+                signal.challenge = RQuote(text: hit, day: entry.day)
+                break
+            }
+        }
         return signal
     }
 

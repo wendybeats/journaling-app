@@ -44,6 +44,8 @@ struct VoiceCard: View {
 
             // The waveform block owns the slack space, so the trace sits
             // dead-center between the title group and the stop button.
+            // The wave bleeds edge-to-edge of the card; the transcript is
+            // the inset one (QA 8-20: it was exactly backwards).
             VStack(spacing: 16) {
                 wave
                     .frame(height: 130)
@@ -53,6 +55,7 @@ struct VoiceCard: View {
                         .foregroundStyle(Tokens.Text.heading)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
+                        .padding(.horizontal, Tokens.Space.screenX)
                 }
             }
             .frame(maxHeight: .infinity)
@@ -109,7 +112,6 @@ struct VoiceCard: View {
             ctx.fill(Path(CGRect(x: size.width - 1.5, y: mid - 12, width: 1.5, height: 24)),
                      with: .color(Tokens.Accent.capture))
         }
-        .padding(.horizontal, Tokens.Space.md)
     }
 
     private func push(_ level: CGFloat) {

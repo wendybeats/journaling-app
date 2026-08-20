@@ -35,15 +35,18 @@ struct ImportReviewSheet: View {
             }
             .padding(.top, Tokens.Space.lg)
 
+            // Short enough to stay one line on the smallest device.
             HStack(spacing: Tokens.Space.xs) {
-                Text(origin == "scanned" ? "Read from your photo" : "Read from your file")
+                Text(origin == "scanned" ? "From your photo" : "From your file")
                     .typeMetaSmall()
-                Text("· fix anything it misread")
+                Text("· tap to edit or fix")
                     .font(.custom(EndpaperFont.meta, size: 10))
                     .tracking(10 * 0.14)
                     .textCase(.uppercase)
                     .foregroundStyle(Tokens.Accent.capture)
             }
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .padding(.top, Tokens.Space.xl)
 
             ScrollView {

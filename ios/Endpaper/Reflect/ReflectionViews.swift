@@ -51,16 +51,19 @@ struct WeeklyCardView: View {
     @State private var page = 0
 
     private enum Beat: Hashable {
-        case shape, thread, bigLine, question, sitting, close
+        case intro, shape, thread, bigLine, question, sitting, days, words, challenge, close
     }
 
     private var beats: [Beat] {
-        var b: [Beat] = []
+        var b: [Beat] = [.intro]
         if signal.shape != nil { b.append(.shape) }
         if signal.topic != nil, !signal.quotes.isEmpty { b.append(.thread) }
         if signal.bigLine != nil { b.append(.bigLine) }
         if signal.question != nil { b.append(.question) }
         if signal.sitting != nil { b.append(.sitting) }
+        b.append(.days)
+        b.append(.words)
+        if signal.challenge != nil { b.append(.challenge) }
         b.append(.close)
         return b
     }
@@ -93,6 +96,36 @@ struct WeeklyCardView: View {
     @ViewBuilder
     private func beatView(_ beat: Beat) -> some View {
         switch beat {
+        case .intro:
+            // The weekly opener — sibling of the monthly's cropped disc,
+            // deliberately lighter: a hollow ring, opposite corner. A week
+            // is an outline of a month.
+            ZStack(alignment: .bottomLeading) {
+                GeometryReader { geo in
+                    Circle()
+                        .strokeBorder(Tokens.Text.onInverted, lineWidth: 2)
+                        .frame(width: 260, height: 260)
+                        .position(x: geo.size.width - 20, y: 60)
+                }
+                VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                    Text("Reflections")
+                        .font(.custom(EndpaperFont.meta, size: 11))
+                        .tracking(11 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.62))
+                    Text("Your\nweek.")
+                        .font(.custom(EndpaperFont.heading, size: 44).weight(.semibold))
+                        .foregroundStyle(Tokens.Text.onInverted)
+                    Text(weekLabel(signal))
+                        .font(.custom(EndpaperFont.meta, size: 10))
+                        .tracking(10 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                        .padding(.top, Tokens.Space.xs)
+                }
+                .padding(.horizontal, Tokens.Space.screenX)
+                .padding(.bottom, 140)
+            }
         case .shape:
             if let shape = signal.shape {
                 PromptBeat(prompt: "Reflections — \(weekLabel(signal))") {
@@ -162,11 +195,23 @@ struct WeeklyCardView: View {
                     }
                 }
             }
+        case .days:
+            CounterStat(value: signal.days, label: "days written")
+        case .words:
+            CounterStat(value: signal.words, label: "words")
+        case .challenge:
+            if let challenge = signal.challenge {
+                PromptBeat(prompt: "Challenges") {
+                    SequenceQuote(quote: challenge, stampAsDate: true)
+                        .padding(.horizontal, Tokens.Space.screenX)
+                }
+            }
         case .close:
             PromptBeat(prompt: weekLabel(signal)) {
-                VStack(spacing: Tokens.Space.xl) {
-                    SequenceStat(value: "\(signal.days)", label: "days written")
-                    SequenceStat(value: signal.words.formatted(), label: "words")
+                VStack(spacing: Tokens.Space.lg) {
+                    Text("See you on the page.")
+                        .font(.custom(EndpaperFont.heading, size: 28).weight(.medium))
+                        .foregroundStyle(Tokens.Text.onInverted)
                     Button(action: onClose) {
                         Text("Continue")
                             .font(.custom(EndpaperFont.meta, size: 13))
@@ -174,26 +219,16 @@ struct WeeklyCardView: View {
                             .textCase(.uppercase)
                             .foregroundStyle(Tokens.Text.onInverted)
                     }
-                    .padding(.top, Tokens.Space.lg)
+                    .padding(.top, Tokens.Space.md)
                 }
             }
         }
     }
 
-    /// The seven days as tap-size dots, filled where written.
+    /// The seven days as tap-size dots, filling in one by one — the week
+    /// drawing itself, like the monthly grid. Reduce Motion: pre-drawn.
     private var weekDots: some View {
-        let start = DayFormat.date(fromKey: signal.startKey)
-        let cal = Calendar.current
-        let written = Set(signal.writtenKeys ?? [])
-        return HStack(spacing: Tokens.Space.sm) {
-            ForEach(0..<7, id: \.self) { i in
-                let key = DayFormat.key(for: cal.date(byAdding: .day, value: i, to: start)!)
-                Circle()
-                    .strokeBorder(Tokens.Text.onInverted.opacity(0.28), lineWidth: 1)
-                    .background(Circle().fill(written.contains(key) ? Tokens.Text.onInverted : .clear))
-                    .frame(width: 20, height: 20)
-            }
-        }
+        WeekDotsDrawing(startKey: signal.startKey, writtenKeys: Set(signal.writtenKeys ?? []))
     }
 
     private func shapeStatement(_ shape: WeeklySignal.Shape) -> String {
@@ -211,6 +246,40 @@ struct WeeklyCardView: View {
         case "afternoon": return "midday"
         case "late": return "after midnight"
         default: return "after 5 pm"
+        }
+    }
+}
+
+/// The seven-dot row, drawing itself left to right.
+private struct WeekDotsDrawing: View {
+    let startKey: String
+    let writtenKeys: Set<String>
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drawn = 0
+
+    var body: some View {
+        let start = DayFormat.date(fromKey: startKey)
+        let cal = Calendar.current
+        HStack(spacing: Tokens.Space.sm) {
+            ForEach(0..<7, id: \.self) { i in
+                let key = DayFormat.key(for: cal.date(byAdding: .day, value: i, to: start)!)
+                Circle()
+                    .strokeBorder(Tokens.Text.onInverted.opacity(0.28), lineWidth: 1)
+                    .background(Circle().fill(i < drawn && writtenKeys.contains(key)
+                                              ? Tokens.Text.onInverted : .clear))
+                    .frame(width: 20, height: 20)
+            }
+        }
+        .task {
+            if reduceMotion {
+                drawn = 7
+                return
+            }
+            for d in 1...7 {
+                withAnimation(Tokens.Motion.fast) { drawn = d }
+                try? await Task.sleep(for: .milliseconds(110))
+            }
         }
     }
 }

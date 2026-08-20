@@ -185,6 +185,27 @@ then force the arrivals (Settings demo tools / fresh week boundary):
 - [ ] Reduce Motion: prompts sit at rest, metrics appear without travel
 - [ ] Tap-to-advance/hold-to-pause still work on the monthly sequence
 
+Round 2 (2026-08-20, build 11):
+
+- [ ] Weekly opens with the ring opener ("Your week."), monthly with the
+      filled-disc opener — siblings, not twins
+- [ ] Weekly shape beat: the seven dots draw in one by one
+- [ ] Weekly numbers are separate beats and COUNT UP (days, then words);
+      monthly's three number slides count up too
+- [ ] Weekly closes: challenge quote (when one exists) → "See you on the
+      page." + Continue
+- [ ] Monthly order: opener → grid → numbers → opened/closed → one name
+      kept appearing → rhythm → spoken → kept surfacing (topics) →
+      challenges → your word / the turn (closer) → outro
+- [ ] Topics, challenges, and the tone slide all open with the prompt
+      choreography (no more intertitle cards)
+- [ ] Writing bar: REC + UPLOAD left, Done right, no overlap on iPhone 15;
+      bar present after Archive → seed → back (regression)
+- [ ] Voice card: waveform touches both card edges; transcript has side
+      padding
+- [ ] Review sheet meta fits one line on iPhone 15 ("From your photo ·
+      tap to edit or fix")
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not
