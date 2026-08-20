@@ -1,5 +1,16 @@
 # Recaps, comprehensive — weekly / monthly / yearly plan
 
+> **STATUS 2026-08-20: weekly + monthly BUILT** (folded into 1.0.2,
+> build 10, pre-user-testing). Weekly = five-beat swipeable deck (shape /
+> thread / written-large / question / sitting → stats+Continue), each on
+> the PromptBeat choreography. Monthly sequence re-paced: dot opener →
+> grid → three fast numbers → opened/closed split → the turn (supersedes
+> Your Word when present) → recurring ideas → people → rhythm bars →
+> spoken (rose) → challenges → outro. Engine fields are optional Codable
+> (old archives decode; silence rule per beat); time-shaped signals come
+> from a sessions side-table on Corpus and stay out of the JS parity
+> surface. Yearly sequence still parked for the December release.
+
 *2026-08-18 · brainstorm with Wendell: "make the recaps more
 comprehensive… weekly 3–5 data points, monthly a bigger recap, yearly a
 full, introspective picture. Hesitant to use AI, but it needs to feel

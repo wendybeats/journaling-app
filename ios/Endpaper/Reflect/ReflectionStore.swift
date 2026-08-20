@@ -74,10 +74,13 @@ final class ReflectionStore {
     static func corpus(from context: ModelContext) -> Corpus {
         let all = (try? context.fetch(FetchDescriptor<Entry>(sortBy: [SortDescriptor(\.at)]))) ?? []
         var byDay: [String: [String]] = [:]
+        var sessions: [String: [RSession]] = [:]
         for entry in all {
             byDay[entry.dayKey, default: []].append(entry.text)
+            sessions[entry.dayKey, default: []].append(
+                RSession(text: entry.text, at: entry.at, lastAt: entry.lastAt, origin: entry.origin))
         }
-        return Corpus(byDay: byDay)
+        return Corpus(byDay: byDay, sessions: sessions)
     }
 
     // MARK: Pending arrivals (one per visit; monthly wins — reflection.js)

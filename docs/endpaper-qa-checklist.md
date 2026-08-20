@@ -162,6 +162,29 @@ Import — UPLOAD pill:
 
 ---
 
+## 13. Recaps (1.0.2): weekly deck + monthly sequence
+
+Seed a demo notebook (or write across several days) with consent = yes,
+then force the arrivals (Settings demo tools / fresh week boundary):
+
+- [ ] Weekly arrives as a swipeable deck; every beat opens with the
+      prompt flash → slide-up → metric reveal; pager dots visible in
+      BOTH light and dark mode
+- [ ] Beats without evidence are absent (no session times → no
+      shape/sitting; no "?" sentence → no question; nothing written
+      large → no big-line beat) — never an empty page
+- [ ] Big-line beat shows the line at display size; question beat is
+      verbatim, with its weekday
+- [ ] Monthly: dot opener (cropped circle, left-set type) → grid →
+      three FAST number slides → opened/closed split → turn (ghost →
+      ink; replaces Your Word when present) → topics → people → rhythm
+      bars → spoken (rose) → challenges → outro
+- [ ] Insufficient month still gets the quiet variant, no new slides
+- [ ] Old archived reflections (pre-1.0.2) reopen from the Notebook
+      without crashing (new fields decode as absent)
+- [ ] Reduce Motion: prompts sit at rest, metrics appear without travel
+- [ ] Tap-to-advance/hold-to-pause still work on the monthly sequence
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

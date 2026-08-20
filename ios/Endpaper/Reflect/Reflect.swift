@@ -27,6 +27,19 @@ struct WeeklySignal: Codable {
         var mentions: Int
         var days: Int
     }
+    // 1.0.2 deck beats — all optional: archived signals from older builds
+    // decode with them absent, and a nil beat simply doesn't render
+    // (the silence rule, for free).
+    struct Shape: Codable {
+        var bucket: String    // "morning" | "afternoon" | "evening" | "late"
+        var days: Int         // written days in the dominant bucket
+        var total: Int        // written days that had session times
+    }
+    struct Sitting: Codable {
+        var seconds: Int
+        var day: String
+        var words: Int
+    }
     var id: String        // "w-2026-06-29"
     var startKey: String
     var days: Int
@@ -34,6 +47,11 @@ struct WeeklySignal: Codable {
     var sufficient: Bool
     var topic: Topic?
     var quotes: [RQuote]
+    var writtenKeys: [String]? = nil   // for the deck's seven-dot row
+    var shape: Shape? = nil
+    var bigLine: RQuote? = nil         // the week's largest written line
+    var question: RQuote? = nil        // a verbatim "?" sentence
+    var sitting: Sitting? = nil        // longest single session
 }
 
 struct MonthlySignal: Codable {
@@ -48,6 +66,21 @@ struct MonthlySignal: Codable {
         var word: String
         var count: Int
     }
+    // 1.0.2 sequence beats — optional for the same decode-compat and
+    // silence-rule reasons as the weekly fields.
+    struct Turn: Codable {
+        var from: String      // first-half tone leader
+        var to: String        // second-half tone leader
+    }
+    struct Person: Codable {
+        var name: String
+        var days: Int
+    }
+    struct Rhythm: Codable {
+        var weekdayCounts: [Int]   // written days per weekday, Sunday-first
+        var peakWeekday: Int       // 0 = Sunday
+        var bucket: String?        // dominant writing time, when times exist
+    }
     var id: String        // "m-2026-06"
     var year: Int
     var month: Int        // 1-based (JS is 0-based; the id format matches)
@@ -58,6 +91,12 @@ struct MonthlySignal: Codable {
     var topics: [Topic]
     var tone: Tone?
     var difficult: [RQuote]
+    var opened: RQuote? = nil      // first sentence of the month
+    var closed: RQuote? = nil      // last sentence of the month
+    var turn: Turn? = nil          // tone leader changed mid-month
+    var people: [Person]? = nil    // recurring proper names
+    var rhythm: Rhythm? = nil
+    var spokenCount: Int? = nil    // sections that arrived by voice
 }
 
 struct YearlySignal: Codable {
@@ -88,10 +127,22 @@ extension WeeklySignal: Identifiable {}
 extension MonthlySignal: Identifiable {}
 extension YearlySignal: Identifiable {}
 
+/// One session with its timing and arrival — the raw material for the
+/// time-shaped signals (writing hour, longest sitting, spoken count).
+/// The JS reference corpus carries no timestamps, so these signals are
+/// Swift-only and stay out of the parity comparison.
+struct RSession {
+    let text: String
+    let at: Date
+    let lastAt: Date
+    let origin: String
+}
+
 /// The corpus the engine reads: day key → session texts in time order.
 /// Built once per evaluation from the SwiftData store.
 struct Corpus {
     let byDay: [String: [String]]
+    var sessions: [String: [RSession]] = [:]
 
     func has(_ key: String) -> Bool {
         !(byDay[key] ?? []).isEmpty
@@ -250,9 +301,97 @@ enum Reflect {
         }
 
         let startKey = DayFormat.key(for: start)
-        return WeeklySignal(id: "w-\(startKey)", startKey: startKey,
-                            days: writtenDays.count, words: words,
-                            sufficient: sufficient, topic: topic, quotes: quotes)
+        var signal = WeeklySignal(id: "w-\(startKey)", startKey: startKey,
+                                  days: writtenDays.count, words: words,
+                                  sufficient: sufficient, topic: topic, quotes: quotes)
+
+        // Deck beats (1.0.2). Text-shaped beats come from the corpus text;
+        // time-shaped beats need session times and stay nil without them.
+        signal.writtenKeys = writtenDays
+        signal.bigLine = biggestLine(in: all)
+        signal.question = bestQuestion(in: all)
+        let weekSessions = keys.flatMap { corpus.sessions[$0] ?? [] }
+        signal.shape = shape(of: weekSessions, writtenDayCount: writtenDays.count)
+        signal.sitting = longestSitting(in: weekSessions)
+        return signal
+    }
+
+    // MARK: Deck-beat helpers (Swift-only; not part of the JS parity surface)
+
+    /// The largest-written line of the period — the user already marked it
+    /// as important by writing it big; we just remember. nil when nothing
+    /// classified above body size.
+    static func biggestLine(in all: [(day: String, text: String)]) -> RQuote? {
+        var best: (size: CGFloat, quote: RQuote)? = nil
+        for entry in all {
+            for raw in entry.text.components(separatedBy: "\n") {
+                let line = raw.trimmingCharacters(in: .whitespaces)
+                guard !line.isEmpty else { continue }
+                let size = WrittenScale.size(for: line)
+                guard size >= 28 else { continue }
+                if best == nil || size > best!.size {
+                    best = (size, RQuote(text: line, day: entry.day))
+                }
+            }
+        }
+        return best?.quote
+    }
+
+    /// A verbatim question the user asked themself — the longest "?"
+    /// sentence of substance. Handed back unanswered.
+    static func bestQuestion(in all: [(day: String, text: String)]) -> RQuote? {
+        var best: RQuote? = nil
+        for entry in all {
+            for line in sentences(entry.text) where line.hasSuffix("?") {
+                guard line.count >= 12, line.count <= 160 else { continue }
+                if best == nil || line.count > best!.text.count {
+                    best = RQuote(text: line, day: entry.day)
+                }
+            }
+        }
+        return best
+    }
+
+    /// Hour → writing-time bucket.
+    static func bucket(forHour h: Int) -> String {
+        switch h {
+        case 5..<12: return "morning"
+        case 12..<17: return "afternoon"
+        case 17..<24: return "evening"
+        default: return "late"
+        }
+    }
+
+    /// The week's dominant writing time: at least 3 written days with
+    /// session times, and one bucket carrying ≥60% of them.
+    static func shape(of sessions: [RSession], writtenDayCount: Int,
+                      calendar: Calendar = .current) -> WeeklySignal.Shape? {
+        guard !sessions.isEmpty else { return nil }
+        var daysByBucket: [String: Set<String>] = [:]
+        var timedDays = Set<String>()
+        for s in sessions {
+            let day = DayFormat.key(for: s.at)
+            let b = bucket(forHour: calendar.component(.hour, from: s.at))
+            daysByBucket[b, default: []].insert(day)
+            timedDays.insert(day)
+        }
+        guard timedDays.count >= 3,
+              let top = daysByBucket.max(by: {
+                  ($0.value.count, $1.key) < ($1.value.count, $0.key)
+              }),
+              top.value.count * 5 >= timedDays.count * 3 else { return nil }
+        return WeeklySignal.Shape(bucket: top.key, days: top.value.count, total: timedDays.count)
+    }
+
+    /// The longest single session ≥ 2 minutes.
+    static func longestSitting(in sessions: [RSession]) -> WeeklySignal.Sitting? {
+        let best = sessions.max {
+            $0.lastAt.timeIntervalSince($0.at) < $1.lastAt.timeIntervalSince($1.at)
+        }
+        guard let best, best.lastAt.timeIntervalSince(best.at) >= 120 else { return nil }
+        return WeeklySignal.Sitting(seconds: Int(best.lastAt.timeIntervalSince(best.at)),
+                                    day: DayFormat.key(for: best.at),
+                                    words: wordCount(best.text))
     }
 
     // MARK: Monthly
@@ -370,10 +509,99 @@ enum Reflect {
             }
         }
 
-        return MonthlySignal(id: String(format: "m-%04d-%02d", year, month),
-                             year: year, month: month,
-                             days: writtenDays.count, words: words, longestRun: longestRun,
-                             sufficient: sufficient, topics: topics, tone: tone, difficult: difficult)
+        var signal = MonthlySignal(id: String(format: "m-%04d-%02d", year, month),
+                                   year: year, month: month,
+                                   days: writtenDays.count, words: words, longestRun: longestRun,
+                                   sufficient: sufficient, topics: topics, tone: tone, difficult: difficult)
+
+        // Sequence beats (1.0.2) — juxtaposition and rhythm. Each stays nil
+        // without honest evidence; the sequence simply skips the slide.
+
+        // The month opened / the month closed: first sentence of the first
+        // entry against the last sentence of the last. No commentary — the
+        // distance speaks.
+        if all.count >= 2,
+           let first = sentences(all.first!.text).first, first.count <= 220,
+           let last = sentences(all.last!.text).last, last.count <= 220,
+           first != last {
+            signal.opened = RQuote(text: first, day: all.first!.day)
+            signal.closed = RQuote(text: last, day: all.last!.day)
+        }
+
+        // The turn: the tone leader changed between the halves of the month.
+        let firstHalf = all.filter { Int($0.day.suffix(2)) ?? 0 <= 15 }
+        let secondHalf = all.filter { Int($0.day.suffix(2)) ?? 0 > 15 }
+        if let from = toneLeader(in: firstHalf), let to = toneLeader(in: secondHalf), from != to {
+            signal.turn = MonthlySignal.Turn(from: from, to: to)
+        }
+
+        // People: recurring proper names — capitalized mid-sentence, never
+        // seen lowercase in the month (a real name rarely is), ≥3 distinct
+        // days. At most two; silence otherwise.
+        signal.people = recurringNames(in: all)
+
+        // Rhythm: written days per weekday plus the dominant writing time.
+        if writtenDays.count >= 8 {
+            var counts = [Int](repeating: 0, count: 7)
+            for k in writtenDays {
+                counts[calendar.component(.weekday, from: DayFormat.date(fromKey: k)) - 1] += 1
+            }
+            if let peak = counts.indices.max(by: { counts[$0] < counts[$1] }), counts[peak] >= 2 {
+                let monthSessions = keys.flatMap { corpus.sessions[$0] ?? [] }
+                let b = shape(of: monthSessions, writtenDayCount: writtenDays.count)?.bucket
+                signal.rhythm = MonthlySignal.Rhythm(weekdayCounts: counts, peakWeekday: peak, bucket: b)
+            }
+        }
+
+        // Spoken: sections that arrived by voice this month.
+        let spoken = keys.flatMap { corpus.sessions[$0] ?? [] }.filter { $0.origin == "spoken" }.count
+        if spoken > 0 { signal.spokenCount = spoken }
+
+        return signal
+    }
+
+    /// The dominant tone word (≥2 occurrences) of a set of entries.
+    static func toneLeader(in entries: [(day: String, text: String)]) -> String? {
+        let joined = entries.map { $0.text.lowercased() }.joined(separator: " ")
+        var best: (word: String, count: Int)? = nil
+        for w in toneWords {
+            let count = countMatches(of: "\\b\(w)\\b", in: joined)
+            if count >= 2 && count > (best?.count ?? 0) { best = (w, count) }
+        }
+        return best?.word
+    }
+
+    /// Proper names appearing on ≥3 distinct days: capitalized, ≥3 letters,
+    /// never sentence-initial, never seen lowercase anywhere in the period.
+    static func recurringNames(in all: [(day: String, text: String)]) -> [MonthlySignal.Person]? {
+        let calendarWords: Set<String> = Set(
+            ["January","February","March","April","May","June","July","August",
+             "September","October","November","December",
+             "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"])
+        let lowercaseCorpus = Set(all.flatMap { tokenize($0.text) })
+        var days: [String: Set<String>] = [:]
+        for entry in all {
+            for line in sentences(entry.text) {
+                var isFirst = true
+                for rawWord in line.split(whereSeparator: { !$0.isLetter && $0 != "'" }) {
+                    let word = String(rawWord.prefix(while: { $0 != "'" }))
+                    defer { isFirst = false }
+                    guard !isFirst, word.count >= 3,
+                          let head = word.first, head.isUppercase,
+                          word.dropFirst().allSatisfy({ $0.isLowercase }),
+                          !calendarWords.contains(word),
+                          !lowercaseCorpus.contains(word.lowercased())
+                    else { continue }
+                    days[word, default: []].insert(entry.day)
+                }
+            }
+        }
+        let ranked = days
+            .filter { $0.value.count >= 3 }
+            .sorted { ($0.value.count, $1.key) > ($1.value.count, $0.key) }
+            .prefix(2)
+            .map { MonthlySignal.Person(name: $0.key, days: $0.value.count) }
+        return ranked.isEmpty ? nil : Array(ranked)
     }
 
     // MARK: Yearly
