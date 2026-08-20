@@ -275,6 +275,7 @@ private struct AccountSlide: View {
 private struct TrialSlide: View {
     var live = true                       // false in replay: no StoreKit, no stamps
     var start: (_ restored: Bool) -> Void
+    @ObservedObject private var gate = TrialGate.shared
 
     var body: some View {
         VStack(spacing: Tokens.Space.md) {
@@ -308,6 +309,20 @@ private struct TrialSlide: View {
             .padding(.top, Tokens.Space.lg)
 
             Text("$39.99/year after trial · cancel anytime").typeMetaSmall()
+
+            // TestFlight/debug-only store diagnostic: if the product never
+            // loads, startTrial() takes the silent offline fallback and no
+            // purchase sheet can ever appear — this line makes that state
+            // visible instead of mysterious (QA 2026-08-20: "never seen
+            // the sheet in TestFlight"). App Store builds never show it.
+            if live && AppEnv.demoControls {
+                Text(gate.product == nil
+                     ? "store check: product not loaded — sheet cannot appear"
+                     : "store check: \(gate.product!.id) loaded ✓")
+                    .typeMetaSmall()
+                    .foregroundStyle(Tokens.Accent.capture)
+                    .onAppear { Task { await gate.refresh() } }
+            }
 
             Button {
                 Task {
