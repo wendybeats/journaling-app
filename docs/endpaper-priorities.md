@@ -12,6 +12,15 @@ Build-focused; marketing ops live in tools/content/hooks.md.*
 | Record content | On him — founder reflections script delivered + beat-mapped; W34 pack waiting on his footage. |
 | Global strategy: reflection over permanence | **NEW directive — biggest item on the board.** Reflection becomes the messaging spine; permanence becomes the supporting trait. Touches: hooks.md pillars, onboarding tutorial (P1), ASC screenshots + listing (P1), site hero, founder video (already reflections-first). Recap redesign (shipped) is the product-side proof. Needs one coherent messaging pass, not piecemeal edits. |
 
+**Russia / unpayable storefronts (decided 2026-08-21, build 13):** Apple
+takes no payments in RU, so the paywall could only ever lock that
+audience out for revenue that cannot exist. Endpaper is free on
+unpayable storefronts (`TrialGate.unpayableStorefronts`), with honest
+copy at onboarding. Reverts automatically if Apple restores payments.
+Growth note: the RU cohort can download, rate, and review — but App
+Store ratings display per storefront, so RU reviews build the RU
+listing, not the US one.
+
 Also P0-adjacent, missing from the list:
 - **CloudKit Production schema** — verify CD_Entry (and the new `origin`
   field's schema) is deployed to Production before 1.0.2 ships; a

@@ -280,10 +280,15 @@ private struct TrialSlide: View {
     var body: some View {
         VStack(spacing: Tokens.Space.md) {
             Spacer()
-            Text("A week, on me.")
+            // Where Apple processes no payments, there is no week to give
+            // and no price to name — the honest version of that page is a
+            // different page, not the same one with a dead button.
+            Text(gate.paymentsUnavailable ? "Endpaper is yours." : "A week, on me.")
                 .typeDisplay()
                 .multilineTextAlignment(.center)
-            Text("Every page, every reflection, free for seven days. After that, Endpaper is $39.99 a year — about the price of one good paper notebook.")
+            Text(gate.paymentsUnavailable
+                 ? "Apple doesn't process payments in your region, so Endpaper is free here — every page, every reflection, for as long as that's true."
+                 : "Every page, every reflection, free for seven days. After that, Endpaper is $39.99 a year — about the price of one good paper notebook.")
                 .typeWritten()
                 .multilineTextAlignment(.center)
 
@@ -299,7 +304,7 @@ private struct TrialSlide: View {
                     }
                 }
             } label: {
-                Text("Start my free week")
+                Text(gate.paymentsUnavailable ? "Start writing" : "Start my free week")
                     .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
                     .foregroundStyle(Tokens.Text.onInverted)
                     .frame(maxWidth: .infinity)
@@ -308,7 +313,9 @@ private struct TrialSlide: View {
             }
             .padding(.top, Tokens.Space.lg)
 
-            Text("$39.99/year after trial · cancel anytime").typeMetaSmall()
+            if !gate.paymentsUnavailable {
+                Text("$39.99/year after trial · cancel anytime").typeMetaSmall()
+            }
 
             // TestFlight/debug-only store diagnostic: if the product never
             // loads, startTrial() takes the silent offline fallback and no
@@ -324,15 +331,18 @@ private struct TrialSlide: View {
                     .onAppear { Task { await gate.refresh() } }
             }
 
-            Button {
-                Task {
-                    if live { await TrialGate.shared.restore() }
-                    start(true)
+            // Nothing to restore where nothing can be bought.
+            if !gate.paymentsUnavailable {
+                Button {
+                    Task {
+                        if live { await TrialGate.shared.restore() }
+                        start(true)
+                    }
+                } label: {
+                    Text("Restore purchase").typeMetaSmall()
                 }
-            } label: {
-                Text("Restore purchase").typeMetaSmall()
+                .padding(.top, Tokens.Space.xl)
             }
-            .padding(.top, Tokens.Space.xl)
             Spacer()
         }
         .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)

@@ -20,6 +20,23 @@ final class TrialGate: ObservableObject {
     @Published private(set) var subscribed = false
     @Published private(set) var product: Product?
 
+    /// Storefronts where Apple itself processes no payments — no paid
+    /// apps, no in-app purchase, no subscriptions, and no offer-code
+    /// redemption. Russia since March 2022. A paywall there can only ever
+    /// be a locked door: nobody can pay through it, and refusing access
+    /// forfeits the whole audience for revenue that cannot exist. So
+    /// Endpaper stays open instead (decided 2026-08-21). If Apple
+    /// restores payments, or the reader moves to a storefront that can
+    /// transact, the flag clears on the next refresh and the normal gate
+    /// applies — no grandfathering, no special case to unwind.
+    static let unpayableStorefronts: Set<String> = ["RUS"]
+
+    /// Cached so the very first frame after launch is already correct —
+    /// the storefront lookup is async, and a paywall must never flash in
+    /// front of someone who has no way to dismiss it.
+    @Published private(set) var paymentsUnavailable =
+        UserDefaults.standard.bool(forKey: AppKeys.paymentsUnavailable)
+
     private init() {
         Task { await refresh() }
         // Keep entitlement state current as transactions arrive (renewals,
@@ -35,6 +52,11 @@ final class TrialGate: ObservableObject {
     }
 
     func refresh() async {
+        if let code = await Storefront.current?.countryCode {
+            let unpayable = Self.unpayableStorefronts.contains(code)
+            paymentsUnavailable = unpayable
+            UserDefaults.standard.set(unpayable, forKey: AppKeys.paymentsUnavailable)
+        }
         product = try? await Product.products(for: [Self.yearlyID]).first
         subscribed = await currentEntitlementExists()
     }
@@ -55,6 +77,9 @@ final class TrialGate: ObservableObject {
     /// dismissed sheet returns false and onboarding stays put.
     func startTrial() async -> Bool {
         if product == nil { await refresh() }
+        // Nothing to purchase where Apple takes no payments — onboarding
+        // proceeds and the gate stays open for good.
+        if paymentsUnavailable { return true }
         guard let product else {
             // Store unreachable (offline first run): the app's own week,
             // so onboarding can't brick. The paywall at its end runs the
@@ -94,7 +119,7 @@ final class TrialGate: ObservableObject {
     /// The hard paywall's question. During development (no product loaded),
     /// the locally stamped week substitutes.
     var withinTrialOrSubscribed: Bool {
-        if subscribed { return true }
+        if subscribed || paymentsUnavailable { return true }
         guard let stamp = UserDefaults.standard.string(forKey: AppKeys.trial),
               let started = ISO8601DateFormatter().date(from: stamp) else { return false }
         return Date.now.timeIntervalSince(started) < 7 * 24 * 3600

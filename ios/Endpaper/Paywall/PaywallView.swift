@@ -23,7 +23,13 @@ struct PaywallView: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                Task { await gate.subscribe() }   // plain yearly purchase — the week is spent
+                Task {
+                    // A button that looks alive must not silently do
+                    // nothing: if the product never loaded, try once more
+                    // before the purchase (QA 2026-08-20).
+                    if gate.product == nil { await gate.refresh() }
+                    await gate.subscribe()   // plain yearly — the week is spent
+                }
             } label: {
                 Text("Keep writing")
                     .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
@@ -35,6 +41,15 @@ struct PaywallView: View {
             .padding(.top, Tokens.Space.lg)
 
             Text("\(priceLine) · cancel anytime").typeMetaSmall()
+
+            // The store can be unreachable (no signal, an outage). Say so,
+            // rather than leaving a button that appears to do nothing.
+            if gate.product == nil {
+                Text("The App Store isn't reachable right now. Your notebook is safe — try again in a moment.")
+                    .typeMetaSmall()
+                    .multilineTextAlignment(.center)
+                    .padding(.top, Tokens.Space.sm)
+            }
 
             Button {
                 Task { await gate.restore() }
@@ -57,6 +72,7 @@ struct PaywallView: View {
         .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
         .background(Tokens.Surface.page.ignoresSafeArea())
         .offerCodeRedemption(isPresented: $redeeming)
+        .task { await gate.refresh() }
     }
 
     private var priceLine: String {

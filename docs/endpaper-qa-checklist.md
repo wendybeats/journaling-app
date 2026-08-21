@@ -219,6 +219,25 @@ Round 3 — production candidate (2026-08-20, build 12):
       iCloud sync by up to 3 minutes — an uncommitted draft has nothing to
       sync. Revisit if cross-device users complain.
 
+## 14. Unpayable storefronts (build 13)
+
+Apple processes no payments in Russia (since March 2022): no paid apps,
+no IAP, no subscriptions, no offer codes. Endpaper stays open there
+rather than showing a door nobody can walk through.
+
+- [ ] With a Russian-storefront Apple ID: onboarding's trial slide reads
+      "Endpaper is yours." / "Apple doesn't process payments in your
+      region…", button says "Start writing", no price line, no Restore
+- [ ] Writing works; day 8 (or with the trial stamp cleared) shows NO
+      paywall — the notebook stays open
+- [ ] With a US storefront: unchanged — trial slide, Apple sheet, price,
+      paywall after the week
+- [ ] Airplane mode on a payable storefront: paywall says "The App Store
+      isn't reachable right now" instead of a silent dead button
+- [ ] Simulator check: Xcode → scheme → Options → StoreKit → the
+      `.storekit` config's Storefront setting can be switched to Russia
+      to exercise the branch without a Russian Apple ID
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not
