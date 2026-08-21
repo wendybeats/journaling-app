@@ -21,6 +21,19 @@ Growth note: the RU cohort can download, rate, and review — but App
 Store ratings display per storefront, so RU reviews build the RU
 listing, not the US one.
 
+**Font gap (verified 2026-08-21):** none of the four bundled faces —
+Newsreader, Newsreader-Italic, Instrument Sans, Fragment Mono — carry
+Cyrillic glyphs (cmap checked for U+0410/U+044F: absent in all four).
+Russian writing still renders (iOS cascades to a system face per glyph,
+no tofu) but lands in a different typeface than the page around it —
+and the writing register IS the product's identity. Same gap blocks
+Russian store screenshots in the brand faces. Decision needed before
+promoting to a Russian audience: bundle a Cyrillic-capable serif for
+the writing register (Literata / PT Serif / Source Serif 4 all cover
+Cyrillic and sit near Newsreader's warmth), or accept system fallback.
+Cheapest correct fix is one extra serif used only where user text
+renders.
+
 Also P0-adjacent, missing from the list:
 - **CloudKit Production schema** — verify CD_Entry (and the new `origin`
   field's schema) is deployed to Production before 1.0.2 ships; a
