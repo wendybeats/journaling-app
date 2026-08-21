@@ -117,6 +117,27 @@ pillars beyond the product families above:
 
 Mix guide: pillars carry the page, product promos stay ≤1 in 4 posts.
 
+## Question cuts (format, added 2026-08-21)
+
+Deep-question Reels through the same quote-motion renderer — the typed
+line is a QUESTION, no attribution, emphasis press on the loaded phrase.
+Mirrors the app's own "You asked yourself" recap beat, and questions
+convert to comments better than statements.
+
+- Bench: tools/content/cards/questions.json (8 seeded). Same
+  no-repeat/Live-log rules as quotes.
+- Caption format (hand-written; the renderer's "Thought of…" caption
+  does NOT apply): `Asked myself on {Weekday}, {Mon} {D}th at {time}`
+- First comment: standard ("I wrote this in the Endpaper app").
+- Slotting: 1–2 per week replacing a quote slot (not additive), and the
+  bench-empty bridge. Confrontational questions take dark/evening,
+  softer ones light/morning — same polarity rule as quotes.
+- DEBUT: Sunday Aug 23 — dark = "pretending not to know", light =
+  "almost saying". Quote bench empties Saturday; questions bridge until
+  restock + Wendell's weekend raw content.
+- Founder video 1: recorded, HELD until 1.0.2 is live on the App Store
+  (his call — promote the new build, not the old one).
+
 ## Signals
 
 - 2026-08-20: **Kierkegaard "anxiety/freedom" light: 1.5x baseline
