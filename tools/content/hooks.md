@@ -140,6 +140,13 @@ convert to comments better than statements.
 
 ## Signals
 
+- 2026-08-21 (Eden mining): two format signals from the outlier sweep.
+  (1) The quarter's biggest stoic-quote outlier (23.7x, 593k views,
+  @theeverydaystoic) is FOUR SECONDS long — a single Seneca line on a
+  book page. Ultra-short = loop-completion rate; our cuts run ~15s.
+  Worth one test: a 5-6s single-line cut (type-on already fast, trim the
+  hang). (2) A 91x outlier (@jayhiette) is a "do these alone" solitude
+  LISTICLE — adjacent audience, different lane; noted, not ours yet.
 - 2026-08-20: **Kierkegaard "anxiety/freedom" light: 1.5x baseline
   reach** (posted Aug 19 ~21:00 EEST, US Wed morning). First bench line
   opening on a single charged noun ("Anxiety…") — and the frame-one
