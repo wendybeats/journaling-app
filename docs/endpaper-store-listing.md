@@ -96,3 +96,31 @@ set in Instrument Sans Medium above — same system as the site hero.
 
 - Primary: **Lifestyle** · Secondary: **Productivity**
 - Age rating: 4+ (questionnaire: all "none")
+
+## v3 screenshot set (2026-08-21) — lockups, not captions
+
+Rendered by `tools/content/render-appstore-v3.mjs` through
+`appstore/compose-v3.html`, in the reflections-deck grammar: one
+statement per canvas, three registers, the layout changing shape shot to
+shot, the dot punctuating twice across six. The product appears as an
+element in a composition — a card face, a cropped device, a fanned deck
+— rather than a rectangle with a headline above it.
+
+| # | Slug | Layout | Theme | Claim |
+|---|---|---|---|---|
+| 1 | reads-you-back | statement + cropped dot + angled device | light | The journal that reads you back. |
+| 2 | you-write-it-reads | ghost → ink split, type only | dark | You write. / It reads you back. |
+| 3 | kept-surfacing | one reflection card, tilted | light | Your week, in your own words. |
+| 4 | next-session | kicker chip + question card | light | Know what to bring to your next session. |
+| 5 | your-week-handed-back | three cards fanned with depth | dark | Your week, handed back. |
+| 6 | sealed-at-midnight | statement + device bleeding off | dark | Sealed at midnight. Yours for good. |
+
+Sizes: 1320×2868, 1290×2796, 1284×2778 (iPhone-only app — no iPad set
+required). Upload with the 1.0.2 submission; screenshots for a live app
+only change with a version.
+
+Notes for future edits: card faces are HTML in the compositor, not
+captures, so copy changes are text edits. `--card-face`/`--card-ink`
+flip with the page theme so a card always opposes its ground. Cyrillic
+is NOT available in the bundled faces — Russian-localized screenshots
+need a Cyrillic companion serif first (see priorities doc).

@@ -1,0 +1,284 @@
+<!doctype html>
+<!-- App Store screenshots, v3 — lockups in the reflections-card grammar.
+     Not captioned screenshots: each canvas is a composition where the
+     product appears as an element (a card face, a cropped device, a
+     fanned deck), following the deck rules — one statement per screen,
+     three registers, layout varying shot to shot, the dot punctuating
+     once. Driven by render-appstore-v3.mjs (body class picks the
+     variant; content injected by id). All units are vw/vh so one sheet
+     serves every required size. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Instrument Sans';
+    src: url('../../../fonts/InstrumentSans.woff2') format('woff2');
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader.woff2') format('woff2');
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Newsreader';
+    src: url('../../../fonts/Newsreader-italic.woff2') format('woff2');
+    font-style: italic; font-weight: 100 900;
+  }
+  @font-face {
+    font-family: 'Fragment Mono';
+    src: url('../../../fonts/FragmentMono.woff2') format('woff2');
+  }
+
+  :root {
+    --bone: #E8E6E1;
+    --bone-raised: #F1EFEA;
+    --ink: #1A1A1A;
+    --ink-soft: #262320;
+    --graphite: #4A4843;
+    --stone: #A9A6A0;
+    --hairline: #C9C6BF;
+    --rose: #C2685C;
+    --page: var(--bone);
+    --type: var(--ink);
+    --meta: var(--stone);
+    --rule: var(--hairline);
+    /* A card always opposes its ground — a dark card on a dark page is
+       an invisible card. */
+    --card-face: #161514;
+    --card-ink: #E8E6E1;
+    --card-meta: rgba(232,230,225,0.62);
+    --card-line: rgba(232,230,225,0.28);
+  }
+  html.dark {
+    --page: #161514;
+    --type: #E8E6E1;
+    --meta: #6B6862;
+    --rule: #332F2B;
+    --rose: #D07A6C;
+    --card-face: #E8E6E1;
+    --card-ink: #1A1A1A;
+    --card-meta: rgba(26,26,26,0.55);
+    --card-line: rgba(26,26,26,0.25);
+  }
+
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    background: var(--page);
+    color: var(--type);
+    font-family: 'Instrument Sans', sans-serif;
+    position: relative;
+  }
+
+  /* ---------- registers ---------- */
+  .kicker {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 2.5vw; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--meta);
+  }
+  .kicker.chip {
+    display: inline-block;
+    border: 1px solid var(--rule);
+    border-radius: 99vw;
+    padding: 1.2vw 3vw;
+  }
+  .stmt {
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600; letter-spacing: -0.025em; line-height: 1.02;
+    font-size: 9.4vw;
+  }
+  .stmt.sm { font-size: 7.6vw; }
+  .said {
+    font-family: 'Newsreader', serif; font-style: italic;
+    line-height: 1.12; letter-spacing: -0.01em;
+  }
+  .meta {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 2.3vw; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--meta);
+  }
+  /* The sub sits under a statement, not against it. */
+  #sub { margin-top: 3vw; }
+  #kicker:not(:empty) { margin-bottom: 3vw; }
+  .ghost {
+    color: transparent;
+    -webkit-text-stroke: 0.42vw var(--type);
+    opacity: 0.8;
+  }
+  /* A quiet line at the foot — balances compositions whose subject sits
+     high, without adding a second claim. */
+  .foot {
+    position: absolute; bottom: 9vh; left: 7vw; right: 7vw;
+    text-align: center;
+  }
+
+  /* ---------- the dot: punctuation, once ---------- */
+  .dot {
+    position: absolute; border-radius: 50%;
+    background: var(--type);
+  }
+
+  /* ---------- hardware device ---------- */
+  .scene { perspective: 300vw; position: absolute; }
+  .phone {
+    position: relative; width: 74vw;
+    transform-style: preserve-3d;
+    filter: drop-shadow(4vw 5vw 7vw rgba(0,0,0,0.22));
+  }
+  .band {
+    border-radius: 11.5vw; padding: 1vw;
+    background: linear-gradient(115deg,
+      #b9b7b2 0%, #f5f4f1 18%, #d6d4d0 38%,
+      #a9a7a2 55%, #e9e7e3 78%, #c2c0bb 100%);
+  }
+  .bezel { position: relative; border-radius: 10.6vw; background: #050505; padding: 2.2vw; }
+  .screen { position: relative; border-radius: 8.6vw; overflow: hidden; background: var(--page); }
+  .screen img { display: block; width: 100%; margin-top: 10.6vw; }
+  .island {
+    position: absolute; top: 2.9vw; left: 50%; transform: translateX(-50%);
+    width: 20.5vw; height: 6.2vw; border-radius: 3.5vw; background: #050505; z-index: 3;
+  }
+  .sheen {
+    position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(115deg,
+      rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 28%, rgba(255,255,255,0) 45%);
+  }
+
+  /* ---------- recap card face ---------- */
+  .card {
+    background: var(--card-face); color: var(--card-ink);
+    border-radius: 6vw;
+    padding: 7vw 5vw 6vw;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 4vw 9vw rgba(0,0,0,0.28);
+  }
+  .card .kicker, .card .meta { color: var(--card-meta); }
+  .card .grab {
+    width: 9vw; height: 1vw; border-radius: 1vw;
+    background: var(--card-line); margin-bottom: 5vw;
+  }
+  .card .pager { display: flex; gap: 1.4vw; margin-top: 5vw; }
+  .card .pager i { width: 1.1vw; height: 1.1vw; border-radius: 50%; background: var(--card-line); }
+  .card .pager i.on { background: var(--card-ink); }
+
+  /* ================= VARIANTS ================= */
+  body > .stage { position: absolute; inset: 0; }
+
+  /* 1 — opener: left-set statement, cropped dot, device rising bottom-left */
+  body.v-opener .head {
+    position: absolute; top: 11vh; left: 7vw; right: 7vw;
+  }
+  body.v-opener .dot {
+    width: 50vw; height: 50vw; right: -15vw; top: 26vh;
+  }
+  body.v-opener .scene {
+    left: 9vw; bottom: -11vh;
+  }
+  body.v-opener .phone { transform: rotateY(11deg) rotateZ(-5deg); width: 80vw; }
+
+  /* 2 — the split: ghost above, ink below, hairline between. Type only. */
+  body.v-split .wrap {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5vh; padding: 0 7vw;
+  }
+  body.v-split .rule { width: 62vw; height: 1px; background: var(--rule); }
+  body.v-split .foot { position: absolute; bottom: 9vh; left: 0; right: 0; text-align: center; }
+
+  /* 3 — the card: one reflection beat, held large and tilted */
+  body.v-card .head { position: absolute; top: 10vh; left: 7vw; right: 7vw; text-align: center; }
+  body.v-card .cardwrap {
+    position: absolute; left: 5vw; right: 5vw; top: 27vh;
+    transform: rotate(-3deg);
+  }
+
+  /* 4 — the question: kicker chip, statement, the beat as a quoted card */
+  body.v-question .head { position: absolute; top: 10vh; left: 7vw; right: 7vw; }
+  body.v-question .cardwrap {
+    position: absolute; left: 6vw; right: 6vw; top: 33vh;
+    transform: rotate(1.5deg);
+  }
+  body.v-question .dot { width: 34vw; height: 34vw; left: -12vw; bottom: 6vh; opacity: 0.9; }
+
+  /* 5 — the deck: three card faces fanned with depth (the dynamic shot) */
+  body.v-fan .head { position: absolute; top: 9vh; left: 7vw; right: 7vw; text-align: center; }
+  body.v-fan .fan { position: absolute; left: 0; right: 0; top: 24vh; height: 60vh; }
+  body.v-fan .fan .card {
+    position: absolute; left: 9vw; right: 9vw;
+    transform-origin: 50% 100%;
+  }
+  /* The cards behind are depth, not a second thing to read: dimmed far
+     enough that only their edges register. */
+  body.v-fan .fan .card:nth-child(1) {
+    top: 0; left: 6vw; right: 13vw;
+    transform: rotate(-7.5deg) scale(0.9); opacity: 0.22;
+  }
+  body.v-fan .fan .card:nth-child(2) {
+    top: 8vh; left: 13vw; right: 6vw;
+    transform: rotate(5deg) scale(0.95); opacity: 0.42;
+  }
+  body.v-fan .fan .card:nth-child(3) { top: 17vh; transform: rotate(-1.5deg); }
+
+  /* 6 — closer: statement top, device bleeding off the bottom edge */
+  body.v-closer .head { position: absolute; top: 10vh; left: 7vw; right: 7vw; text-align: center; }
+  body.v-closer .scene { left: 13vw; bottom: -12vh; }
+  body.v-closer .phone { width: 74vw; transform: rotateX(4deg); }
+
+  .hide { display: none !important; }
+</style>
+</head>
+<body class="v-opener">
+  <div class="stage">
+    <div class="dot" id="dot"></div>
+
+    <div class="head" id="head">
+      <div class="kicker" id="kicker"></div>
+      <div class="stmt" id="stmt"></div>
+      <div class="meta" id="sub"></div>
+    </div>
+
+    <!-- variant 2 -->
+    <div class="wrap hide" id="wrap">
+      <div class="stmt ghost" id="ghostLine"></div>
+      <div class="rule"></div>
+      <div class="stmt" id="inkLine"></div>
+      <div class="meta foot" id="splitFoot"></div>
+    </div>
+
+    <!-- variants 3 / 4 -->
+    <div class="cardwrap hide" id="cardwrap">
+      <div class="card">
+        <div class="grab"></div>
+        <div class="kicker" id="cardKicker"></div>
+        <div class="said" id="cardBig" style="font-size: 13vw; margin-top: 4vw;"></div>
+        <div class="meta" id="cardMeta" style="margin-top: 3.5vw;"></div>
+        <div class="said" id="cardQuote"
+             style="font-size: 4.4vw; margin-top: 5vw; text-align: center; opacity: 0.92;"></div>
+        <div class="pager"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+
+    <!-- variant 5 -->
+    <div class="fan hide" id="fan"></div>
+
+    <div class="meta foot hide" id="foot"></div>
+
+    <!-- device -->
+    <div class="scene hide" id="scene">
+      <div class="phone">
+        <div class="band">
+          <div class="bezel">
+            <div class="island"></div>
+            <div class="screen">
+              <div class="sheen"></div>
+              <img id="screen" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
