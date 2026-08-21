@@ -55,47 +55,52 @@ private struct SeededRNG {
 
 enum DebugSeed {
 
-    // Sentence pools, loosely grouped so words recur across days the way a
-    // real notebook's do. Content is filler; the recurrence is the point.
+    // Sentence pools, grouped so words recur across days the way a real
+    // notebook's do — the recurrence is what the reflection engine reads.
+    // The threads are deliberately the ones most people carry (sleep,
+    // attention, the person they live with, money) so anyone opening the
+    // demo recognises their own week rather than admiring someone else's.
     private static let pools: [[String]] = [
-        [ // work
-            "Long day at the studio and the project is still fighting me.",
-            "Shipped the draft I'd been circling for a week. Lighter already.",
-            "Meetings ate the morning. The afternoon was mine and I wasted it.",
-            "The project turned a corner today. Small corner, but a corner.",
-            "Said no to a thing I would have said yes to a year ago.",
+        [ // sleep — the four a.m. thread
+            "Woke at four again with my jaw already clenched. Nothing was wrong.",
+            "Third night falling asleep with the phone in my hand. That isn't sleep, it's lying down with the lights off.",
+            "Slept seven hours and woke up steady. One night doesn't prove anything, but I'll take it.",
+            "Tired in a way that sleep doesn't fix. Naming it here so it's somewhere other than my chest.",
+            "Left the phone charging in the kitchen overnight. Slept through until six.",
         ],
-        [ // running / body
-            "Ran the long loop before breakfast. Legs heavy, head clear.",
-            "Skipped the run. Regretted it by ten.",
-            "The run was terrible and I'm glad I went.",
-            "New shoes, same hill. The hill is undefeated.",
-            "Slept badly and felt it all day. Short fuse.",
+        [ // attention
+            "Read the same paragraph four times and gave up. I used to sit with a book for an hour.",
+            "Put the phone in the other room for two hours and got more done than the whole day before it.",
+            "Checked my phone through most of dinner. Nobody said anything, which was worse.",
+            "Focus came back for about ninety minutes this afternoon. I remember this feeling.",
+            "The thing I'm avoiding takes twenty minutes. I've now spent four days not doing twenty minutes.",
         ],
-        [ // the boat (the classic Endpaper demo thread)
-            "Spent an hour on the boat after dinner. The hull needs more work than I thought.",
-            "Ordered the paint for the boat. Committing to the color felt bigger than it is.",
-            "The boat again. I keep going back to it like a question I haven't answered.",
-            "Sanded the hull until my arms gave out. Good tired.",
+        [ // Sam — the person across the table
+            "Sam said I've been somewhere else all week. I wanted to argue and couldn't.",
+            "Snapped at Sam about the dishes. It was never about the dishes.",
+            "Sam made coffee without asking and left it by the laptop. I noticed and said nothing.",
+            "Sam asked what I actually want this year and I gave an answer I've given before.",
+            "Better evening with Sam. We didn't fix anything, we just stopped circling.",
         ],
-        [ // family / people
-            "Called Mom. She told the story about the lake house again and I let her.",
-            "Dinner with June. We talked about moving and didn't decide anything.",
-            "The kids were loud and the house felt full in the good way.",
-            "Old friend in town. Three hours felt like twenty minutes.",
+        [ // money and work
+            "Worried about money in a way that has nothing to do with the number in the account.",
+            "Anxious all morning about a meeting that lasted nine minutes and went fine.",
+            "Money is fine this month. I checked the balance four times anyway.",
+            "Ran into an old coworker and performed being happy for eleven minutes. Exhausting.",
+            "Said the thing in the meeting and it landed. I still replayed it the whole way home.",
         ],
         [ // noticing
-            "The light on the kitchen wall at six was worth writing down. So here it is.",
-            "Rain all day. The kind that makes the house feel like a boat.",
-            "First cold morning. Summer left without saying anything.",
-            "Nothing happened today, which is its own kind of thing to notice.",
-            "Read on the porch until the light went. Didn't check my phone once.",
+            "Told my therapist I'm fine and heard how fast I said it.",
+            "A quiet day, nothing to report. I notice I don't entirely trust quiet days.",
+            "Walked instead of taking the bus. Those twenty minutes were the only ones that were mine.",
+            "Wrote the worry down and it got about ten percent smaller. Apparently that's the trick.",
         ],
-        [ // inner weather
-            "Tired, but the honest kind of tired that comes from doing the thing.",
-            "Anxious about the fall. Wrote it down to make it smaller.",
-            "Caught myself hurrying for no reason. Slowed down on purpose.",
-            "Grateful, mostly. Trying not to inspect it too hard.",
+        [ // inner weather — the questions and the tone words
+            "Am I anxious about the work, or about what people will decide about me because of it?",
+            "Why do I keep replaying what Sam said on Sunday?",
+            "When did I stop being able to read for twenty minutes?",
+            "Steady today. Not happy exactly — steady. That seems worth protecting.",
+            "Anxious morning, ordinary afternoon. The gap between them is where I live.",
         ],
     ]
 

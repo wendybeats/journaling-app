@@ -10,7 +10,7 @@ import { el, reducedMotion, countdownBar, intertitle, quoteNode, runSequence } f
 
 const MATRIX_DOT_STAGGER_MS = 14;
 const MATRIX_MS = 6000;
-const STATS_MS = 6000;
+const WRAPPED_STATS_MS = 6000;
 const TOPICS_MS = 6000;
 const REVEAL_MS = 7000;
 
@@ -130,7 +130,7 @@ export function showWrapped(signal, { onDone } = {}) {
       });
       center.append(...stats);
       slide.appendChild(center);
-      const bar = countdownBar(STATS_MS, advance);
+      const bar = countdownBar(WRAPPED_STATS_MS, advance);
       slide.appendChild(bar.el);
 
       return {

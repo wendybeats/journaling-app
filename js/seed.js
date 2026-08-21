@@ -5,31 +5,38 @@ import { dayKey, replaceAll } from './store.js';
 import { resetReflections, lastCompletedWeekStart } from './reflect.js';
 import { resetReminder } from './views/reminder.js';
 
+// The demo notebook is the pitch: a stranger should recognise their own
+// week in it within one screen. So the threads are the ones most people
+// actually carry — sleep, attention, the person they live with, money —
+// written plainly and without resolution. Words recur on purpose: the
+// reflection engine can only surface what repeats.
 const SNIPPETS = [
-  'Woke before the alarm again. There is a particular quality to the hour before anyone needs anything from me — I want to protect it better than I have been.',
-  'Long call with the team about the roadmap. I keep noticing how much of my job is just saying the same true thing patiently, in different rooms.',
-  'Walked the long way home past the harbor. The water was completely flat and I stood there longer than I meant to.',
-  'Reading before bed instead of scrolling, night four. The difference in how mornings feel is not subtle.',
-  'The essay is fighting me. I think the problem is that I am trying to sound smart instead of trying to be clear.',
-  'Coffee with Dana. She asked what I would build if nobody was watching, and I did not have a fast answer. Sitting with that.',
-  'Shipped the thing. Quietly, no announcement. It felt better that way — the work as its own punctuation.',
-  'Rain all day. Stayed in and cleaned the studio. There is thinking that only happens while the hands are busy.',
-  'I keep circling the same idea in different notebooks. Maybe the repetition is the point — the thought is trying to finish itself.',
-  'Bad sleep, short fuse. Noted without judgment, mostly.',
-  'The morning pages are getting easier. Less clearing of the throat before the actual sentence arrives.',
-  'Dinner with the family. Dad told the story about the boat again and I realized I would miss the retelling more than the story.',
-  'Deleted three features from the spec today. Each one hurt for about a minute and then the whole thing got lighter.',
-  'A good day, ordinary in every particular. Worth writing down precisely because there is nothing to report.',
-  'Ran in the cold. First kilometer was a negotiation, the rest was a gift.',
-  'Thinking about restraint as a discipline rather than a preference. What would this look like if it were harder to do less?',
-  'The draft finally cracked open around noon. Two hours disappeared. This is the feeling I am always trying to get back to.',
-  'Argued my position too hard in the review. The point survived; the tone should have been softer. Tomorrow: repair.',
-  'New month. Looking at the grid of days behind me and feeling something between pride and appetite.',
-  'Spent the evening with the lights low, doing nothing defensible. Necessary.',
-  'The idea from the shower survived contact with paper, which almost never happens.',
-  'Slow start, strong finish. The afternoon self keeps rescuing the morning self and neither of them thanks the other.',
-  'Called an old friend instead of texting. Forty minutes. Should be a rule, not an exception.',
-  'Small vow, recorded here so it counts: no new projects until this one is done being loved.',
+  'Woke at four again with my jaw already clenched. Nothing was wrong. The body just decided it was time to worry.',
+  'Third night falling asleep with the phone in my hand. That is not sleep, it is just lying down with the lights off.',
+  'Sam said I have been somewhere else all week. I wanted to argue and could not, which is its own answer.',
+  'Read the same paragraph four times and gave up. I used to be able to sit with a book for an hour.',
+  'Worried about money in a way that has nothing to do with the number actually in the account.',
+  'Anxious all morning about a meeting that lasted nine minutes and went fine.',
+  'Put the phone in the other room for two hours and got more done than the whole day before it.',
+  'Told my therapist I am fine and heard how fast I said it.',
+  'Sam made coffee without asking and left it by the laptop. I noticed and did not say anything.',
+  'Slept seven hours and woke up steady. One night does not prove anything, but I will take it.',
+  'Checked my phone through most of dinner. Nobody said anything, which was worse than if they had.',
+  'The thing I am avoiding takes twenty minutes. I have now spent four days not doing twenty minutes.',
+  'Snapped at Sam about the dishes. It was never about the dishes.',
+  'Enough.',
+  'Money is fine this month. I still checked the balance four times.',
+  'Focus came back for about ninety minutes this afternoon. I remember this feeling and I want more of it.',
+  'Ran into an old coworker and performed being happy for eleven minutes. Exhausting in a way I could not explain after.',
+  'Sam asked what I actually want this year and I gave an answer I have given before. It was not true then either.',
+  'Left the phone charging in the kitchen overnight. Slept through until six.',
+  'A quiet day, nothing to report. I notice that I do not entirely trust quiet days.',
+  'Tired in a way that sleep does not fix. Naming it here so it is somewhere other than my chest.',
+  'Why do I keep replaying what Sam said on Sunday?',
+  'Am I anxious about the work, or about what people will decide about me because of it?',
+  'Walked instead of taking the bus. Those twenty minutes were the only ones today that were mine.',
+  'Steady today. Not happy exactly — steady. That seems like the thing to protect.',
+  'Wrote the worry down and it got maybe ten percent smaller. Apparently that is the whole trick.',
 ];
 
 // Small deterministic PRNG so the demo data is stable across reloads
@@ -80,6 +87,20 @@ export function seedDemoData() {
     while (parts.size < 3) parts.add(SNIPPETS[Math.floor(rand() * SNIPPETS.length)]);
     data[key] = [{ id: crypto.randomUUID(), at, text: [...parts].join('\n\n') }];
   }
+
+  // Today is chosen, not rolled. It's the page every first impression and
+  // every marketing shot is taken from, and the dice sometimes leave it
+  // empty — so it carries two sections that show what the notebook is
+  // actually about.
+  const tKey = dayKey(today);
+  const atToday = (h, m) =>
+    new Date(today.getFullYear(), today.getMonth(), today.getDate(), h, m).getTime();
+  data[tKey] = [
+    { id: crypto.randomUUID(), at: atToday(7, 12),
+      text: 'Woke at four again with my jaw already clenched. Nothing was wrong. The body just decided it was time to worry.\n\nThird night falling asleep with the phone in my hand. That is not sleep, it is just lying down with the lights off.' },
+    { id: crypto.randomUUID(), at: atToday(9, 40),
+      text: 'Sam said I have been somewhere else all week. I wanted to argue and could not, which is its own answer.' },
+  ];
 
   replaceAll(data);
   resetReflections(); // demo starts with the consent moment fresh

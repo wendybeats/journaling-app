@@ -47,11 +47,13 @@ const SHOTS = [
   {
     slug: 'kept-surfacing', variant: 'card', scheme: 'light',
     stmt: 'Your week, in your own words.',
+    // The thread has to be one a stranger recognises in themselves —
+    // sleep and the phone carry the anxiety and the attention at once.
     card: {
-      kicker: 'Kept surfacing', big: '“the boat”', bigSize: '13vw',
+      kicker: 'Kept surfacing', big: '“sleep”', bigSize: '14vw',
       meta: '6 times · across 4 days',
-      quote: 'The boat again. I keep going back to it like a question I haven’t answered.',
-      quoteSize: '4.4vw',
+      quote: 'Third night falling asleep with the phone in my hand. That isn’t sleep, it’s lying down with the lights off.',
+      quoteSize: '4.2vw',
     },
     foot: 'every sunday · drawn from what you wrote',
   },
@@ -61,7 +63,7 @@ const SHOTS = [
     stmt: 'Know what to bring to your next session.', stmtSmall: true,
     card: {
       kicker: 'You asked yourself',
-      quote: 'Am I actually tired of the work, or just the commute?',
+      quote: 'Why do I keep replaying what Sam said on Sunday?',
       quoteSize: '6.6vw',
     },
     dot: true,
@@ -70,8 +72,8 @@ const SHOTS = [
     slug: 'your-week-handed-back', variant: 'fan', scheme: 'dark',
     stmt: 'Your week, handed back.',
     fan: [
+      { kicker: 'One name kept appearing', big: 'Sam', bigSize: '12vw', meta: '9 days this month' },
       { kicker: 'You wrote this large', big: 'Enough.', bigSize: '11vw', meta: 'Tuesday · 11:04 PM' },
-      { kicker: 'Your longest sitting', big: '22:41', bigSize: '12vw', meta: '512 words' },
       { kicker: 'Reflections — your week', big: 'Evening writer.', bigSize: '9vw', meta: '4 of 5 nights · after 9 pm' },
     ],
     foot: 'five moments · one week · your words',
@@ -104,10 +106,38 @@ for (const scheme of ['light', 'dark']) {
     localStorage.setItem('endpaper.onboarded.v1', '1');
     localStorage.setItem('endpaper.trial.v1', JSON.stringify({ startedAt: Date.now() }));
   });
+  // The seeded notebook lives in memory, so the capture happens on this
+  // one load — navigating away empties it.
   await page.goto(appURL + '#today');
+  await page.waitForTimeout(700);
+
+  // The preview keeps state in an in-memory shim, so the onboarded flag
+  // can't be pre-set from outside — walk the onboarding the way a reader
+  // would (tutorial → account → trial) until the writing page appears.
+  // The Today view stays mounted behind the onboarding overlay, so the
+  // page's own text can't tell us whether onboarding is done. Drive it
+  // by its controls instead: click one, repeat until none is left.
+  for (let step = 0; step < 10; step++) {
+    const clicked = await page.evaluate(() => {
+      // Prefix match, not exact: these labels carry trailing glyphs
+      // ("Continue without an account →").
+      const advance = /^(skip|continue without an account|start my free week|continue|next|begin|got it|start writing)\b/i;
+      const btn = [...document.querySelectorAll('button, a, [role="button"]')].find(b => {
+        const t = (b.textContent || '').trim();
+        return advance.test(t) && !/restore/i.test(t) && b.offsetParent !== null;
+      });
+      if (btn) { btn.click(); return true; }
+      return false;
+    });
+    if (!clicked) break;
+    await page.waitForTimeout(600);
+  }
+  // No hash reset here: re-rendering the route restarts onboarding.
+  await page.waitForTimeout(500);
+
   await page.addStyleTag({ content: HIDE });
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(400);
   await page.screenshot({ path: `${raw}/today-${scheme}.png` });
   await ctx.close();
 }
