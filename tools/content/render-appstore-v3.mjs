@@ -12,7 +12,7 @@
 //   sizesCsv: e.g. "1284x2778" for one size (default: all three)
 
 import { chromium } from 'playwright';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -21,6 +21,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
 const out = resolve(process.argv[2] || resolve(here, 'out'));
 mkdirSync(out, { recursive: true });
+
+// Shots carry their index in the filename, so reordering the set leaves
+// stale files behind that look like part of it. Clear ours first.
+for (const f of readdirSync(out)) {
+  if (/^appstore-v3-.*\.png$/.test(f)) rmSync(resolve(out, f));
+}
 
 const raw = resolve(tmpdir(), 'endpaper-appstore-raw-v3');
 mkdirSync(raw, { recursive: true });
@@ -56,6 +62,16 @@ const SHOTS = [
       quoteSize: '4.2vw',
     },
     foot: 'every sunday · drawn from what you wrote',
+  },
+  {
+    slug: 'say-it-out-loud', variant: 'voice', scheme: 'dark',
+    stmt: 'Some days you’d rather say it.', stmtSmall: true,
+    voice: {
+      title: 'Spoken · Aug 21',
+      timer: '00:14.59',
+      text: '“I keep saying I’m fine and I don’t think I am.”',
+    },
+    foot: 'transcribed on your device · no audio kept',
   },
   {
     slug: 'next-session', variant: 'question', scheme: 'light',
@@ -190,6 +206,27 @@ for (const [sizeName, viewport] of SIZES) {
         set($('cardMeta'), c.meta);
         set($('cardQuote'), c.quote);
         if (c.quoteSize) $('cardQuote').style.fontSize = c.quoteSize;
+      }
+
+      // the voice card — a seismograph that reads as a real take: flat
+      // through the pauses, spiking where the voice is.
+      show($('voicewrap'), !!shot.voice);
+      if (shot.voice) {
+        set($('vTitle'), shot.voice.title);
+        set($('vTimer'), shot.voice.timer);
+        set($('vText'), shot.voice.text);
+        const amps = [0,0,0,.05,.02,.3,.75,.45,.9,.55,.35,.7,.28,.12,.05,.02,0,0,
+                      .04,.22,.6,.95,.5,.8,.4,.65,.3,.15,.06,.02,0,0,0,.03,.18,
+                      .5,.3,.62,.25,.4,.15,.08,.03,0,0,0,0,0];
+        const pts = amps.map((a, i) => {
+          const x = (i / (amps.length - 1)) * 100;
+          const y = 15 - (i % 2 ? 1 : -1) * a * 13.5;
+          return `${x.toFixed(2)},${y.toFixed(2)}`;
+        }).join(' ');
+        $('vWave').innerHTML =
+          `<polyline points="${pts}" fill="none" stroke="var(--rose)"
+             stroke-width="1.4" vector-effect="non-scaling-stroke"
+             stroke-linejoin="round" />`;
       }
 
       // 5 — the fanned deck

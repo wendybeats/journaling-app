@@ -111,9 +111,13 @@ element in a composition — a card face, a cropped device, a fanned deck
 | 1 | reads-you-back | statement + cropped dot + angled device | light | The journal that reads you back. |
 | 2 | you-write-it-reads | ghost → ink split, type only | dark | You write. / It reads you back. |
 | 3 | kept-surfacing | one reflection card, tilted | light | Your week, in your own words. |
-| 4 | next-session | kicker chip + question card | light | Know what to bring to your next session. |
-| 5 | your-week-handed-back | three cards fanned with depth | dark | Your week, handed back. |
-| 6 | sealed-at-midnight | statement + device bleeding off | dark | Sealed at midnight. Yours for good. |
+| 4 | say-it-out-loud | voice card: rose seismograph + transcript | dark | Some days you'd rather say it. |
+| 5 | next-session | kicker chip + question card | light | Know what to bring to your next session. |
+| 6 | your-week-handed-back | three cards fanned with depth | dark | Your week, handed back. |
+| 7 | sealed-at-midnight | statement + device bleeding off | dark | Sealed at midnight. Yours for good. |
+
+Seven shots (ASC allows up to 10 per size). Themes alternate
+L-D-L-D-L-D-D and no two neighbours share a layout.
 
 Sizes: 1320×2868, 1290×2796, 1284×2778 (iPhone-only app — no iPad set
 required). Upload with the 1.0.2 submission; screenshots for a live app
