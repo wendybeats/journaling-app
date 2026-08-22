@@ -79,6 +79,9 @@ final class VoiceCapture: ObservableObject {
         let req = SFSpeechAudioBufferRecognitionRequest()
         req.shouldReportPartialResults = true
         req.requiresOnDeviceRecognition = true
+        // Spoken pages arrived as one long run-on; let the recogniser
+        // punctuate them.
+        req.addsPunctuation = true
         request = req
 
         let input = engine.inputNode
@@ -128,10 +131,10 @@ final class VoiceCapture: ObservableObject {
                         // before it. (QA 2026-08-18.)
                         if spoken.count < self.lastSpoken.count,
                            !self.lastSpoken.hasPrefix(spoken) {
-                            self.folded = Self.join(self.folded, self.lastSpoken)
+                            self.folded = Self.appendDeduped(self.folded, self.lastSpoken)
                         }
                         self.lastSpoken = spoken
-                        self.transcript = Self.join(self.folded, spoken)
+                        self.transcript = Self.appendDeduped(self.folded, spoken)
                     }
                 }
                 if self.isRecording, error != nil || result?.isFinal == true {
@@ -182,10 +185,38 @@ final class VoiceCapture: ObservableObject {
             .setActive(false, options: .notifyOthersOnDeactivation)
     }
 
-    private static func join(_ a: String, _ b: String) -> String {
-        if a.isEmpty { return b }
-        if b.isEmpty { return a }
-        return a.hasSuffix(" ") || a.hasSuffix("\n") ? a + b : a + " " + b
+    /// Append `addition` to `base`, dropping words the recognizer has
+    /// handed back twice. On-device recognition revises ACROSS utterance
+    /// boundaries: after a pause it can re-deliver words already folded
+    /// in, and a blind concatenation writes the same clause onto the page
+    /// again and again (QA 2026-08-22 — a long take repeated whole
+    /// sentences). Matching is word-level and ignores case and
+    /// punctuation, since the recognizer re-punctuates as it revises.
+    ///
+    /// A one-word overlap is left alone unless the whole addition is
+    /// already present — real speech repeats single words ("and", "the")
+    /// often enough that trimming them would eat the user's own words.
+    private static func appendDeduped(_ base: String, _ addition: String) -> String {
+        let baseWords = base.split(whereSeparator: \.isWhitespace).map(String.init)
+        let addWords = addition.split(whereSeparator: \.isWhitespace).map(String.init)
+        guard !addWords.isEmpty else { return base }
+        guard !baseWords.isEmpty else { return addWords.joined(separator: " ") }
+
+        let norm = { (w: String) in
+            w.lowercased().trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        }
+        let baseNorm = baseWords.map(norm), addNorm = addWords.map(norm)
+
+        var overlap = min(baseWords.count, addWords.count)
+        while overlap > 0 {
+            if Array(baseNorm.suffix(overlap)) == Array(addNorm.prefix(overlap)) { break }
+            overlap -= 1
+        }
+        if overlap == 1 && addWords.count > 1 { overlap = 0 }
+
+        let rest = addWords.dropFirst(overlap)
+        guard !rest.isEmpty else { return base }
+        return (baseWords + rest).joined(separator: " ")
     }
 
     private static func rms(of buffer: AVAudioPCMBuffer) -> Float? {

@@ -238,6 +238,31 @@ rather than showing a door nobody can walk through.
       `.storekit` config's Storefront setting can be switched to Russia
       to exercise the branch without a Russian Apple ID
 
+## 15. Build 14 — transcript duplication + trial reinstall
+
+Voice:
+
+- [ ] Record a LONG take (60s+) with several 2–3s pauses, talking through
+      them: no clause appears twice. (Build 13 re-delivered folded words
+      after a pause and wrote them onto the page again.)
+- [ ] Deliberately repeat a word twice in a row ("really, really tired") —
+      it survives; the dedupe only trims runs of 2+ words
+- [ ] Transcript arrives punctuated rather than as one run-on
+
+Trial (the reinstall hole):
+
+- [ ] Start the free week → delete the app → reinstall → onboarding does
+      NOT hand out a second week; the original clock still applies
+      (stamp is mirrored to iCloud key-value storage)
+- [ ] Same, with the device offline at first run (the fallback path that
+      grants the local week) — reinstall still can't re-trial
+- [ ] Signed out of iCloud entirely: local week still works (a legit
+      offline user isn't punished); note this is the accepted escape
+      hatch — it costs the abuser the synced notebook
+- [ ] A genuinely new Apple ID gets a normal new trial (expected)
+- [ ] Xcode: the target has the iCloud key-value storage capability after
+      `xcodegen` (entitlement `ubiquity-kvstore-identifier`)
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

@@ -84,10 +84,7 @@ final class TrialGate: ObservableObject {
             // Store unreachable (offline first run): the app's own week,
             // so onboarding can't brick. The paywall at its end runs the
             // real purchase.
-            UserDefaults.standard.set(
-                ISO8601DateFormatter().string(from: .now),
-                forKey: AppKeys.trial
-            )
+            Self.stampTrialStart()
             return true
         }
         if let result = try? await product.purchase(),
@@ -120,8 +117,44 @@ final class TrialGate: ObservableObject {
     /// the locally stamped week substitutes.
     var withinTrialOrSubscribed: Bool {
         if subscribed || paymentsUnavailable { return true }
-        guard let stamp = UserDefaults.standard.string(forKey: AppKeys.trial),
-              let started = ISO8601DateFormatter().date(from: stamp) else { return false }
+        guard let started = Self.trialStart() else { return false }
         return Date.now.timeIntervalSince(started) < 7 * 24 * 3600
+    }
+
+    // MARK: - The local trial stamp
+    //
+    // The stamp is mirrored into iCloud key-value storage, not kept in
+    // UserDefaults alone. Deleting the app wipes UserDefaults but not the
+    // iCloud store, so a delete-and-reinstall can't mint a second free
+    // week on the same Apple ID while iCloud keeps the notebook intact
+    // (raised 2026-08-22). Apple's own introductory offer is already
+    // per-Apple-ID and unrepeatable; this closes the same door on the
+    // offline fallback beside it. A different Apple ID is a different
+    // person as far as we're concerned — and signing out of iCloud to
+    // farm weeks costs the abuser the synced notebook they wanted to keep.
+
+    private static let cloudStore = NSUbiquitousKeyValueStore.default
+
+    /// The earliest stamp either store knows about — a reinstall reads
+    /// the cloud's older date rather than starting the clock again.
+    static func trialStart() -> Date? {
+        let f = ISO8601DateFormatter()
+        let local = UserDefaults.standard.string(forKey: AppKeys.trial).flatMap(f.date(from:))
+        let cloud = cloudStore.string(forKey: AppKeys.trial).flatMap(f.date(from:))
+        switch (local, cloud) {
+        case let (l?, c?): return min(l, c)
+        case let (l?, nil): return l
+        case let (nil, c?): return c
+        default: return nil
+        }
+    }
+
+    /// Start the clock once and never restart it.
+    static func stampTrialStart() {
+        guard trialStart() == nil else { return }
+        let stamp = ISO8601DateFormatter().string(from: .now)
+        UserDefaults.standard.set(stamp, forKey: AppKeys.trial)
+        cloudStore.set(stamp, forKey: AppKeys.trial)
+        cloudStore.synchronize()
     }
 }
