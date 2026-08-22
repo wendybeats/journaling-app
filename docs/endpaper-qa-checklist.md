@@ -240,6 +240,16 @@ rather than showing a door nobody can walk through.
 
 ## 15. Build 14 — transcript duplication + trial reinstall
 
+Theme toggle (Settings → Theme):
+
+- [ ] "System" follows the OS (flip iOS appearance → app re-themes)
+- [ ] "Light" and "Dark" pin the app regardless of OS setting; survives
+      relaunch
+- [ ] Every surface obeys — Today, Archive, recap sequences, onboarding,
+      the voice card, paywall — no half-themed screen
+- [ ] Reflections' inverted (on-color) surfaces still read correctly
+      under a pinned theme
+
 Voice:
 
 - [ ] Record a LONG take (60s+) with several 2–3s pauses, talking through

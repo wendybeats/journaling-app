@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage(AppKeys.account) private var accountMode = ""
     @AppStorage(AppKeys.voiceLocale) private var voiceLocale = ""
+    @AppStorage(AppKeys.theme) private var theme = ""
 
     @AppStorage(AppKeys.faceLock) private var faceLock = false
     @State private var reminderOn = ReminderManager.enabled
@@ -105,6 +106,21 @@ struct SettingsView: View {
                     }
                     Text("Spoken notes are transcribed on this device")
                         .typeMetaSmall()
+                }
+
+                rule
+
+                // --- Theme ---
+                // "" follows the system; light/dark pin it. The whole app
+                // is two tokenized worlds already, so this just chooses
+                // which one to hold.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Text("Theme").typeWritten()
+                    HStack(spacing: Tokens.Space.sm) {
+                        themeChip("System", tag: "")
+                        themeChip("Light", tag: "light")
+                        themeChip("Dark", tag: "dark")
+                    }
                 }
 
                 rule
@@ -251,6 +267,26 @@ struct SettingsView: View {
                 .padding(.vertical, Tokens.Space.xs + 2)
                 .background(
                     Capsule().fill(voiceLocale == tag ? Tokens.Surface.inverted : .clear)
+                )
+                .overlay(Capsule().strokeBorder(Tokens.Line.rule, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Theme choice pill — same shape as the language chips.
+    private func themeChip(_ label: String, tag: String) -> some View {
+        Button {
+            theme = tag
+        } label: {
+            Text(label)
+                .font(.custom(EndpaperFont.meta, size: 11))
+                .tracking(11 * 0.14)
+                .textCase(.uppercase)
+                .foregroundStyle(theme == tag ? Tokens.Text.onInverted : Tokens.Text.meta)
+                .padding(.horizontal, Tokens.Space.md)
+                .padding(.vertical, Tokens.Space.xs + 2)
+                .background(
+                    Capsule().fill(theme == tag ? Tokens.Surface.inverted : .clear)
                 )
                 .overlay(Capsule().strokeBorder(Tokens.Line.rule, lineWidth: 1))
         }

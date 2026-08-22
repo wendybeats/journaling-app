@@ -13,6 +13,7 @@ enum AppKeys {
     static let draftStart = "endpaper.draft.start.v1" // ISO — when the draft's first words landed
     static let voiceLocale = "endpaper.voice.locale.v1" // "" = match device; else e.g. "ru-RU"
     static let paymentsUnavailable = "endpaper.payments.unavailable.v1" // storefront can't transact
+    static let theme = "endpaper.theme.v1"            // "" = system | "light" | "dark"
     static let reminder = "endpaper.reminder.v1"      // "yes" | "no" — the pre-prompt answer
     static let reminderHour = "endpaper.reminder.hour.v1"     // Int, default 8
     static let reminderMinute = "endpaper.reminder.minute.v1" // Int, default 0

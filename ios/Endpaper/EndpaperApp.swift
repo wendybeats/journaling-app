@@ -41,9 +41,21 @@ struct EndpaperApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .preferredColorScheme(nil)   // token-level dark mode follows the system
+            RootThemed()
         }
         .modelContainer(container)
+    }
+}
+
+/// Applies the reader's theme choice. "" follows the system (tokens
+/// already resolve per trait); "light"/"dark" pin it. Kept in its own
+/// view so the @AppStorage read re-renders the whole tree on change.
+private struct RootThemed: View {
+    @AppStorage(AppKeys.theme) private var theme = ""
+    var body: some View {
+        RootView()
+            .preferredColorScheme(
+                theme == "light" ? .light : theme == "dark" ? .dark : nil
+            )
     }
 }
