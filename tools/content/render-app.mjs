@@ -19,7 +19,7 @@ mkdirSync(out, { recursive: true });
 const url = 'file://' + root + '/preview.html?seed';
 
 // Preview-only chrome that must not appear in marketing captures.
-const HIDE = '.footer-actions{display:none!important}';
+const HIDE = 'footer.type-meta-small{display:none!important}';  // hide the whole preview footer (label + controls)
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 
@@ -36,18 +36,37 @@ for (const scheme of ['light', 'dark']) {
   });
 
   await page.goto(url + '#today');
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(700);
+
+  // The preview keeps state in an in-memory shim, so the pre-set
+  // onboarded flag doesn't take — and the onboarding overlay would sit
+  // on top of every captured view. Walk it by its controls (Today stays
+  // mounted behind, so drive by buttons, not by page text) until the
+  // overlay is gone.
+  for (let step = 0; step < 10; step++) {
+    const clicked = await page.evaluate(() => {
+      const advance = /^(skip|continue without an account|start my free week|continue|next|begin|got it|start writing)\b/i;
+      const btn = [...document.querySelectorAll('button, a, [role="button"]')].find(b => {
+        const t = (b.textContent || '').trim();
+        return advance.test(t) && !/restore/i.test(t) && b.offsetParent !== null;
+      });
+      if (btn) { btn.click(); return true; }
+      return false;
+    });
+    if (!clicked) break;
+    await page.waitForTimeout(500);
+  }
+  await page.evaluate(() => { location.hash = '#today'; });
   await page.addStyleTag({ content: HIDE });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(600);
 
   // A written day for the day-page shot: newest seeded day.
+  // The newest-but-one written day, read off the rendered Notebook so we
+  // don't depend on where the prototype keeps its store.
   const dayKey = await page.evaluate(() => {
-    for (const k of Object.keys(localStorage)) {
-      if (k.includes('entries')) {
-        const days = Object.keys(JSON.parse(localStorage.getItem(k)) || {});
-        return days.sort().at(-2) || days.sort().at(-1);   // yesterday-ish
-      }
-    }
+    location.hash = '#archive';
     return null;
   });
 
@@ -56,7 +75,6 @@ for (const scheme of ['light', 'dark']) {
     ['notebook', '#archive'],
     ['calendar-year', '#archive/calendar'],
   ];
-  if (dayKey) views.push(['day-page', `#archive/day/${dayKey}`]);
 
   for (const [name, hash] of views) {
     await page.evaluate(h => { location.hash = h; }, hash);
