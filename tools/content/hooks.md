@@ -140,6 +140,18 @@ convert to comments better than statements.
 
 ## Signals
 
+- 2026-08-26 (Leara, via Wendell — STOWED for later, not scheduled):
+  women audiences respond strongly to a man talking about his fiancée /
+  wife — naming her, crediting her — in the content itself. Endorsed as
+  a delivery frame for founder-voice videos: hooks like "My fiancée
+  said something last week I can't stop thinking about…" or "My
+  fiancée, who's a psychologist, recommends…". Pairs naturally with
+  RET-1 (therapy) and NCW angles, and with the relationship material
+  already in the demo corpora. HARD RULE: only claims that are true —
+  real quotes, real credentials, cleared with her before use (same
+  no-fake-attribution rule as quotes). When activated, log tests as
+  `FRAME FIANCEE` alongside the AUDIENCE-TEST tags so the frame's lift
+  is separable from the angle's.
 - 2026-08-21 (Eden mining): two format signals from the outlier sweep.
   (1) The quarter's biggest stoic-quote outlier (23.7x, 593k views,
   @theeverydaystoic) is FOUR SECONDS long — a single Seneca line on a
