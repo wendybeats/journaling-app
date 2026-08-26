@@ -1,13 +1,15 @@
-// First launch: the four-screen tutorial, the account moment ("Keep your
-// notebook."), then the trial moment ("A week on me.") — Endpaper is paid,
-// one week free, no freemium. Shows exactly once; replay lives in Settings
-// when Settings exists. Copy and sequence per docs/endpaper-stage2-plan.md,
-// ported from js/views/onboarding.js.
+// First launch: a five-beat deck in the reflections grammar (the pitch is
+// "you write, it reads you back" — so the tutorial LOOKS like a reflection
+// arriving), then the account moment ("Keep your notebook."), then the
+// trial moment ("A week on me.") — Endpaper is paid, one week free, no
+// freemium. Shows exactly once; replay lives in Settings. The deck runs on
+// the inverted surface like the weekly/monthly cards; landing on the bone
+// page afterwards IS the arrival into the product.
 
 import SwiftUI
 import UIKit
 
-private let tutorialPages = 4
+private let tutorialPages = 5
 
 struct OnboardingView: View {
     /// Replay mode (Settings → "Show the introduction again"): the same
@@ -20,45 +22,24 @@ struct OnboardingView: View {
     @AppStorage(AppKeys.trial) private var trialStamp = ""
 
     @State private var index = 0
-    private let accountIndex = tutorialPages   // slide after the tutorial
+    private let accountIndex = tutorialPages   // slide after the deck
 
     var body: some View {
         ZStack {
-            Tokens.Surface.page.ignoresSafeArea()
+            // The deck is inverted, like every reflection; the account and
+            // trial moments sit on the page surface the user is about to
+            // live on.
+            (index < tutorialPages ? Tokens.Surface.inverted : Tokens.Surface.page)
+                .ignoresSafeArea()
 
             Group {
                 switch index {
-                case 0:
-                    TutorialSlide(
-                        index: 0,
-                        title: "Attention is a practice.",
-                        body: "A few honest lines a day change how the day sits with you. Not therapy, not productivity — just noticing, kept somewhere quiet.",
-                        onSkip: { jump(to: accountIndex) }
-                    )
-                case 1:
-                    TutorialSlide(
-                        index: 1,
-                        title: "This is Endpaper.",
-                        body: "Open it, write or speak, close it. When the day ends, the page is sealed — no edits, no deletions; the point is to commit. Each day you write, a dot fills in.",
-                        onSkip: { jump(to: accountIndex) }
-                    ) { DemoDotGrid() }
-                case 2:
-                    TutorialSlide(
-                        index: 2,
-                        title: "Reflect, if you wish.",
-                        body: "Get a reflection of your most important thoughts every week, month, and year. Face your recurring challenges and themes. Always optional.",
-                        onSkip: { jump(to: accountIndex) }
-                    ) { CirclesGlyph() }
-                case 3:
-                    TutorialSlide(
-                        index: 3,
-                        title: "Go forth.",
-                        body: "Today’s page is ready.",
-                        cta: "Begin",
-                        onSkip: { jump(to: accountIndex) },
-                        onCTA: advance
-                    )
-                case 4:
+                case 0: OpenerBeat()
+                case 1: WriteBeat()
+                case 2: SurfacingBeat()
+                case 3: QuestionBeat()
+                case 4: ReadyBeat(onBegin: advance)
+                case 5:
                     AccountSlide { mode in
                         if !replay { accountMode = mode.rawValue }
                         advance()
@@ -75,10 +56,14 @@ struct OnboardingView: View {
                 }
             }
             .transition(.opacity)
+
+            if index < tutorialPages {
+                deckChrome
+            }
         }
         .contentShape(Rectangle())
-        // Tap anywhere advances every tutorial slide (incl. past "Go forth.");
-        // swiping works too — back a page as well as forward. The account
+        // Tap anywhere advances every deck beat (incl. past "Begin");
+        // swiping works too — back a beat as well as forward. The account
         // and trial moments require their buttons.
         .onTapGesture { if index < tutorialPages { advance() } }
         .gesture(
@@ -95,84 +80,30 @@ struct OnboardingView: View {
         .animation(Tokens.Motion.base, value: index)
     }
 
-    private func advance() { withAnimation(Tokens.Motion.base) { index += 1 } }
-    private func jump(to i: Int) { withAnimation(Tokens.Motion.base) { index = i } }
-}
-
-// MARK: - Tutorial slide
-
-private struct TutorialSlide<Extra: View>: View {
-    let index: Int
-    let title: String
-    let body_: String
-    var cta: String? = nil
-    var onSkip: () -> Void
-    var onCTA: (() -> Void)? = nil
-    @ViewBuilder var extra: () -> Extra
-
-    init(index: Int, title: String, body: String, cta: String? = nil,
-         onSkip: @escaping () -> Void, onCTA: (() -> Void)? = nil,
-         @ViewBuilder extra: @escaping () -> Extra) {
-        self.index = index
-        self.title = title
-        self.body_ = body
-        self.cta = cta
-        self.onSkip = onSkip
-        self.onCTA = onCTA
-        self.extra = extra
-    }
-
-    var body: some View { content }
-}
-
-// Swift can't infer `Extra` from a defaulted argument, so the plain slides
-// (no visual) get their own initializer.
-private extension TutorialSlide where Extra == EmptyView {
-    init(index: Int, title: String, body: String, cta: String? = nil,
-         onSkip: @escaping () -> Void, onCTA: (() -> Void)? = nil) {
-        self.init(index: index, title: title, body: body, cta: cta,
-                  onSkip: onSkip, onCTA: onCTA) { EmptyView() }
-    }
-}
-
-private extension TutorialSlide {
-
-    var content: some View {
-        VStack(spacing: 0) {
+    /// Skip (top right) and the deck's own pager dots (bottom) — system
+    /// page dots color by scheme, not by our inverted surface.
+    private var deckChrome: some View {
+        VStack {
             HStack {
                 Spacer()
-                Button(action: onSkip) { Text("Skip").typeMetaSmall() }
+                Button { jump(to: accountIndex) } label: {
+                    Text("Skip")
+                        .font(.custom(EndpaperFont.meta, size: 11))
+                        .tracking(11 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                }
             }
             .padding(.horizontal, Tokens.Space.screenX)
             .padding(.top, Tokens.Space.md)
 
             Spacer()
 
-            VStack(spacing: Tokens.Space.md) {
-                Text(title)
-                    .typeDisplay()
-                    .multilineTextAlignment(.center)
-                Text(body_)
-                    .typeWritten()
-                    .multilineTextAlignment(.center)
-                extra()
-                    .padding(.top, Tokens.Space.sm)
-                if let cta {
-                    Button(action: { onCTA?() }) {
-                        Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
-                    }
-                    .padding(.top, Tokens.Space.lg)
-                }
-            }
-            .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
-
-            Spacer()
-
-            // Literal Endpaper dots as the page indicator — the habit metaphor,
-            // taught silently before a word about it is read.
-            HStack(spacing: Tokens.DotSize.gap) {
+            HStack(spacing: Tokens.Space.xs) {
                 ForEach(0..<tutorialPages, id: \.self) { i in
-                    VDot(filled: i == index)
+                    Circle()
+                        .fill(Tokens.Text.onInverted.opacity(i == index ? 1 : 0.3))
+                        .frame(width: 5, height: 5)
                 }
             }
             .accessibilityElement(children: .ignore)
@@ -180,10 +111,135 @@ private extension TutorialSlide {
             .padding(.bottom, Tokens.Space.xl)
         }
     }
+
+    private func advance() { withAnimation(Tokens.Motion.base) { index += 1 } }
+    private func jump(to i: Int) { withAnimation(Tokens.Motion.base) { index = i } }
 }
 
-/// The one animated moment: a month of dots filling in, one by one.
-private struct DemoDotGrid: View {
+// MARK: - Deck beats
+
+/// The thesis, in the weekly opener's layout — hollow ring off the top
+/// corner, statement bottom-left. The first thing read is the strategy.
+private struct OpenerBeat: View {
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            GeometryReader { geo in
+                Circle()
+                    .strokeBorder(Tokens.Text.onInverted, lineWidth: 2)
+                    .frame(width: 260, height: 260)
+                    .position(x: geo.size.width - 20, y: 60)
+            }
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text("Endpaper")
+                    .font(.custom(EndpaperFont.meta, size: 11))
+                    .tracking(11 * 0.14)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.62))
+                Text("You write.\nIt reads\nyou back.")
+                    .font(.custom(EndpaperFont.heading, size: 44).weight(.semibold))
+                    .foregroundStyle(Tokens.Text.onInverted)
+                Text("A journal, in your own words")
+                    .font(.custom(EndpaperFont.meta, size: 10))
+                    .tracking(10 * 0.14)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                    .padding(.top, Tokens.Space.xs)
+            }
+            .padding(.horizontal, Tokens.Space.screenX)
+            .padding(.bottom, 140)
+        }
+    }
+}
+
+/// Act one: the page. Permanence stated once, the dot habit shown, not
+/// explained.
+private struct WriteBeat: View {
+    var body: some View {
+        PromptBeat(prompt: "Each day") {
+            VStack(spacing: Tokens.Space.lg) {
+                Text("One quiet page,\nsealed at midnight.")
+                    .font(.custom(EndpaperFont.heading, size: 34).weight(.semibold))
+                    .foregroundStyle(Tokens.Text.onInverted)
+                    .multilineTextAlignment(.center)
+                InvertedDotGrid()
+                beatMeta("No edits · no deletions · a dot per day")
+            }
+            .padding(.horizontal, Tokens.Space.screenX)
+        }
+    }
+}
+
+/// Act two: the reflection — shown in the exact shape it will arrive in,
+/// honestly labeled a sample.
+private struct SurfacingBeat: View {
+    var body: some View {
+        PromptBeat(prompt: "Kept surfacing") {
+            VStack(spacing: Tokens.Space.lg) {
+                Text("\u{201C}sleep\u{201D}")
+                    .font(.custom("Newsreader", size: 54).italic())
+                    .foregroundStyle(Tokens.Text.onInverted)
+                beatMeta("4 times · across 3 days")
+                Text("A sample. Each week and month, your writing comes back to you — your own words, verbatim, never analysis.")
+                    .font(.custom(EndpaperFont.body, size: 17))
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, Tokens.Space.sm)
+            }
+            .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
+        }
+    }
+}
+
+/// The therapy-adjacent promise: what you ask on the page returns when
+/// you're ready — and nobody else ever sees it.
+private struct QuestionBeat: View {
+    var body: some View {
+        PromptBeat(prompt: "You asked yourself") {
+            VStack(spacing: Tokens.Space.lg) {
+                Text("Why do I keep replaying what I said on Sunday?")
+                    .font(.custom("Newsreader", size: 22).italic())
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.95))
+                    .multilineTextAlignment(.center)
+                Text("Questions come back when you're ready to answer them. Never advice, never AI — no one reads a word but you.")
+                    .font(.custom(EndpaperFont.body, size: 17))
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, Tokens.Space.sm)
+            }
+            .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
+        }
+    }
+}
+
+/// The deck's close, mirroring the weekly card's — then the surface flips
+/// to bone and the product begins.
+private struct ReadyBeat: View {
+    var onBegin: () -> Void
+
+    var body: some View {
+        PromptBeat(prompt: "Whenever you're ready") {
+            VStack(spacing: Tokens.Space.lg) {
+                Text("Today's page\nis ready.")
+                    .font(.custom(EndpaperFont.heading, size: 34).weight(.semibold))
+                    .foregroundStyle(Tokens.Text.onInverted)
+                    .multilineTextAlignment(.center)
+                Button(action: onBegin) {
+                    Text("Begin")
+                        .font(.custom(EndpaperFont.meta, size: 13))
+                        .tracking(13 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted)
+                }
+                .padding(.top, Tokens.Space.md)
+            }
+        }
+    }
+}
+
+/// A month of dots filling in one by one — the DemoDotGrid moment, redrawn
+/// for the inverted surface (VDot's tokens are page-surface colors).
+private struct InvertedDotGrid: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var visible = Set<Int>()
     private let filled: [Int] = [1, 3, 4, 8, 10, 11, 15, 17, 20, 22, 23, 26]
 
@@ -194,39 +250,26 @@ private struct DemoDotGrid: View {
         )
         LazyVGrid(columns: columns, spacing: Tokens.DotSize.gap) {
             ForEach(0..<28, id: \.self) { i in
-                VDot(filled: filled.contains(i) && visible.contains(i))
+                Circle()
+                    .strokeBorder(Tokens.Text.onInverted.opacity(0.28), lineWidth: 1)
+                    .background(
+                        Circle().fill(filled.contains(i) && visible.contains(i)
+                                      ? Tokens.Text.onInverted : .clear)
+                    )
                     .frame(width: Tokens.DotSize.today, height: Tokens.DotSize.today)
             }
         }
-        // Bare dots on the page — no card behind the moment.
         .task {
-            if UIAccessibility.isReduceMotionEnabled {
+            if reduceMotion {
                 visible = Set(filled)     // static filled grid under Reduce Motion
                 return
             }
-            try? await Task.sleep(for: .seconds(0.7))
+            try? await Task.sleep(for: .seconds(0.9))   // after the prompt seats
             for i in filled {
                 withAnimation(Tokens.Motion.fast) { _ = visible.insert(i) }
-                try? await Task.sleep(for: .seconds(0.18))
+                try? await Task.sleep(for: .seconds(0.14))
             }
         }
-    }
-}
-
-/// The reflections motif — the recap's overlapping circles, small.
-private struct CirclesGlyph: View {
-    var body: some View {
-        ZStack {
-            Circle()
-                .strokeBorder(Tokens.Dot.filled, lineWidth: Tokens.lineWeight)
-                .frame(width: 56, height: 56)
-                .offset(x: -14)
-            Circle()
-                .fill(Tokens.Dot.filled.opacity(0.9))
-                .frame(width: 56, height: 56)
-                .offset(x: 14)
-        }
-        .padding(.top, Tokens.Space.sm)
     }
 }
 

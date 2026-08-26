@@ -1,10 +1,13 @@
 # Endpaper — App Store Listing Pack
 
-**Date:** July 27, 2026
-**Status:** Draft for Wendell's edit pass. Everything here pastes straight
-into App Store Connect fields (character limits noted). Voice rules: the
-site's register — quiet, direct, first person where it's the maker
-speaking. No feature-matrix language, no exclamation points.
+**Date:** July 27, 2026 · **Rewritten 2026-08-26** for the 1.0.2
+submission: reflection-first per the strategy directive (reflection is
+the spine, permanence the supporting trait). Everything here pastes
+straight into App Store Connect fields (character limits noted). Voice
+rules: the site's register — quiet, direct, first person where it's the
+maker speaking. No feature-matrix language, no exclamation points.
+Accuracy rule: no scanning/import language anywhere — the feature ships
+hidden in production builds.
 
 ---
 
@@ -12,35 +15,40 @@ speaking. No feature-matrix language, no exclamation points.
 
 - **Name** (30 chars max): `Endpaper — Journal`
   (fallback if contested: `Endpaper: Just a Journal`)
-- **Subtitle** (30 chars max): `The journal that's a journal`
-  (alternates: `Write. Reflect. Know yourself` · `One quiet page a day`)
+- **Subtitle** (30 chars max): `A journal that reads you back`
+  (29 chars. Alternates: `Write. It reads you back` ·
+  `One quiet page a day`)
 
 ## Promotional text (170 chars, editable without review)
 
-> What's really going on inside your head? Write one note each day and
-> find out. No AI chatbot, no artificial conclusions. This is you.
+> You write. It reads you back. Weekly and monthly reflections built
+> from your own words — no AI, no analysis, no one reading but you.
 
-## Description (4000 chars max; ~1400 used)
+## Description (4000 chars max; ~1500 used)
 
-> Endpaper is a journal reduced to its essence: open it, write, close it.
+> Endpaper is a journal in two acts: you write one quiet page a day,
+> and it reads your writing back to you.
 >
-> No folders. No tags. No prompts, templates, mood scores, or streaks.
-> The page is the whole product — a quiet, beautiful log of your thinking
-> over time.
+> No folders. No tags. No mood scores, streaks, or chatbots. The page
+> is the product — and the reflections are the reward.
+>
+> IT READS YOU BACK
+> Each week and month, Endpaper hands your writing back as a small deck
+> of cards: the word that kept surfacing, the line you wrote large, the
+> question you asked yourself, when you write and how much. Your own
+> words, verbatim — never advice, never analysis, never AI. Whether
+> you're in therapy, in a new chapter, or just trying to understand
+> yourself, you arrive already knowing what's been on your mind.
 >
 > WRITE DAILY
-> Open to today's page with the cursor ready. Write as many times a day
-> as you like. What you write stays written — no edits, no deletions,
-> like pen and paper. The point is to commit.
+> Open to today's page with the cursor ready. Write it — or say it:
+> spoken notes are transcribed on your device and land on the page as
+> their own section. What you write stays written — no edits, no
+> deletions, like pen and paper. The point is to commit.
 >
 > WATCH IT ACCUMULATE
 > Each day you write, a dot fills in. Months become constellations; a
-> year becomes something you can hold. The record itself is the reward.
->
-> REFLECT, IF YOU WISH
-> Each week, month, and year, Endpaper can read your writing back to
-> you — the topics you returned to, your own recurring words, verbatim.
-> Never advice, never analysis, never a chatbot. Optional, always.
+> year becomes something you can hold.
 >
 > ONLY YOURS
 > Your writing lives on your device and in your private iCloud. No
@@ -58,8 +66,25 @@ speaking. No feature-matrix language, no exclamation points.
 
 ## Keywords (100 chars max, comma-separated, no spaces)
 
-`journal,diary,journaling,minimal,private,writing,daily,notebook,reflection,mindful,quiet,gratitude`
-(98 chars. Don't repeat "Endpaper" — the name field already indexes.)
+`journal,diary,journaling,reflection,private,writing,daily,notebook,voice,minimal,mindful,therapy`
+(96 chars. Don't repeat "Endpaper" — the name field already indexes.)
+
+## What's New — 1.0.2
+
+Only what's new since the live version's notes (which already announced
+voice, handwriting capture, file import, recaps, and dictation
+language). Import lines from the old notes roll into version history on
+release; keep import out of ALL current fields.
+
+> Your writing, read back better.
+>
+> — Recaps, redesigned: your week arrives as a small deck of cards, your
+> month as a slower sequence — every line drawn from your own words.
+> — A new introduction, built in the same card language.
+> — Choose your theme in Settings: light, dark, or match your device.
+> — Spoken notes now handle pauses gracefully — long takes no longer
+> repeat words.
+> — Refinements and small fixes throughout.
 
 ## Screenshot shot list (6.9" + 6.5" required; capture from simulator, light AND dark variants)
 

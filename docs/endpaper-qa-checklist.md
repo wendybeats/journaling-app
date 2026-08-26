@@ -273,6 +273,37 @@ Trial (the reinstall hole):
 - [ ] Xcode: the target has the iCloud key-value storage capability after
       `xcodegen` (entitlement `ubiquity-kvstore-identifier`)
 
+## 16. Build 15 — onboarding deck (reflections-first)
+
+The tutorial is now a five-beat inverted deck in the recap grammar
+(opener ring → "Each day" dots → "Kept surfacing" sample → "You asked
+yourself" → "Today's page is ready."), then the unchanged account and
+trial slides on the page surface.
+
+- [ ] Fresh install: deck runs opener → 4 beats → Begin → account →
+      trial; the surface flips from char to bone at the account moment
+- [ ] Each PromptBeat plays the choreography: prompt flashes centered
+      large, holds ~1 s, slides up to its seat, then the content rises
+- [ ] "Each day" beat: the dot grid fills in one by one after the prompt
+      seats (not simultaneously with it)
+- [ ] Tap anywhere advances every deck beat; swipe left advances; swipe
+      right goes back a beat; the pager dots (5) track position
+- [ ] Skip (top right) jumps straight to the account slide from any beat
+- [ ] Account and trial slides still require their buttons — tap-anywhere
+      must NOT advance past them
+- [ ] Trial slide unchanged: purchase sheet on "Start my free week",
+      dismissing the sheet stays on the slide, Restore works, the
+      TestFlight store-check line shows product state
+- [ ] Replay from Settings ("Show the introduction again"): full deck
+      plays, and finishing writes nothing — account mode, trial stamp,
+      and onboarded flag all unchanged
+- [ ] Reduce Motion on: every beat renders at rest (prompt seated,
+      content visible, dot grid pre-filled) — no travel
+- [ ] Dark mode: deck surface is the dark-theme inverted (bone), text is
+      ink — both themes legible on every beat
+- [ ] VoiceOver: pager announces "Page n of 5"; Skip, Begin, and both
+      account buttons are reachable and labeled
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not
