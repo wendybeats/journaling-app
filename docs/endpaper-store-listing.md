@@ -69,7 +69,7 @@ hidden in production builds.
 `journal,diary,journaling,reflection,private,writing,daily,notebook,voice,minimal,mindful,therapy`
 (96 chars. Don't repeat "Endpaper" — the name field already indexes.)
 
-## What's New — 1.0.2
+## What's New — 1.0.3 (1.0.2's train closed already approved; same notes)
 
 Only what's new since the live version's notes (which already announced
 voice, handwriting capture, file import, recaps, and dictation
