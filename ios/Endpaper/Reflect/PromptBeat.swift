@@ -10,6 +10,10 @@ import SwiftUI
 
 struct PromptBeat<Content: View>: View {
     let prompt: String
+    /// Page-surface variant (the onboarding deck runs on the system
+    /// surface, not inverted): ink flash, meta seat. Recaps keep the
+    /// inverted default.
+    var onPage = false
     @ViewBuilder var content: () -> Content
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -54,7 +58,8 @@ struct PromptBeat<Content: View>: View {
             .font(.custom(EndpaperFont.meta, size: 11))
             .tracking(11 * 0.14)
             .textCase(.uppercase)
-            .foregroundStyle(Tokens.Text.onInverted.opacity(seated ? 0.62 : 1))
+            .foregroundStyle(onPage ? (seated ? Tokens.Text.meta : Tokens.Text.written)
+                                    : Tokens.Text.onInverted.opacity(seated ? 0.62 : 1))
             .multilineTextAlignment(.center)
             .padding(.horizontal, Tokens.Space.screenX)
     }

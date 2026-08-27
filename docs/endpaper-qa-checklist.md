@@ -273,21 +273,33 @@ Trial (the reinstall hole):
 - [ ] Xcode: the target has the iCloud key-value storage capability after
       `xcodegen` (entitlement `ubiquity-kvstore-identifier`)
 
-## 16. Build 15 — onboarding deck (reflections-first)
+## 16. Onboarding deck (reflections-first; revised per QA 2026-08-27)
 
-The tutorial is now a five-beat inverted deck in the recap grammar
-(opener ring → "Each day" dots → "Kept surfacing" sample → "You asked
-yourself" → "Today's page is ready."), then the unchanged account and
-trial slides on the page surface.
+Splash: one dot held center, expanded until its ink fills the screen,
+faded to reveal the deck (the calendar dive motif). Then six beats on
+the SYSTEM surface (not inverted): centered opener ("The journal that
+reflects.") → "Each day" month grid above the title → "What did I say?"
+("stressed") → "Who did I talk about?" ("Sam") → collage of overlapping
+stat cards → "Today's page is ready." Then the unchanged account and
+trial slides.
 
-- [ ] Fresh install: deck runs opener → 4 beats → Begin → account →
-      trial; the surface flips from char to bone at the account moment
+- [ ] Fresh install: splash dot holds ~0.7 s, expands to fill, fades
+      into the opener; Reduce Motion skips the splash entirely
+- [ ] Deck matches the app's theme (bone in light, char in dark) — no
+      inverted surface anywhere in the tutorial
 - [ ] Each PromptBeat plays the choreography: prompt flashes centered
-      large, holds ~1 s, slides up to its seat, then the content rises
-- [ ] "Each day" beat: the dot grid fills in one by one after the prompt
-      seats (not simultaneously with it)
-- [ ] Tap anywhere advances every deck beat; swipe left advances; swipe
-      right goes back a beat; the pager dots (5) track position
+      large in ink, holds ~1 s, slides up to its seat (muted), then the
+      content rises
+- [ ] "Each day" beat: month grid sits ABOVE the title, calendar-scale
+      dots, nearly full with 3 misses, fills in one by one after the
+      prompt seats
+- [ ] Collage beat: five cards (days counter, rhythm bars, rose voice
+      waveform, words counter, "Enough.") land staggered, overlapping,
+      tilted — all legible, none clipped off-screen on a small phone
+      (test SE-class width)
+- [ ] Tap anywhere advances every deck beat (but NOT during the splash);
+      swipe left advances; swipe right goes back a beat; the pager dots
+      (6) track position
 - [ ] Skip (top right) jumps straight to the account slide from any beat
 - [ ] Account and trial slides still require their buttons — tap-anywhere
       must NOT advance past them
@@ -297,11 +309,9 @@ trial slides on the page surface.
 - [ ] Replay from Settings ("Show the introduction again"): full deck
       plays, and finishing writes nothing — account mode, trial stamp,
       and onboarded flag all unchanged
-- [ ] Reduce Motion on: every beat renders at rest (prompt seated,
-      content visible, dot grid pre-filled) — no travel
-- [ ] Dark mode: deck surface is the dark-theme inverted (bone), text is
-      ink — both themes legible on every beat
-- [ ] VoiceOver: pager announces "Page n of 5"; Skip, Begin, and both
+- [ ] Reduce Motion on: no splash, every beat renders at rest (prompt
+      seated, content visible, month grid pre-filled, collage laid out)
+- [ ] VoiceOver: pager announces "Page n of 6"; Skip, Begin, and both
       account buttons are reachable and labeled
 
 ## Payment flow — reliable testing recipe (2026-08-18)
