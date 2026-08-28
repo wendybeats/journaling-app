@@ -314,6 +314,58 @@ trial slides.
 - [ ] VoiceOver: pager announces "Page n of 6"; Skip, Begin, and both
       account buttons are reachable and labeled
 
+## 17. Build 18 (1.0.4) — the free model
+
+Writing free forever; membership gates reflections. First weekly plays
+free and closes on the offer. Daily-arrival splash + countdown line +
+first-week ghost prompts carry the free user's week. Share cards v1.
+
+Onboarding & model
+- [ ] Fresh install: deck → account slide → straight onto the page — NO
+      trial slide, no payment sheet anywhere in onboarding
+- [ ] Closing beat carries the quiet membership line (no price, no button)
+- [ ] Replay from Settings ends at the account slide and writes nothing
+
+Daily arrival & countdown
+- [ ] Onboarding day: no arrival splash (the deck was the moment)
+- [ ] Next day's first open: countdown line held large → dot expands to
+      fill → fades into Today; plays once per calendar day (background /
+      foreground same day: no repeat)
+- [ ] Countdown copy: n days away / arrives tomorrow / is ready (Sunday);
+      consent=="no" shows the bare weekday instead
+- [ ] Today: small "Reflection in n days" line under the date (hidden
+      when reflections are declined)
+- [ ] Reduce Motion: no splash at all
+
+Ghost prompts (first week)
+- [ ] Days 1–7: a charged italic question as the empty-page ghost;
+      vanishes on first keystroke; gone once anything is committed today
+- [ ] Day 8+: plain "Write." placeholder returns
+
+Free weekly + offer
+- [ ] Non-member's first weekly arrives and plays in full; its closing
+      beat is the offer ("That was your week" → join / not now)
+- [ ] "Not now" closes the deck; the card is archived as normal
+- [ ] Second weekly for a non-member does NOT auto-present: quiet line
+      "Your week is ready — join to read it →"; joining presents it
+      immediately, unspoiled (it was never marked seen while locked)
+- [ ] Monthly for a non-member: same locked line, never auto-presents
+- [ ] Member (or unpayable storefront): weekly and monthly arrive as
+      before, decks close on "See you on the page."
+- [ ] Purchase from offer beat / Settings applies the ASC intro offer
+      (first week free) and unlocks on the spot; Restore works
+- [ ] Trial-stamp reinstall logic is moot for writing (never gated) —
+      confirm a lapsed 1.0.2 user upgrading to 1.0.4 lands on the page,
+      not a paywall
+
+Share cards v1
+- [ ] Long-press an entry → "Share as card": bone card, drop cap, day
+      stamp, ENDPAPER.SPACE footer; long text scales, never clips
+- [ ] Calendar → long-press a month name → "Share this month": char
+      constellation card matches that month's dots
+- [ ] Cards render identically in light and dark app themes (cards pin
+      their own colors)
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

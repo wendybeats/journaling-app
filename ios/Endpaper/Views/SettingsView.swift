@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
     @State private var redeeming = false
+    @ObservedObject private var gate = TrialGate.shared
 
     var body: some View {
         ScrollView {
@@ -171,6 +172,39 @@ struct SettingsView: View {
                     Text("Show the introduction again").typeWritten()
                 }
                 .buttonStyle(.plain)
+
+                rule
+
+                // --- Membership (free model, 1.0.4) ---
+                // Writing is free forever; the membership is reflections.
+                // Named here so the model is always discoverable — the
+                // offer itself lives at the end of the first weekly.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    if gate.paymentsUnavailable {
+                        Text("Membership").typeWritten()
+                        Text("Apple takes no payments in your region — Endpaper is yours, reflections included")
+                            .typeMetaSmall()
+                    } else if gate.subscribed {
+                        Text("Membership · active").typeWritten()
+                        Text("Reflections, every week and month — thank you")
+                            .typeMetaSmall()
+                    } else {
+                        Button {
+                            Task { await TrialGate.shared.subscribe() }
+                        } label: {
+                            Text("Join — reflections, every week").typeWritten()
+                        }
+                        .buttonStyle(.plain)
+                        Text("Writing is free forever · \(gate.product?.displayPrice ?? "$39.99") a year, first week free")
+                            .typeMetaSmall()
+                        Button {
+                            Task { await TrialGate.shared.restore() }
+                        } label: {
+                            Text("Restore purchase").typeMetaSmall()
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 rule
 

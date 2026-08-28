@@ -22,6 +22,11 @@ enum AppKeys {
     static let faceLock = "endpaper.facelock.v1"      // Bool — lock the app behind Face ID
     static let reviewAsk = "endpaper.reviewask.v1"    // "itIs" | "notYet" — answered once, kept forever
     static let signals = "endpaper.signals.v1"        // [String] — local-only event notes (Signals.swift)
+    // Free model (1.0.4): writing is free forever; reflections are the
+    // membership. First weekly plays free; the offer closes its deck.
+    static let firstDay = "endpaper.firstday.v1"      // day key of first open — drives the ghost-prompt week
+    static let lastArrival = "endpaper.lastarrival.v1" // day key the daily splash last played
+    static let firstWeeklyUsed = "endpaper.reflection.first.v1" // Bool — the free weekly has been spent
 }
 
 enum AccountMode: String {

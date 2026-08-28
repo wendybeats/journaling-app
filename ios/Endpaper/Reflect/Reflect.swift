@@ -239,6 +239,14 @@ enum Reflect {
 
     // MARK: Week geometry
 
+    /// Days until the next weekly reflection can arrive (weeks run
+    /// Sunday–Saturday; the finished week becomes readable on Sunday).
+    /// 0 means it is ready today.
+    static func daysUntilReflection(now: Date = .now, calendar: Calendar = .current) -> Int {
+        let weekday = calendar.component(.weekday, from: now)   // 1 = Sunday
+        return (8 - weekday) % 7
+    }
+
     /// Sunday that starts the last fully completed week.
     static func lastCompletedWeekStart(now: Date = .now, calendar: Calendar = .current) -> Date {
         let day = calendar.startOfDay(for: now)

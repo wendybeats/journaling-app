@@ -121,6 +121,13 @@ final class TrialGate: ObservableObject {
         return Date.now.timeIntervalSince(started) < 7 * 24 * 3600
     }
 
+    /// The free-model question (1.0.4): writing is never gated; this gates
+    /// reflections beyond the first free weekly. Unpayable storefronts get
+    /// everything — a membership nobody can buy would just be a locked door.
+    var reflectionsUnlocked: Bool {
+        subscribed || paymentsUnavailable
+    }
+
     // MARK: - The local trial stamp
     //
     // The stamp is mirrored into iCloud key-value storage, not kept in

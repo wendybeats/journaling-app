@@ -634,6 +634,18 @@ private struct MonthPage: View {
             ZStack(alignment: .topLeading) {
                 Text("\(DayFormat.monthName(ref.month)) \(String(ref.year))")
                     .typeTitle()
+                    // Share v1 (1.0.4): long-press the month name for the
+                    // constellation card — the month as dots, nothing
+                    // private, in the sealed register.
+                    .contextMenu {
+                        ShareLink(
+                            item: ShareCard.image(constellationCard),
+                            preview: SharePreview("\(DayFormat.monthName(ref.month)) \(String(ref.year))",
+                                                  image: ShareCard.image(constellationCard))
+                        ) {
+                            Label("Share this month", systemImage: "square.and.arrow.up")
+                        }
+                    }
                     .position(x: geo.size.width / 2, y: originY - Tokens.Space.xl)
 
                 // Quiet paging affordances — typographic arrows in the meta
@@ -688,6 +700,15 @@ private struct MonthPage: View {
                 }
             }
         }
+    }
+
+    private var constellationCard: ConstellationCardView {
+        ConstellationCardView(
+            month: ref.month,
+            year: ref.year,
+            writtenDays: Set(counts.filter { $0.value > 0 }.keys),
+            dayCount: CalendarLayout.daysIn(year: ref.year, month: ref.month)
+        )
     }
 
     private func dayLabel(_ day: Int, count: Int, isToday: Bool) -> String {

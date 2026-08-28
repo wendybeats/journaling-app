@@ -2,9 +2,11 @@
 // calendar's motif as a front door), then a six-beat deck in the
 // reflections grammar on the SYSTEM surface (QA 2026-08-27: same-color
 // as the app, not inverted), then the account moment ("Keep your
-// notebook.") and the trial moment ("A week on me.") — Endpaper is paid,
-// one week free, no freemium. Shows exactly once; replay lives in
-// Settings.
+// notebook.") — and straight onto the page. Free model (1.0.4): writing
+// is free forever, so there is no trial slide and no payment sheet here;
+// the membership is named in one quiet line on the closing beat, and the
+// offer itself lives at the end of the first weekly reflection. Shows
+// exactly once; replay lives in Settings.
 
 import SwiftUI
 import UIKit
@@ -19,7 +21,6 @@ struct OnboardingView: View {
 
     @AppStorage(AppKeys.onboarded) private var onboarded = false
     @AppStorage(AppKeys.account) private var accountMode = ""
-    @AppStorage(AppKeys.trial) private var trialStamp = ""
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var index = 0
@@ -40,17 +41,15 @@ struct OnboardingView: View {
                 case 3: NamesBeat()
                 case 4: CollageBeat()
                 case 5: ReadyBeat(onBegin: advance)
-                case 6:
-                    AccountSlide { mode in
-                        if !replay { accountMode = mode.rawValue }
-                        advance()
-                    }
                 default:
-                    TrialSlide(live: !replay) { restored in
+                    // The last moment: choose where the notebook lives,
+                    // then the page. No payment stands between a person
+                    // and their first words.
+                    AccountSlide { mode in
                         if replay {
                             onReplayDone?()
                         } else {
-                            trialStamp = restored ? "restored" : ISO8601DateFormatter().string(from: .now)
+                            accountMode = mode.rawValue
                             onboarded = true
                         }
                     }
@@ -380,6 +379,11 @@ private struct ReadyBeat: View {
                         .foregroundStyle(Tokens.Text.written)
                 }
                 .padding(.top, Tokens.Space.md)
+                // The model, named once, honestly — no price, no button.
+                // The offer itself waits at the end of the first weekly
+                // reflection, where they can see what they'd be buying.
+                deckMeta("Writing is free, forever · reflections are\na membership — your first one's on me")
+                    .padding(.top, Tokens.Space.lg)
             }
         }
     }
@@ -466,82 +470,3 @@ private struct AccountSlide: View {
     }
 }
 
-// MARK: - The trial moment — paid with one free week, no freemium, no skip.
-// Prices are placeholders until the pre-submission pricing pass.
-
-private struct TrialSlide: View {
-    var live = true                       // false in replay: no StoreKit, no stamps
-    var start: (_ restored: Bool) -> Void
-    @ObservedObject private var gate = TrialGate.shared
-
-    var body: some View {
-        VStack(spacing: Tokens.Space.md) {
-            Spacer()
-            // Where Apple processes no payments, there is no week to give
-            // and no price to name — the honest version of that page is a
-            // different page, not the same one with a dead button.
-            Text(gate.paymentsUnavailable ? "Endpaper is yours." : "A week, on me.")
-                .typeDisplay()
-                .multilineTextAlignment(.center)
-            Text(gate.paymentsUnavailable
-                 ? "Apple doesn't process payments in your region, so Endpaper is free here — every page, every reflection, for as long as that's true."
-                 : "Every page, every reflection, free for seven days. After that, Endpaper is $39.99 a year — about the price of one good paper notebook.")
-                .typeWritten()
-                .multilineTextAlignment(.center)
-
-            Button {
-                Task {
-                    // Proceed only when the subscription verifies — a
-                    // dismissed sheet keeps us on this slide (no shadow
-                    // week; the double-trial bug lived here).
-                    if live {
-                        if await TrialGate.shared.startTrial() { start(false) }
-                    } else {
-                        start(false)
-                    }
-                }
-            } label: {
-                Text(gate.paymentsUnavailable ? "Start writing" : "Start my free week")
-                    .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
-                    .foregroundStyle(Tokens.Text.onInverted)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Tokens.Space.md * 0.8)
-                    .background(Tokens.Surface.inverted, in: RoundedRectangle(cornerRadius: Tokens.Radius.control))
-            }
-            .padding(.top, Tokens.Space.lg)
-
-            if !gate.paymentsUnavailable {
-                Text("$39.99/year after trial · cancel anytime").typeMetaSmall()
-            }
-
-            // TestFlight/debug-only store diagnostic: if the product never
-            // loads, startTrial() takes the silent offline fallback and no
-            // purchase sheet can ever appear — this line makes that state
-            // visible instead of mysterious (QA 2026-08-20: "never seen
-            // the sheet in TestFlight"). App Store builds never show it.
-            if live && AppEnv.demoControls {
-                Text(gate.product == nil
-                     ? "store check: product not loaded — sheet cannot appear"
-                     : "store check: \(gate.product!.id) loaded ✓")
-                    .typeMetaSmall()
-                    .foregroundStyle(Tokens.Accent.capture)
-                    .onAppear { Task { await gate.refresh() } }
-            }
-
-            // Nothing to restore where nothing can be bought.
-            if !gate.paymentsUnavailable {
-                Button {
-                    Task {
-                        if live { await TrialGate.shared.restore() }
-                        start(true)
-                    }
-                } label: {
-                    Text("Restore purchase").typeMetaSmall()
-                }
-                .padding(.top, Tokens.Space.xl)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
-    }
-}

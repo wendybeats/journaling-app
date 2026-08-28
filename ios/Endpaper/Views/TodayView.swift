@@ -44,6 +44,37 @@ struct TodayView: View {
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
 
+    /// The resting countdown under the date (1.0.4).
+    private var countdownLine: String {
+        switch Reflect.daysUntilReflection(now: now) {
+        case 0: return "Reflection today"
+        case 1: return "Reflection tomorrow"
+        case let n: return "Reflection in \(n) days"
+        }
+    }
+
+    /// The first week's ghost questions — deliberately charged (pain,
+    /// jealousy, guilt, excitement; Wendell 2026-08-28). Nil from day
+    /// eight on, and nil once anything is written today.
+    private static let ghostPrompts = [
+        "What's taking up space in your head right now?",
+        "Who are you jealous of — and of what, exactly?",
+        "What hurt more than you let on?",
+        "What do you feel guilty about that nobody knows?",
+        "What are you secretly excited about?",
+        "What did you almost say out loud today?",
+        "What would you write if no one could ever read it?",
+    ]
+
+    private var ghostPrompt: String? {
+        guard todayEntries.isEmpty else { return nil }
+        guard let firstKey = UserDefaults.standard.string(forKey: AppKeys.firstDay) else { return nil }
+        let days = Calendar.current.dateComponents(
+            [.day], from: DayFormat.date(fromKey: firstKey), to: now).day ?? 0
+        guard (0..<Self.ghostPrompts.count).contains(days) else { return nil }
+        return Self.ghostPrompts[days]
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
             scroll(proxy)
@@ -73,6 +104,14 @@ struct TodayView: View {
                 Text(DayFormat.dayMetaRow(now, entries: todayEntries))
                     .typeMeta()
                     .padding(.top, Tokens.Space.sm)
+
+                // The week's destination, resting under the date — the same
+                // line the daily arrival held large (1.0.4 retention pair).
+                if ReflectionStore.shared.consent != "no" {
+                    Text(countdownLine)
+                        .typeMetaSmall()
+                        .padding(.top, Tokens.Space.xs)
+                }
 
                 Rectangle()
                     .fill(Tokens.Line.rule)
@@ -277,8 +316,14 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             ZStack(alignment: .topLeading) {
                 if draft.isEmpty {
-                    Text(todayEntries.isEmpty ? "Write. This page is yours." : "Write.")
-                        .font(.custom(EndpaperFont.body, size: 28))
+                    // First week: a provocative ghost question seeds the
+                    // page (1.0.4). It vanishes on the first keystroke and
+                    // retires for good after day seven — never a template,
+                    // just a door. From day eight: the plain invitation.
+                    Text(ghostPrompt ?? (todayEntries.isEmpty ? "Write. This page is yours." : "Write."))
+                        .font(ghostPrompt == nil
+                              ? .custom(EndpaperFont.body, size: 28)
+                              : .custom(EndpaperFont.body, size: 22).italic())
                         .foregroundStyle(Tokens.Text.meta)
                         .allowsHitTesting(false)
                 }
@@ -540,6 +585,16 @@ struct EntrySection: View {
             }
             ShareLink(item: shareText) {
                 Label("Share", systemImage: "square.and.arrow.up")
+            }
+            // The styled card (1.0.4 share v1): the section as a kit-grammar
+            // image — drop cap, day stamp, wordmark. The writer chose to
+            // share it, so the words are consented by definition.
+            ShareLink(
+                item: ShareCard.image(LineCardView(text: entry.text, date: entry.at)),
+                preview: SharePreview("Endpaper card",
+                                      image: ShareCard.image(LineCardView(text: entry.text, date: entry.at)))
+            ) {
+                Label("Share as card", systemImage: "square.text.square")
             }
         }
         .sheet(isPresented: $editing) {

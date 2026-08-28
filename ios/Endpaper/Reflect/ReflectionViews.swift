@@ -49,9 +49,10 @@ struct WeeklyCardView: View {
     var onClose: () -> Void
 
     @State private var page = 0
+    @ObservedObject private var gate = TrialGate.shared
 
     private enum Beat: Hashable {
-        case intro, shape, thread, bigLine, question, sitting, days, words, challenge, close
+        case intro, shape, thread, bigLine, question, sitting, days, words, challenge, close, offer
     }
 
     private var beats: [Beat] {
@@ -64,7 +65,10 @@ struct WeeklyCardView: View {
         b.append(.days)
         b.append(.words)
         if signal.challenge != nil { b.append(.challenge) }
-        b.append(.close)
+        // Free model (1.0.4): a non-member's deck closes on the offer —
+        // the ask lands right after they've seen their own week read back,
+        // and what's gated is the future, never the card they just read.
+        b.append(gate.reflectionsUnlocked ? .close : .offer)
         return b
     }
 
@@ -222,7 +226,47 @@ struct WeeklyCardView: View {
                     .padding(.top, Tokens.Space.md)
                 }
             }
+        case .offer:
+            // The membership ask, at peak: their own week, just read back.
+            PromptBeat(prompt: "That was your week") {
+                VStack(spacing: Tokens.Space.lg) {
+                    Text("Every week.\nEvery month.\nA year you can hold.")
+                        .font(.custom(EndpaperFont.heading, size: 32).weight(.semibold))
+                        .foregroundStyle(Tokens.Text.onInverted)
+                        .multilineTextAlignment(.center)
+                    beatMeta("Writing stays free, forever")
+                    Button {
+                        Task {
+                            await TrialGate.shared.subscribe()
+                            if TrialGate.shared.reflectionsUnlocked { onClose() }
+                        }
+                    } label: {
+                        Text(joinLabel)
+                            .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
+                            .foregroundStyle(Tokens.Surface.inverted)
+                            .padding(.horizontal, Tokens.Space.xl)
+                            .padding(.vertical, Tokens.Space.md * 0.8)
+                            .background(Tokens.Text.onInverted, in: RoundedRectangle(cornerRadius: Tokens.Radius.control))
+                    }
+                    .padding(.top, Tokens.Space.sm)
+                    Button(action: onClose) {
+                        Text("Not now")
+                            .font(.custom(EndpaperFont.meta, size: 11))
+                            .tracking(11 * 0.14)
+                            .textCase(.uppercase)
+                            .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                    }
+                }
+                .padding(.horizontal, Tokens.Space.screenX)
+            }
         }
+    }
+
+    private var joinLabel: String {
+        if let price = gate.product?.displayPrice {
+            return "Join — \(price) a year, first week free"
+        }
+        return "Join — $39.99 a year, first week free"
     }
 
     /// The seven days as tap-size dots, filling in one by one — the week
@@ -357,6 +401,7 @@ struct ReflectionFlowHost: View {
     @State private var showConsent = false
     @State private var presented: PresentedReflection? = nil
     @State private var januaryYear: YearlySignal? = nil
+    @State private var lockedLine: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.md) {
@@ -368,13 +413,30 @@ struct ReflectionFlowHost: View {
                         // that first.
                         let corpus = ReflectionStore.corpus(from: context)
                         if let weekly = ReflectionStore.shared.pendingWeekly(corpus: corpus) {
-                            present(.weekly(weekly), archiving: .weekly(weekly))
-                        } else if let monthly = ReflectionStore.shared.pendingMonthly(corpus: corpus) {
+                            presentWeekly(weekly)
+                        } else if let monthly = ReflectionStore.shared.pendingMonthly(corpus: corpus),
+                                  TrialGate.shared.reflectionsUnlocked {
                             present(.monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus)),
                                     archiving: .monthly(monthly))
                         }
                     }
                 }
+            }
+            // A ready reflection behind the membership: one quiet line,
+            // never a sheet. Joining presents it on the spot.
+            if let lockedLine {
+                Button {
+                    Task {
+                        await TrialGate.shared.subscribe()
+                        if TrialGate.shared.reflectionsUnlocked {
+                            self.lockedLine = nil
+                            evaluate()
+                        }
+                    }
+                } label: {
+                    Text(lockedLine).typeMeta()
+                }
+                .buttonStyle(.plain)
             }
             if let year = januaryYear {
                 Button {
@@ -394,21 +456,34 @@ struct ReflectionFlowHost: View {
     private func evaluate() {
         let corpus = ReflectionStore.corpus(from: context)
         let store = ReflectionStore.shared
+        let entitled = TrialGate.shared.reflectionsUnlocked
+        let firstUsed = UserDefaults.standard.bool(forKey: AppKeys.firstWeeklyUsed)
 
         if store.consentEligible(corpus: corpus) {
             showConsent = true
             return
         }
 
-        // One arrival per visit — monthly first.
+        // One arrival per visit — monthly first. Free model (1.0.4):
+        // monthly is members-only; the weekly plays free exactly once.
+        // A locked pending reflection is never marked seen — it waits,
+        // whole, behind the quiet line until the member joins.
         if let monthly = store.pendingMonthly(corpus: corpus) {
-            let days = writtenDayNumbers(of: monthly, corpus: corpus)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                present(.monthly(monthly, writtenDays: days), archiving: .monthly(monthly))
+            if entitled {
+                let days = writtenDayNumbers(of: monthly, corpus: corpus)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    present(.monthly(monthly, writtenDays: days), archiving: .monthly(monthly))
+                }
+            } else {
+                lockedLine = "Your \(DayFormat.monthName(monthly.month)) recap is ready — join to read it →"
             }
         } else if let weekly = store.pendingWeekly(corpus: corpus) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                present(.weekly(weekly), archiving: .weekly(weekly))
+            if entitled || !firstUsed {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    presentWeekly(weekly)
+                }
+            } else {
+                lockedLine = "Your week is ready — join to read it →"
             }
         }
 
@@ -428,6 +503,15 @@ struct ReflectionFlowHost: View {
     private func present(_ item: PresentedReflection, archiving reflection: ArchivedReflection) {
         ReflectionStore.shared.markSeen(reflection)
         presented = item
+    }
+
+    /// Weekly presentation spends the one free weekly for non-members —
+    /// stamped at presentation, so backgrounding mid-deck can't re-mint it.
+    private func presentWeekly(_ weekly: WeeklySignal) {
+        if !TrialGate.shared.reflectionsUnlocked {
+            UserDefaults.standard.set(true, forKey: AppKeys.firstWeeklyUsed)
+        }
+        present(.weekly(weekly), archiving: .weekly(weekly))
     }
 
     @ViewBuilder
