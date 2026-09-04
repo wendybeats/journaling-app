@@ -140,6 +140,22 @@ convert to comments better than statements.
 
 ## Signals
 
+- 2026-09-04 (FOUNDER-FORMAT BASELINE — Wendell's Aug 26 desk Reel,
+  "On the importance of reading your writing", 0:52, overlay "Have you
+  read it?"): 205 views (2x quote baseline), 94.6% non-followers, skip
+  rate 74.7% vs 88.6% account-typical, avg watch 5s/52s (~10%),
+  retention cliff by ~8s, distribution flat-dead after day one, profile
+  activity 0, 2 saves. READ: the face WINS the stop (best skip rate
+  ever measured on the account) and IG willingly serves cold reach —
+  but the opening loses ~80% of stopped viewers in seconds, which is
+  what caps views, not account size. FIXES for every future founder
+  cut: ≤30s for cold audiences; the pain in the first spoken line (no
+  warm-up); overlay must carry stakes, not a referent-less question
+  ("10 years of journals. Never read them once." > "Have you read
+  it?"); app named only at the end. NEXT TEST: recut the same footage
+  to ~20s, fresh Reel, compare avg watch (target 12-15s) + skip; same
+  cut to TikTok same day. Note: founder gate is open (his post) — the
+  audience-test angles are unblocked; shoot them in this shape.
 - 2026-08-26 (Leara, via Wendell — STOWED for later, not scheduled):
   women audiences respond strongly to a man talking about his fiancée /
   wife — naming her, crediting her — in the content itself. Endorsed as
