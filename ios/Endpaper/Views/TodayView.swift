@@ -113,11 +113,16 @@ struct TodayView: View {
                 .padding(.top, Tokens.Space.sm)
 
                 // Once the day has words (a draft begun, or anything
-                // committed), the heading steps back to "Sep 5" — same
-                // size, less presence — and stays there (QA 2026-09-05).
+                // committed), the heading steps back to "Sep 5" — 30%
+                // smaller, smoothly — and stays there (QA 2026-09-05).
+                // scaleEffect keeps the shrink continuous (font sizes
+                // can't tween); the frame height animates the layout
+                // below it closed.
                 Text(headingShortened ? DayFormat.shortDay(now) : DayFormat.dayHeading(now))
                     .typeDisplay()
                     .contentTransition(.opacity)
+                    .scaleEffect(headingShortened ? 0.7 : 1, anchor: .topLeading)
+                    .frame(height: headingShortened ? 25 : 36, alignment: .topLeading)
                     .animation(Tokens.Motion.base, value: headingShortened)
                     .padding(.top, Tokens.Space.xl)
 
@@ -363,33 +368,51 @@ struct TodayView: View {
                     // page (1.0.4). It vanishes on the first keystroke and
                     // retires for good after day seven — never a template,
                     // just a door. From day eight: the plain invitation.
-                    // In hook mode it rests centered, where the first
-                    // word will land.
-                    Text(ghostPrompt ?? (todayEntries.isEmpty ? "Write. This page is yours." : "Write."))
-                        .font(ghostPrompt == nil
-                              ? .custom(EndpaperFont.body, size: 28)
-                              : .custom(EndpaperFont.body, size: 22).italic())
-                        .lineSpacing(ghostPrompt == nil ? 0 : 9)
-                        .foregroundStyle(Tokens.Text.meta)
-                        .multilineTextAlignment(hookMode ? .center : .leading)
-                        .frame(maxWidth: .infinity,
-                               maxHeight: hookMode ? .infinity : nil,
-                               alignment: hookMode ? .center : .topLeading)
+                    // In hook mode it rests centered with the brand's
+                    // rule-cursor blinking beside it — the "you can type
+                    // here" the centered layout was missing (QA 2026-09-05).
+                    if hookMode {
+                        HStack(alignment: .center, spacing: 7) {
+                            Text(ghostPrompt ?? "Write. This page is yours.")
+                                .font(ghostPrompt == nil
+                                      ? .custom(EndpaperFont.body, size: 28)
+                                      : .custom(EndpaperFont.body, size: 22).italic())
+                                .lineSpacing(ghostPrompt == nil ? 0 : 9)
+                                .foregroundStyle(Tokens.Text.meta)
+                                .multilineTextAlignment(.center)
+                            BlinkingCursor(height: ghostPrompt == nil ? 30 : 26)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .allowsHitTesting(false)
+                    } else {
+                        Text(ghostPrompt ?? (todayEntries.isEmpty ? "Write. This page is yours." : "Write."))
+                            .font(ghostPrompt == nil
+                                  ? .custom(EndpaperFont.body, size: 28)
+                                  : .custom(EndpaperFont.body, size: 22).italic())
+                            .lineSpacing(ghostPrompt == nil ? 0 : 9)
+                            .foregroundStyle(Tokens.Text.meta)
+                            .allowsHitTesting(false)
+                    }
                 }
                 LivingWriteView(text: $draft, focused: $writingFocused,
                                 concealed: hookMode)
-                // The overlay word — what the reader sees themselves type.
-                // Same seat animation family as the prompt choreography.
+                // The overlay word — what the reader sees themselves type,
+                // rule-cursor riding its right edge until it seats. Same
+                // animation family as the prompt choreography.
                 if hookMode, !hookWord.isEmpty {
-                    Text(hookWord)
-                        .font(.custom(EndpaperFont.body, size: 40))
-                        .foregroundStyle(Tokens.Text.written)
-                        .scaleEffect(hookSeated ? hookSeatScale : 1, anchor: .topLeading)
-                        .frame(maxWidth: .infinity,
-                               maxHeight: .infinity,
-                               alignment: hookSeated ? .topLeading : .center)
-                        .allowsHitTesting(false)
+                    HStack(alignment: .center, spacing: 8) {
+                        Text(hookWord)
+                            .font(.custom(EndpaperFont.body, size: 40))
+                            .foregroundStyle(Tokens.Text.written)
+                        if !hookSeated {
+                            BlinkingCursor(height: 42)
+                        }
+                    }
+                    .scaleEffect(hookSeated ? hookSeatScale : 1, anchor: .topLeading)
+                    .frame(maxWidth: .infinity,
+                           maxHeight: .infinity,
+                           alignment: hookSeated ? .topLeading : .center)
+                    .allowsHitTesting(false)
                 }
             }
             .frame(minHeight: hookMode ? 230 : nil, alignment: .topLeading)
@@ -718,5 +741,26 @@ private struct ReflectMark: View {
         }
         .frame(width: 19, height: 11)
         .accessibilityHidden(true)
+    }
+}
+
+/// The brand's rule-cursor — the thin vertical line from the quote
+/// Reels' type-on frames — blinking beside whatever invites typing
+/// (QA 2026-09-05: the centered ghost needed a visible affordance).
+private struct BlinkingCursor: View {
+    var height: CGFloat = 24
+    @State private var dimmed = false
+
+    var body: some View {
+        Rectangle()
+            .fill(Tokens.Line.cursor)
+            .frame(width: 1.5, height: height)
+            .opacity(dimmed ? 0.08 : 1)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                    dimmed = true
+                }
+            }
+            .accessibilityHidden(true)
     }
 }

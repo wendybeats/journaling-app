@@ -433,9 +433,13 @@ private struct MorphDotsDemo: View {
                 stage = 2
                 return
             }
-            try? await Task.sleep(for: .seconds(0.5))   // after the prompt seats
+            // PromptBeat reveals the content ~1.15s in (0.5 hold + 0.4
+            // slide + 0.25 rise) — the single dot must hold ALONE on
+            // screen before splitting (QA 2026-09-05: the solo was
+            // playing while still invisible).
+            try? await Task.sleep(for: .seconds(1.8))
             stage = 1
-            try? await Task.sleep(for: .seconds(0.75))
+            try? await Task.sleep(for: .seconds(0.8))
             stage = 2
         }
         .accessibilityHidden(true)
