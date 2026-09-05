@@ -34,6 +34,10 @@ struct TodayView: View {
     @State private var pickingFile = false
     @State private var pendingImport: PendingImport?
     @State private var barStamp = 0
+    @State private var hookDone = false     // the first-word moment has played (or doesn't apply)
+    @State private var hookSeated = false
+    @State private var hookWord = ""
+    @State private var hookSeatScale: CGFloat = 1
 
     struct PendingImport: Identifiable {
         let id = UUID()
@@ -238,6 +242,15 @@ struct TodayView: View {
             barStamp += 1
             adoptStaleDraft()
             refresh()
+            // The hook plays only for the day's true first words: skip it
+            // when entries exist or a restored draft is already past its
+            // first word (returning mid-thought must not replay it).
+            if !todayEntries.isEmpty
+                || draft.drop(while: \.isWhitespace).contains(where: \.isWhitespace) {
+                hookDone = true
+            } else {
+                advanceHook(with: draft)   // a restored single word resumes at center
+            }
             let consentPending = ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
             reminderOffer = ReminderManager.shouldOfferPrompt(in: context) && !consentPending
             reviewOffer = ReviewAskState.eligible(in: context) && !consentPending && !reminderOffer
@@ -335,6 +348,13 @@ struct TodayView: View {
 
     // MARK: - Writing surface
 
+    /// The day's first moment runs the hook (QA 2026-09-05): the ghost
+    /// question sits centered so the reader types over it; their first
+    /// word renders large and centered (the editor types concealed
+    /// underneath); on the first space it travels to its seat at the
+    /// top-left and the real text is revealed.
+    private var hookMode: Bool { todayEntries.isEmpty && !hookDone }
+
     private var writingSurface: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             ZStack(alignment: .topLeading) {
@@ -343,19 +363,41 @@ struct TodayView: View {
                     // page (1.0.4). It vanishes on the first keystroke and
                     // retires for good after day seven — never a template,
                     // just a door. From day eight: the plain invitation.
+                    // In hook mode it rests centered, where the first
+                    // word will land.
                     Text(ghostPrompt ?? (todayEntries.isEmpty ? "Write. This page is yours." : "Write."))
                         .font(ghostPrompt == nil
                               ? .custom(EndpaperFont.body, size: 28)
                               : .custom(EndpaperFont.body, size: 22).italic())
                         .lineSpacing(ghostPrompt == nil ? 0 : 9)
                         .foregroundStyle(Tokens.Text.meta)
+                        .multilineTextAlignment(hookMode ? .center : .leading)
+                        .frame(maxWidth: .infinity,
+                               maxHeight: hookMode ? .infinity : nil,
+                               alignment: hookMode ? .center : .topLeading)
                         .allowsHitTesting(false)
                 }
-                LivingWriteView(text: $draft, focused: $writingFocused)
+                LivingWriteView(text: $draft, focused: $writingFocused,
+                                concealed: hookMode)
+                // The overlay word — what the reader sees themselves type.
+                // Same seat animation family as the prompt choreography.
+                if hookMode, !hookWord.isEmpty {
+                    Text(hookWord)
+                        .font(.custom(EndpaperFont.body, size: 40))
+                        .foregroundStyle(Tokens.Text.written)
+                        .scaleEffect(hookSeated ? hookSeatScale : 1, anchor: .topLeading)
+                        .frame(maxWidth: .infinity,
+                               maxHeight: .infinity,
+                               alignment: hookSeated ? .topLeading : .center)
+                        .allowsHitTesting(false)
+                }
             }
+            .frame(minHeight: hookMode ? 230 : nil, alignment: .topLeading)
+            .animation(Tokens.Motion.base, value: hookDone)
             .onChange(of: draft) { _, text in
                 draftDay = key
                 idleCommit?.cancel()
+                advanceHook(with: text)
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                 // Stamp the session's start on the first real words — the
                 // committed section sorts by when writing BEGAN, so a
@@ -375,6 +417,27 @@ struct TodayView: View {
                 .typeMetaSmall()
                 .opacity(ackVisible ? 1 : 0)
                 .animation(Tokens.Motion.base, value: ackVisible)
+        }
+    }
+
+    /// The first space (or newline) after the first word seats it: the
+    /// overlay travels from center to the top-left at the living-type
+    /// size the line will actually render at, then the concealed editor
+    /// is revealed underneath and the overlay leaves.
+    private func advanceHook(with text: String) {
+        guard hookMode else { return }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            hookWord = ""
+            return
+        }
+        hookWord = String(trimmed.split(whereSeparator: \.isWhitespace).first ?? "")
+        let body = text.drop(while: \.isWhitespace)
+        guard !hookSeated, body.contains(where: \.isWhitespace) else { return }
+        hookSeatScale = WrittenScale.size(for: String(body.prefix(while: { !$0.isNewline }))) / 40
+        withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 0.45)) { hookSeated = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.48) {
+            hookDone = true
         }
     }
 

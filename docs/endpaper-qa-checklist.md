@@ -378,7 +378,17 @@ Round 2 (2026-09-05) — Today page + reflections flow:
       date line underneath — only "N entries · M min" once entries exist
 - [ ] Countdown line carries the mini reflections mark (outlined +
       filled overlapping circles, meta tone) to its right
-- [ ] Ghost prompt: comfortable line height on two-line questions
+- [ ] Ghost prompt: comfortable line height on two-line questions;
+      rests CENTERED in the writing area on the day's first session
+- [ ] First-word hook: typing over the centered ghost renders the first
+      word large and centered; the first space sends it travelling to
+      its top-left seat (at the size the living type will hold it) and
+      normal writing continues seamlessly — no flicker at the handoff,
+      caret reappears at the end
+- [ ] Hook edge cases: backspacing to empty brings the ghost back;
+      backgrounding mid-word and returning resumes at center; returning
+      with a multi-word draft or existing entries never replays the
+      hook; committing a single word (Done) ends hook mode cleanly
 - [ ] Consent card: opting in presents NOTHING (new user has no week);
       it arms the weekly notification pair instead
 - [ ] End of week: "Your week is ready." card rests on Today — tapping
