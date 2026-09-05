@@ -371,6 +371,32 @@ Share cards v1
 - [ ] Cards render identically in light and dark app themes (cards pin
       their own colors)
 
+Round 2 (2026-09-05) — Today page + reflections flow:
+- [ ] Heading: full "Saturday, September 5" on a blank day; cross-fades
+      to "Sep 5" on the first typed characters and STAYS short for the
+      rest of the day (committing keeps it short); no repeated small
+      date line underneath — only "N entries · M min" once entries exist
+- [ ] Countdown line carries the mini reflections mark (outlined +
+      filled overlapping circles, meta tone) to its right
+- [ ] Ghost prompt: comfortable line height on two-line questions
+- [ ] Consent card: opting in presents NOTHING (new user has no week);
+      it arms the weekly notification pair instead
+- [ ] End of week: "Your week is ready." card rests on Today — tapping
+      it opens the deck; nothing auto-presents on app open any more
+- [ ] Non-member, free weekly spent: the same card reads "Join to read
+      it →" and purchases inline
+- [ ] Non-member monthly: card opens the full-screen recap-styled gate
+      (inverted, cropped disc, "Your August recap is ready.") with
+      Join / Not now; Not now returns with the card still resting;
+      joining opens the real recap immediately
+- [ ] Settings → Reflections toggled ON by a non-member: the inverted
+      membership sheet rises; dismissing keeps reflections on (consent
+      is never gated)
+- [ ] Notifications (consent on, permission granted): Saturday 22:00
+      "Know yourself: your weekly reflection arrives tomorrow." and
+      Sunday 9:00 "What did you say? Your weekly reflection is here."
+      — both repeat weekly; turning consent off cancels both
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

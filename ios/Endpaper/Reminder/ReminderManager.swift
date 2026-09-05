@@ -12,6 +12,8 @@ enum ReminderManager {
     static let defaultHour = 8
     private static let requestID = "endpaper.reminder.daily"
     private static let editsCloseID = "endpaper.editsclose.daily"
+    private static let reflectionEveID = "endpaper.reflection.eve"
+    private static let reflectionDayID = "endpaper.reflection.day"
 
     /// Copy pool — one line, no title, no emoji, never streak language.
     /// Rotation seeded by day-of-year: deterministic, testable.
@@ -87,6 +89,37 @@ enum ReminderManager {
         try? await center.add(UNNotificationRequest(identifier: requestID, content: content, trigger: trigger))
 
         await rearmEditsClose()
+        await rearmReflectionNotes()
+    }
+
+    // MARK: - The weekly reflection's two notes (QA 2026-09-05)
+
+    /// D6 teases, D7 announces: Saturday 22:00 "arrives tomorrow",
+    /// Sunday 9:00 "is here". Repeating calendar triggers, armed only
+    /// while reflections consent is yes; consent changes call this with
+    /// requestPermission so a reader who never enabled the daily
+    /// reminder still gets the one permission ask their yes implies.
+    static func rearmReflectionNotes(requestPermission: Bool = false) async {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [reflectionEveID, reflectionDayID])
+        guard ReflectionStore.shared.consent == "yes" else { return }
+        if requestPermission {
+            _ = try? await center.requestAuthorization(options: [.alert, .sound])
+        }
+
+        let eve = UNMutableNotificationContent()
+        eve.body = "Know yourself: your weekly reflection arrives tomorrow."
+        var sat = DateComponents(); sat.weekday = 7; sat.hour = 22; sat.minute = 0
+        try? await center.add(UNNotificationRequest(
+            identifier: reflectionEveID, content: eve,
+            trigger: UNCalendarNotificationTrigger(dateMatching: sat, repeats: true)))
+
+        let day = UNMutableNotificationContent()
+        day.body = "What did you say? Your weekly reflection is here."
+        var sun = DateComponents(); sun.weekday = 1; sun.hour = 9; sun.minute = 0
+        try? await center.add(UNNotificationRequest(
+            identifier: reflectionDayID, content: day,
+            trigger: UNCalendarNotificationTrigger(dateMatching: sun, repeats: true)))
     }
 
     // MARK: - The day's last call (11 PM)

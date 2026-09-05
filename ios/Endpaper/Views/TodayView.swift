@@ -44,6 +44,17 @@ struct TodayView: View {
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
 
+    private var headingShortened: Bool {
+        !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !todayEntries.isEmpty
+    }
+
+    /// "3 entries · 4 min" — the old meta row minus its date.
+    private var entriesMeta: String {
+        let words = todayEntries.reduce(0) { $0 + $1.text.split(whereSeparator: \.isWhitespace).count }
+        let mins = max(1, Int((Double(words) / 200).rounded()))
+        return "\(todayEntries.count) \(todayEntries.count == 1 ? "entry" : "entries") · \(mins) min"
+    }
+
     /// The resting countdown under the date (1.0.4).
     private var countdownLine: String {
         switch Reflect.daysUntilReflection(now: now) {
@@ -97,20 +108,32 @@ struct TodayView: View {
                 }
                 .padding(.top, Tokens.Space.sm)
 
-                Text(DayFormat.dayHeading(now))
+                // Once the day has words (a draft begun, or anything
+                // committed), the heading steps back to "Sep 5" — same
+                // size, less presence — and stays there (QA 2026-09-05).
+                Text(headingShortened ? DayFormat.shortDay(now) : DayFormat.dayHeading(now))
                     .typeDisplay()
+                    .contentTransition(.opacity)
+                    .animation(Tokens.Motion.base, value: headingShortened)
                     .padding(.top, Tokens.Space.xl)
 
-                Text(DayFormat.dayMetaRow(now, entries: todayEntries))
-                    .typeMeta()
-                    .padding(.top, Tokens.Space.sm)
+                // No repeated date here any more — just the day's tally,
+                // and only once there is one.
+                if !todayEntries.isEmpty {
+                    Text(entriesMeta)
+                        .typeMeta()
+                        .padding(.top, Tokens.Space.sm)
+                }
 
                 // The week's destination, resting under the date — the same
-                // line the daily arrival held large (1.0.4 retention pair).
+                // line the daily arrival held large (1.0.4 retention pair),
+                // with the reflections motif in miniature beside it.
                 if ReflectionStore.shared.consent != "no" {
-                    Text(countdownLine)
-                        .typeMetaSmall()
-                        .padding(.top, Tokens.Space.xs)
+                    HStack(spacing: Tokens.Space.xs + 2) {
+                        Text(countdownLine).typeMetaSmall()
+                        ReflectMark()
+                    }
+                    .padding(.top, Tokens.Space.xs)
                 }
 
                 Rectangle()
@@ -324,6 +347,7 @@ struct TodayView: View {
                         .font(ghostPrompt == nil
                               ? .custom(EndpaperFont.body, size: 28)
                               : .custom(EndpaperFont.body, size: 22).italic())
+                        .lineSpacing(ghostPrompt == nil ? 0 : 9)
                         .foregroundStyle(Tokens.Text.meta)
                         .allowsHitTesting(false)
                 }
@@ -611,5 +635,25 @@ struct EntrySection: View {
             .components(separatedBy: "\n")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
+    }
+}
+
+/// The reflections motif in miniature — one outlined circle, one filled,
+/// overlapping — sitting beside the countdown in the same meta tone
+/// (QA 2026-09-05).
+private struct ReflectMark: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .strokeBorder(Tokens.Text.meta, lineWidth: 1)
+                .frame(width: 11, height: 11)
+                .offset(x: -3.5)
+            Circle()
+                .fill(Tokens.Text.meta.opacity(0.9))
+                .frame(width: 11, height: 11)
+                .offset(x: 3.5)
+        }
+        .frame(width: 19, height: 11)
+        .accessibilityHidden(true)
     }
 }

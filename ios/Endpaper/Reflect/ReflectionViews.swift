@@ -401,7 +401,11 @@ struct ReflectionFlowHost: View {
     @State private var showConsent = false
     @State private var presented: PresentedReflection? = nil
     @State private var januaryYear: YearlySignal? = nil
-    @State private var lockedLine: String? = nil
+    @State private var readyWeekly: WeeklySignal? = nil
+    @State private var weeklyLocked = false
+    @State private var readyMonthly: MonthlySignal? = nil
+    @State private var monthlyLocked = false
+    @State private var showMonthlyGate = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.md) {
@@ -409,34 +413,50 @@ struct ReflectionFlowHost: View {
                 ConsentCard { accepted in
                     withAnimation(Tokens.Motion.base) { showConsent = false }
                     if accepted {
-                        // The consent moment pitched "your week" — deliver
-                        // that first.
-                        let corpus = ReflectionStore.corpus(from: context)
-                        if let weekly = ReflectionStore.shared.pendingWeekly(corpus: corpus) {
-                            presentWeekly(weekly)
-                        } else if let monthly = ReflectionStore.shared.pendingMonthly(corpus: corpus),
-                                  TrialGate.shared.reflectionsUnlocked {
-                            present(.monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus)),
-                                    archiving: .monthly(monthly))
-                        }
+                        // Opting in never presents anything (QA 2026-09-05:
+                        // a new user has no week yet — the card is the
+                        // notice, the arrival is a later card). It does arm
+                        // the D6/D7 weekly notes.
+                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: true) }
+                        evaluate()
                     }
                 }
             }
-            // A ready reflection behind the membership: one quiet line,
-            // never a sheet. Joining presents it on the spot.
-            if let lockedLine {
-                Button {
-                    Task {
-                        await TrialGate.shared.subscribe()
-                        if TrialGate.shared.reflectionsUnlocked {
-                            self.lockedLine = nil
-                            evaluate()
+            // End of week: the same card position announces the arrival —
+            // the reader taps to open the deck, nothing auto-presents.
+            if let weekly = readyWeekly {
+                ReadyCard(
+                    title: "Your week is ready.",
+                    meta: weeklyLocked ? "Reflections are a membership — writing stays free"
+                                       : "Seven days, read back to you",
+                    cta: weeklyLocked ? "Join to read it →" : "Read it →"
+                ) {
+                    if weeklyLocked {
+                        Task {
+                            await TrialGate.shared.subscribe()
+                            if TrialGate.shared.reflectionsUnlocked {
+                                weeklyLocked = false
+                                presentWeekly(weekly)
+                            }
                         }
+                    } else {
+                        presentWeekly(weekly)
                     }
-                } label: {
-                    Text(lockedLine).typeMeta()
                 }
-                .buttonStyle(.plain)
+            }
+            if let monthly = readyMonthly {
+                ReadyCard(
+                    title: "Your \(DayFormat.monthName(monthly.month)) recap is ready.",
+                    meta: monthlyLocked ? "Reflections are a membership — writing stays free"
+                                        : "A month, handed back",
+                    cta: monthlyLocked ? "Open →" : "Read it →"
+                ) {
+                    if monthlyLocked {
+                        showMonthlyGate = true
+                    } else {
+                        presentMonthly(monthly)
+                    }
+                }
             }
             if let year = januaryYear {
                 Button {
@@ -451,6 +471,19 @@ struct ReflectionFlowHost: View {
         .fullScreenCover(item: $presented) { item in
             reflectionCover(item)
         }
+        // The locked monthly's full-screen moment (QA 2026-09-05): the
+        // recap opener's own design carrying the offer, join or dismiss.
+        .fullScreenCover(isPresented: $showMonthlyGate) {
+            if let monthly = readyMonthly {
+                MonthlyGateView(signal: monthly) {
+                    showMonthlyGate = false
+                    monthlyLocked = false
+                    presentMonthly(monthly)
+                } onClose: {
+                    showMonthlyGate = false
+                }
+            }
+        }
     }
 
     private func evaluate() {
@@ -464,27 +497,18 @@ struct ReflectionFlowHost: View {
             return
         }
 
-        // One arrival per visit — monthly first. Free model (1.0.4):
-        // monthly is members-only; the weekly plays free exactly once.
-        // A locked pending reflection is never marked seen — it waits,
-        // whole, behind the quiet line until the member joins.
+        // Ready cards, monthly first. Free model (1.0.4): monthly is
+        // members-only; the weekly plays free exactly once. A locked
+        // pending reflection is never marked seen — it waits, whole,
+        // until the member joins.
+        readyWeekly = nil
+        readyMonthly = nil
         if let monthly = store.pendingMonthly(corpus: corpus) {
-            if entitled {
-                let days = writtenDayNumbers(of: monthly, corpus: corpus)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    present(.monthly(monthly, writtenDays: days), archiving: .monthly(monthly))
-                }
-            } else {
-                lockedLine = "Your \(DayFormat.monthName(monthly.month)) recap is ready — join to read it →"
-            }
+            readyMonthly = monthly
+            monthlyLocked = !entitled
         } else if let weekly = store.pendingWeekly(corpus: corpus) {
-            if entitled || !firstUsed {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    presentWeekly(weekly)
-                }
-            } else {
-                lockedLine = "Your week is ready — join to read it →"
-            }
+            readyWeekly = weekly
+            weeklyLocked = !entitled && firstUsed
         }
 
         // January: the year is ready (spec §3.3) — a single quiet line.
@@ -494,6 +518,12 @@ struct ReflectionFlowHost: View {
             let lastYear = Reflect.yearlySignal(year: cal.component(.year, from: now) - 1, corpus: corpus)
             if lastYear.days > 0 { januaryYear = lastYear }
         }
+    }
+
+    private func presentMonthly(_ monthly: MonthlySignal) {
+        let corpus = ReflectionStore.corpus(from: context)
+        present(.monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus)),
+                archiving: .monthly(monthly))
     }
 
     /// An arrival is marked seen (and archived) the moment it presents —
@@ -529,6 +559,91 @@ struct ReflectionFlowHost: View {
             WrappedView(signal: signal) {
                 presented = nil
             }
+        }
+    }
+}
+
+/// The arrival card — the consent card's sibling, resting in the same
+/// position on Today: a reflection is ready, tap to open it. Nothing
+/// auto-presents any more (QA 2026-09-05).
+private struct ReadyCard: View {
+    let title: String
+    let meta: String
+    let cta: String
+    var onTap: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+            Text(title).typeTitle()
+            Text(meta).typeMetaSmall()
+            Button(action: onTap) {
+                Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
+            }
+            .padding(.top, Tokens.Space.xs)
+        }
+        .padding(Tokens.Space.card)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.Surface.raised, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+    }
+}
+
+/// The locked monthly, full screen — the recap opener's own grammar
+/// (inverted surface, cropped disc, statement bottom-left) carrying the
+/// membership offer instead of the deck. Join opens the real recap on
+/// the spot; Not now returns to the page with the card still resting.
+struct MonthlyGateView: View {
+    let signal: MonthlySignal
+    var onJoin: () -> Void
+    var onClose: () -> Void
+
+    @ObservedObject private var gate = TrialGate.shared
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            Tokens.Surface.inverted.ignoresSafeArea()
+            GeometryReader { geo in
+                Circle()
+                    .fill(Tokens.Text.onInverted)
+                    .frame(width: 300, height: 300)
+                    .position(x: geo.size.width - 24, y: 30)
+            }
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text("Recaps")
+                    .font(.custom(EndpaperFont.meta, size: 11))
+                    .tracking(11 * 0.14)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.62))
+                Text("Your \(DayFormat.monthName(signal.month))\nrecap is ready.")
+                    .font(.custom(EndpaperFont.heading, size: 40).weight(.semibold))
+                    .foregroundStyle(Tokens.Text.onInverted)
+                Text("Join to read it — every week, every month, a year you can hold. Writing stays free, forever.")
+                    .font(.custom(EndpaperFont.body, size: 17))
+                    .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
+                Button {
+                    Task {
+                        await TrialGate.shared.subscribe()
+                        if TrialGate.shared.reflectionsUnlocked { onJoin() }
+                    }
+                } label: {
+                    Text("Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free")
+                        .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
+                        .foregroundStyle(Tokens.Surface.inverted)
+                        .padding(.horizontal, Tokens.Space.xl)
+                        .padding(.vertical, Tokens.Space.md * 0.8)
+                        .background(Tokens.Text.onInverted, in: RoundedRectangle(cornerRadius: Tokens.Radius.control))
+                }
+                .padding(.top, Tokens.Space.sm)
+                Button(action: onClose) {
+                    Text("Not now")
+                        .font(.custom(EndpaperFont.meta, size: 11))
+                        .tracking(11 * 0.14)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
+                }
+                .padding(.top, Tokens.Space.sm)
+            }
+            .padding(.horizontal, Tokens.Space.screenX)
+            .padding(.bottom, 100)
         }
     }
 }

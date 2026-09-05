@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
     @State private var redeeming = false
+    @State private var membershipOffer = false
     @ObservedObject private var gate = TrialGate.shared
 
     var body: some View {
@@ -86,6 +87,14 @@ struct SettingsView: View {
                     .tint(Tokens.Surface.inverted)
                     .onChange(of: reflectionsOn) { _, on in
                         ReflectionStore.shared.setConsent(on ? "yes" : "no")
+                        // The weekly D6/D7 notes ride consent.
+                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on) }
+                        // Turning reflections on is the subscription moment
+                        // for a non-member (QA 2026-09-05) — the offer rises
+                        // on the inverted surface; dismissing costs nothing.
+                        if on && !TrialGate.shared.reflectionsUnlocked {
+                            membershipOffer = true
+                        }
                     }
                     Text("Your week and month, in your own words — always private")
                         .typeMetaSmall()
@@ -236,6 +245,7 @@ struct SettingsView: View {
             OnboardingView(replay: true) { replaying = false }
         }
         .offerCodeRedemption(isPresented: $redeeming)
+        .sheet(isPresented: $membershipOffer) { MembershipSheet() }
         .onAppear {
             let (h, m) = ReminderManager.chosenTime
             reminderTime = Calendar.current.date(bySettingHour: h, minute: m, second: 0, of: .now) ?? .now
