@@ -169,22 +169,23 @@ private struct OpenerBeat: View {
                 .textCase(.uppercase)
                 .foregroundStyle(Tokens.Text.meta)
             Text("The journal\nthat reflects.")
-                .font(.custom(EndpaperFont.heading, size: 44).weight(.semibold))
-                .foregroundStyle(Tokens.Text.heading)
+                .font(.custom(EndpaperFont.heading, size: 54).weight(.semibold))
+                .foregroundStyle(Tokens.Text.display)
                 .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.8)
         }
         .padding(.horizontal, Tokens.Space.screenX)
     }
 }
 
-/// Act one: the page. The month draws itself above the words — nearly
-/// full, a few days missed, at the calendar's own scale.
+/// Act one: the page. One dot becomes a week becomes a month, in the
+/// calendar's own morph grammar, above the words.
 private struct WriteBeat: View {
     var body: some View {
-        PromptBeat(prompt: "Each day", onPage: true) {
+        PromptBeat(prompt: "Each day", onPage: true, hold: 0.5) {
             VStack(spacing: Tokens.Space.lg) {
-                MonthDotsDemo()
-                Text("Your space to write,\nsealed at midnight.")
+                MorphDotsDemo()
+                Text("Write each day,\nsealed at midnight.")
                     .font(.custom(EndpaperFont.heading, size: 34).weight(.semibold))
                     .foregroundStyle(Tokens.Text.heading)
                     .multilineTextAlignment(.center)
@@ -199,13 +200,13 @@ private struct WriteBeat: View {
 /// honestly labeled a sample.
 private struct SurfacingBeat: View {
     var body: some View {
-        PromptBeat(prompt: "What did I say?", onPage: true) {
+        PromptBeat(prompt: "What did I say?", onPage: true, hold: 0.5) {
             VStack(spacing: Tokens.Space.lg) {
                 Text("\u{201C}stressed\u{201D}")
                     .font(.custom("Newsreader", size: 54).italic())
                     .foregroundStyle(Tokens.Text.written)
-                deckMeta("4 times · across 3 days")
-                Text("A sample. Each week and month, your writing comes back to you — your own words, verbatim, never analysis.")
+                deckMeta("2 times this week")
+                Text("Each week and month, your writing comes back to you — no analysis, no AI.")
                     .font(.custom(EndpaperFont.body, size: 17))
                     .foregroundStyle(Tokens.Text.written)
                     .multilineTextAlignment(.center)
@@ -220,13 +221,13 @@ private struct SurfacingBeat: View {
 /// makes writing about them safe.
 private struct NamesBeat: View {
     var body: some View {
-        PromptBeat(prompt: "Who did I talk about?", onPage: true) {
+        PromptBeat(prompt: "Who did I talk about?", onPage: true, hold: 0.5) {
             VStack(spacing: Tokens.Space.lg) {
-                Text("Sam")
-                    .font(.custom("Newsreader", size: 54).weight(.medium))
+                Text("\u{201C}Mom\u{201D}")
+                    .font(.custom("Newsreader", size: 54).italic())
                     .foregroundStyle(Tokens.Text.written)
-                deckMeta("A sample · on 5 days this month")
-                Text("Never advice, never AI — no one reads a word but you.")
+                deckMeta("Mentioned 3 times this week")
+                Text("Get to know yourself better through your writing.")
                     .font(.custom(EndpaperFont.body, size: 17))
                     .foregroundStyle(Tokens.Text.written)
                     .multilineTextAlignment(.center)
@@ -245,7 +246,7 @@ private struct CollageBeat: View {
     @State private var shown = 0
 
     var body: some View {
-        PromptBeat(prompt: "Your week, handed back", onPage: true) {
+        PromptBeat(prompt: "Your week, handed back", onPage: true, hold: 0.5) {
             ZStack {
                 collageCard(0, rotation: -7, x: -62, y: -128) { CounterCard(value: "23", label: "days written") }
                 collageCard(1, rotation: 5, x: 72, y: -78) { RhythmCard() }
@@ -260,7 +261,7 @@ private struct CollageBeat: View {
                 shown = 5
                 return
             }
-            try? await Task.sleep(for: .seconds(1.35))   // after the prompt seats
+            try? await Task.sleep(for: .seconds(0.9))   // after the prompt seats
             for i in 1...5 {
                 withAnimation(Tokens.Motion.base) { shown = i }
                 try? await Task.sleep(for: .milliseconds(140))
@@ -365,7 +366,7 @@ private struct ReadyBeat: View {
     var onBegin: () -> Void
 
     var body: some View {
-        PromptBeat(prompt: "Whenever you're ready", onPage: true) {
+        PromptBeat(prompt: "Whenever you're ready", onPage: true, hold: 0.5) {
             VStack(spacing: Tokens.Space.lg) {
                 Text("Today's page\nis ready.")
                     .font(.custom(EndpaperFont.heading, size: 34).weight(.semibold))
@@ -389,44 +390,80 @@ private struct ReadyBeat: View {
     }
 }
 
-/// A month of dots at the calendar's own register — nearly full, a few
-/// days missed — filling in one by one above the words. Page-surface
-/// colors (VDot's own tokens, hand-tuned sizes: bigger than the small
-/// demo grid the deck used before).
-private struct MonthDotsDemo: View {
+/// The calendar's morph grammar as a demo: one dot (today) splits into
+/// a week, then blooms into the month — every dot travels from the
+/// center of the week row to its grid seat, so the story is one day
+/// becoming a record. Three days stay unfilled (an honest month).
+/// Reduce Motion: the finished grid, at rest.
+private struct MorphDotsDemo: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var visible = 0
-    private let missed: Set<Int> = [6, 13, 22]
+    @State private var stage = 0            // 0 one dot · 1 week · 2 month
 
+    private let missed: Set<Int> = [5, 12, 26]
     private let dot: CGFloat = 16
     private let gap: CGFloat = 13
+    private let cols = 7
+    private let count = 30
+
+    private var cell: CGFloat { dot + gap }
+    private var width: CGFloat { CGFloat(cols) * dot + CGFloat(cols - 1) * gap }
+    private var height: CGFloat { 5 * dot + 4 * gap }
+    private let weekRow = 2                 // indices 14–20; its center is index 17
 
     var body: some View {
-        let columns = Array(
-            repeating: GridItem(.fixed(dot), spacing: gap),
-            count: Tokens.DotSize.gridCols
-        )
-        LazyVGrid(columns: columns, spacing: gap) {
-            ForEach(0..<28, id: \.self) { i in
-                Circle()
-                    .strokeBorder(Tokens.Dot.empty, lineWidth: 1)
-                    .background(
-                        Circle().fill(i < visible && !missed.contains(i)
-                                      ? Tokens.Dot.filled : .clear)
-                    )
-                    .frame(width: dot, height: dot)
+        ZStack {
+            ForEach(0..<count, id: \.self) { i in
+                let p = position(of: i)
+                Group {
+                    if missed.contains(i) {
+                        Circle().strokeBorder(Tokens.Dot.empty, lineWidth: 1)
+                    } else {
+                        Circle().fill(Tokens.Dot.filled)
+                    }
+                }
+                .frame(width: dot, height: dot)
+                .opacity(opacity(of: i))
+                .position(x: p.x, y: p.y)
             }
         }
+        .frame(width: width, height: height)
+        .animation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 0.45), value: stage)
         .task {
             if reduceMotion {
-                visible = 28     // static filled grid under Reduce Motion
+                stage = 2
                 return
             }
-            try? await Task.sleep(for: .seconds(0.9))   // after the prompt seats
-            for i in 1...28 {
-                withAnimation(Tokens.Motion.fast) { visible = i }
-                try? await Task.sleep(for: .milliseconds(55))
-            }
+            try? await Task.sleep(for: .seconds(0.5))   // after the prompt seats
+            stage = 1
+            try? await Task.sleep(for: .seconds(0.75))
+            stage = 2
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func gridPoint(_ i: Int) -> CGPoint {
+        CGPoint(x: CGFloat(i % cols) * cell + dot / 2,
+                y: CGFloat(i / cols) * cell + dot / 2)
+    }
+
+    /// Everything not yet revealed waits at the week row's center, so
+    /// each stage change reads as a split outward from what exists.
+    private func position(of i: Int) -> CGPoint {
+        let center = gridPoint(weekRow * cols + 3)
+        let inWeek = i / cols == weekRow
+        switch stage {
+        case 0: return center
+        case 1: return inWeek ? gridPoint(i) : center
+        default: return gridPoint(i)
+        }
+    }
+
+    private func opacity(of i: Int) -> Double {
+        let inWeek = i / cols == weekRow
+        switch stage {
+        case 0: return i == weekRow * cols + 3 ? 1 : 0
+        case 1: return inWeek ? 1 : 0
+        default: return 1
         }
     }
 }

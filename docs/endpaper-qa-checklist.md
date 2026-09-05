@@ -290,9 +290,14 @@ trial slides.
 - [ ] Each PromptBeat plays the choreography: prompt flashes centered
       large in ink, holds ~1 s, slides up to its seat (muted), then the
       content rises
-- [ ] "Each day" beat: month grid sits ABOVE the title, calendar-scale
-      dots, nearly full with 3 misses, fills in one by one after the
-      prompt seats
+- [ ] "Each day" beat (revised 2026-09-05): one dot splits into the
+      week row, then blooms into the 30-dot month (3 misses), the morph
+      travelling outward from the week's center; grid sits ABOVE
+      "Write each day, sealed at midnight."
+- [ ] Deck pacing: prompt holds ~0.5 s (halved), opener is full-ink at
+      54pt; copy — "stressed · 2 times this week · no analysis, no AI"
+      and "Mom · Mentioned 3 times this week · Get to know yourself
+      better through your writing" (no "a sample" anywhere)
 - [ ] Collage beat: five cards (days counter, rhythm bars, rose voice
       waveform, words counter, "Enough.") land staggered, overlapping,
       tilted — all legible, none clipped off-screen on a small phone

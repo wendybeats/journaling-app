@@ -14,6 +14,10 @@ struct PromptBeat<Content: View>: View {
     /// surface, not inverted): ink flash, meta seat. Recaps keep the
     /// inverted default.
     var onPage = false
+    /// How long the prompt holds centered before sliding to its seat.
+    /// Recaps keep the slow 1.0s; the onboarding deck halves it
+    /// (QA 2026-09-05: faster leading lines).
+    var hold: Double = 1.0
     @ViewBuilder var content: () -> Content
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -46,7 +50,7 @@ struct PromptBeat<Content: View>: View {
                 revealed = true
                 return
             }
-            try? await Task.sleep(for: .seconds(1.0))
+            try? await Task.sleep(for: .seconds(hold))
             withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 0.4)) { seated = true }
             try? await Task.sleep(for: .milliseconds(250))
             withAnimation(Tokens.Motion.base) { revealed = true }

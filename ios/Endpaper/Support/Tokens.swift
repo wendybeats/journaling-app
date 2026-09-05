@@ -63,6 +63,9 @@ enum Tokens {
         static let heading    = dynamic(light: Primitive.graphite,   dark: Primitive.graphiteDk)
         static let meta       = dynamic(light: Primitive.stone,      dark: Primitive.stoneDk)
         static let onInverted = dynamic(light: Primitive.boneRaised, dark: Primitive.ink)
+        // Full ink on the page — reserved for display moments that must
+        // carry maximum contrast (onboarding opener, QA 2026-09-05).
+        static let display    = dynamic(light: Primitive.ink,        dark: Primitive.boneType)
     }
 
     enum Dot {
