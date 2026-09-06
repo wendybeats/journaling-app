@@ -43,6 +43,15 @@ struct LivingWriteView: UIViewRepresentable {
             context.coordinator.concealed = concealed
             tv.tintColor = concealed ? .clear : UIColor(Tokens.Line.cursor)
             Self.restyle(tv, concealed: concealed)
+            if !concealed {
+                // The caret doesn't repaint on a tint change alone — nudge
+                // the selection so it reappears at the end of the text
+                // the moment the overlay word seats (QA 2026-09-06).
+                let end = NSRange(location: (tv.text as NSString).length, length: 0)
+                tv.selectedRange = NSRange(location: 0, length: 0)
+                tv.selectedRange = end
+                tv.setNeedsDisplay()
+            }
         }
         if tv.text != text {
             // Text arriving from outside the keyboard (dictation partials,

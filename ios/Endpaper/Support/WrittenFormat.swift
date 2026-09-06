@@ -1,11 +1,14 @@
-// The simplified written format (QA 2026-09-06): the first word LARGE,
-// the rest of the first VISUAL line MEDIUM, body from there on. The
-// medium→body break is MEASURED — it falls exactly where the medium
-// text itself would wrap at the page's width, not where a character
-// count guesses smaller text would (the old classifier's tell).
-// Bullet lines ("- " converts to "• " as you type) always render at
-// body size, italic. WrittenScale stays untouched for the reflections
-// heuristics and the JS parity suite; this is the display grammar.
+// The simplified written format (QA 2026-09-06, rev. 2): the original
+// per-line resizing, reduced to three moves and never mixed on a line.
+// A lone word is LARGE; once the line has more words it becomes MEDIUM
+// as a whole, for as long as it genuinely fits one rendered line at
+// medium (measured, not guessed from a character count); the moment it
+// would wrap, the whole line is BODY. Only the first line of a block
+// resizes — the lines after it are body, and a blank line starts the
+// next block. Bullet lines ("- " converts to "• " as you type) are body
+// size, italic, and hold the block at body until a blank line.
+// WrittenScale stays untouched for the reflections heuristics and the
+// JS parity suite; this is the display grammar.
 
 import SwiftUI
 import UIKit
@@ -54,70 +57,68 @@ enum WrittenFormat {
         return t.hasPrefix("• ") || t.hasPrefix("- ") || t == "•" || t == "-"
     }
 
-    // MARK: Segmentation
+    // MARK: Segmentation — one tier per LINE, never mixed on a line
 
-    /// Contiguous segments covering `text` exactly (newlines ride with the
-    /// following line's segment).
+    /// Contiguous segments covering `text` exactly, one per typed line
+    /// (newlines ride with the following line's segment). Lines are sized
+    /// whole: a lone word is large; a line that fits at medium is medium;
+    /// a line that would wrap at medium is body. Within a block (lines
+    /// between blank lines) only the FIRST non-bullet line resizes — what
+    /// follows it is body, and anything following a bullet stays body
+    /// until a blank line starts a new block. That blank line is the
+    /// "two returns after a list" that brings the large line back.
     static func segments(for text: String, width: CGFloat) -> [Segment] {
         guard !text.isEmpty else { return [] }
         var segs: [Segment] = []
+        var heroUsed = false          // this block's resizing line is spent
 
-        let firstBreak = text.firstIndex(of: "\n")
-        let firstLine = firstBreak.map { String(text[..<$0]) } ?? text
-        let tail = firstBreak.map { String(text[$0...]) } ?? ""
+        var rest = Substring(text)
+        var first = true
+        while first || !rest.isEmpty {
+            let lineEnd = first
+                ? (rest.firstIndex(of: "\n") ?? rest.endIndex)
+                : (rest.dropFirst().firstIndex(of: "\n") ?? rest.endIndex)
+            let chunk = String(rest[..<lineEnd])        // ("\n" +) the line
+            let line = first ? chunk : String(chunk.dropFirst())
 
-        if isBulletLine(firstLine) {
-            segs.append(Segment(text: firstLine, tier: .bullet))
-        } else if firstLine.trimmingCharacters(in: .whitespaces).isEmpty {
-            if !firstLine.isEmpty { segs.append(Segment(text: firstLine, tier: .body)) }
-        } else {
-            segs.append(contentsOf: heroSegments(for: firstLine, width: width))
-        }
+            let tier: Tier
+            if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                heroUsed = false                        // blank line: new block
+                tier = .body
+            } else if isBulletLine(line) {
+                heroUsed = true                         // a list pins the block to body
+                tier = .bullet
+            } else if !heroUsed {
+                heroUsed = true
+                tier = heroTier(for: line, width: width)
+            } else {
+                tier = .body
+            }
+            segs.append(Segment(text: chunk, tier: tier))
 
-        // Every later line: bullet or body.
-        var rest = Substring(tail)
-        while !rest.isEmpty {
-            let lineEnd = rest.dropFirst().firstIndex(of: "\n") ?? rest.endIndex
-            let chunk = String(rest[..<lineEnd])          // "\n" + the line
-            segs.append(Segment(text: chunk, tier: isBulletLine(chunk.dropFirst()) ? .bullet : .body))
             rest = rest[lineEnd...]
+            first = false
         }
         return merged(segs)
     }
 
-    /// First word large; then as many following words as genuinely fit on
-    /// the same rendered line at medium; the overflow is body.
-    private static func heroSegments(for line: String, width: CGFloat) -> [Segment] {
-        let lead = line.prefix(while: { $0.isWhitespace })
-        let afterLead = line[lead.endIndex...]
-        let word = afterLead.prefix(while: { !$0.isWhitespace })
-        let largeText = String(lead) + String(word)
-        var rest = afterLead[word.endIndex...]
-
-        var mediumText = ""
-        while !rest.isEmpty {
-            let space = rest.prefix(while: { $0.isWhitespace && $0 != "\n" })
-            let next = rest[space.endIndex...].prefix(while: { !$0.isWhitespace })
-            guard !next.isEmpty else { break }
-            let candidate = mediumText + String(space) + String(next)
-            guard fitsOneLine(large: largeText, medium: candidate, width: width) else { break }
-            mediumText = candidate
-            rest = rest[next.endIndex...]
-        }
-
-        var segs = [Segment(text: largeText, tier: .large)]
-        if !mediumText.isEmpty { segs.append(Segment(text: mediumText, tier: .medium)) }
-        if !rest.isEmpty { segs.append(Segment(text: String(rest), tier: .body)) }
-        return segs
+    /// The block's resizing line: a lone short word is large; a line that
+    /// genuinely fits one rendered line at medium is medium; the moment
+    /// medium would wrap, the whole line is body.
+    private static func heroTier(for line: String, width: CGFloat) -> Tier {
+        let t = line.trimmingCharacters(in: .whitespaces)
+        let words = t.split(whereSeparator: { $0.isWhitespace })
+        if words.count == 1 && t.count <= 18 { return .large }
+        return fitsOneLine(t, at: medium, width: width) ? .medium : .body
     }
 
-    private static func fitsOneLine(large: String, medium: String, width: CGFloat) -> Bool {
-        let a = NSMutableAttributedString(string: large, attributes: [.font: uiFont(Self.large)])
-        a.append(NSAttributedString(string: medium, attributes: [.font: uiFont(Self.medium)]))
-        let h = a.boundingRect(with: CGSize(width: width, height: .greatestFiniteMagnitude),
-                               options: [.usesLineFragmentOrigin, .usesFontLeading],
-                               context: nil).height
-        return h <= uiFont(Self.large).lineHeight + 1
+    private static func fitsOneLine(_ line: String, at size: CGFloat, width: CGFloat) -> Bool {
+        let font = uiFont(size)
+        let h = NSAttributedString(string: line, attributes: [.font: font])
+            .boundingRect(with: CGSize(width: width, height: .greatestFiniteMagnitude),
+                          options: [.usesLineFragmentOrigin, .usesFontLeading],
+                          context: nil).height
+        return h <= font.lineHeight + 1
     }
 
     private static func merged(_ segs: [Segment]) -> [Segment] {

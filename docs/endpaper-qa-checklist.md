@@ -415,13 +415,19 @@ Round 3 (2026-09-06) — writing grammar, cards, polish:
       ghost) focuses the editor and raises the keyboard
 - [ ] Date shrink: heading holds full for ~5s after the first words,
       then eases to "Sep 5" at 70%; committed days open already short
-- [ ] New grammar (WrittenFormat): first word LARGE, rest of the first
-      rendered line MEDIUM, body after — and the medium run breaks
-      exactly where medium text actually wraps (type a long first line
-      and watch the tail demote at the true wrap point, not early)
-- [ ] Committed sections on Today render the same grammar (first word
-      large inline); Notebook keeps its drop-cap dress (flagged, see
-      note) — confirm that contrast feels intentional
+- [ ] New grammar (WrittenFormat rev. 2 — whole lines, never mixed): a
+      lone word is LARGE; add a second word and the WHOLE line becomes
+      MEDIUM; keep typing and the whole line drops to BODY exactly when
+      medium would wrap (not early). Lines after the first in a block
+      are body; a blank line (two returns) starts a new block whose
+      first line resizes again
+- [ ] After a bullet list, one return = body line; two returns = a new
+      block, so a lone word goes large again
+- [ ] Committed sections on Today render the same grammar; Notebook
+      keeps its drop-cap dress (flagged) — confirm the contrast feels
+      intentional
+- [ ] Hook handoff: when the first word seats, the caret reappears at
+      the end of the text immediately (no caret-less state)
 - [ ] Bullets: "- " at a line start becomes "• " as you type; the line
       renders body-size ITALIC with a hanging indent; Enter continues
       the list; Enter on an empty bullet ends it (marker removed)
