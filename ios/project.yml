@@ -72,10 +72,11 @@ targets:
         # 1.0.3 / 17 is the submitted release candidate (2026-08-27; builds
         # 15 and 16 were consumed by stale uploads). 1.0.4 is the free-model
         # build: writing free forever, membership gates reflections, share
-        # cards v1. Build 18 went to TestFlight 2026-09-04; 19 carries the
-        # onboarding QA round (morph demo, faster beats, copy). Next: 19.
+        # cards v1. TestFlight ledger: 18 (2026-09-04), 19 (consumed),
+        # 20 (2026-09-06 — QA round 3: WrittenFormat grammar, bullets,
+        # card carousel, hook + morph polish). Next archive: 21.
         MARKETING_VERSION: 1.0.4
-        CURRENT_PROJECT_VERSION: 19
+        CURRENT_PROJECT_VERSION: 21
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"
