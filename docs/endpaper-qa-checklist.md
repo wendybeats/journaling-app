@@ -407,6 +407,29 @@ Round 2 (2026-09-05) — Today page + reflections flow:
       Sunday 9:00 "What did you say? Your weekly reflection is here."
       — both repeat weekly; turning consent off cancels both
 
+Round 3 (2026-09-06) — writing grammar, cards, polish:
+- [ ] Onboarding "Each day": the single dot holds ALONE after the
+      prompt seats, then splits to the week, then blooms to the month —
+      transitions leave fast and land soft (stronger ease-out)
+- [ ] Writing area: tapping ANYWHERE in it (incl. on the centered
+      ghost) focuses the editor and raises the keyboard
+- [ ] Date shrink: heading holds full for ~5s after the first words,
+      then eases to "Sep 5" at 70%; committed days open already short
+- [ ] New grammar (WrittenFormat): first word LARGE, rest of the first
+      rendered line MEDIUM, body after — and the medium run breaks
+      exactly where medium text actually wraps (type a long first line
+      and watch the tail demote at the true wrap point, not early)
+- [ ] Committed sections on Today render the same grammar (first word
+      large inline); Notebook keeps its drop-cap dress (flagged, see
+      note) — confirm that contrast feels intentional
+- [ ] Bullets: "- " at a line start becomes "• " as you type; the line
+      renders body-size ITALIC with a hanging indent; Enter continues
+      the list; Enter on an empty bullet ends it (marker removed)
+- [ ] Cards: with 2+ cards pending (e.g. reflection ready + rating
+      ask), they slide horizontally, one per page, aligned snapping —
+      never stacked; every card has its no/later (ReadyCards gained
+      "Later", which hides them until the next visit)
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

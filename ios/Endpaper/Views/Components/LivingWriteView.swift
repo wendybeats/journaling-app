@@ -61,37 +61,23 @@ struct LivingWriteView: UIViewRepresentable {
         let width = proposal.width ?? UIScreen.main.bounds.width - Tokens.Space.screenX * 2
         let fit = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
         // Never collapse below one empty line at the meeting size.
-        let floor = Self.font(28).lineHeight
+        let floor = WrittenFormat.uiFont(28).lineHeight
         return CGSize(width: width, height: max(fit.height, floor))
     }
 
     // MARK: Styling
 
-    private static func font(_ size: CGFloat) -> UIFont {
-        UIFont(name: EndpaperFont.body, size: size) ?? .systemFont(ofSize: size)
+    /// The rendering width the format measures against — the live text
+    /// container when laid out, the page width before that.
+    private static func measureWidth(_ tv: UITextView) -> CGFloat {
+        let w = tv.textContainer.size.width
+        return w > 40 ? w : WrittenFormat.pageWidth
     }
 
-    private static func attributes(forLine line: String, concealed: Bool = false) -> [NSAttributedString.Key: Any] {
-        let size = WrittenScale.size(for: line)
-        let font = font(size)
-        let lh: CGFloat = size >= 36 ? 1.25 : (size >= 22 ? 1.5 : 1.8)
-        let para = NSMutableParagraphStyle()
-        para.lineSpacing = max(0, size * lh - font.lineHeight)
-        // The largest tier gets air above and below — a big word idea
-        // shouldn't sit shoulder-to-shoulder with its neighbors.
-        if size >= 36 {
-            para.paragraphSpacingBefore = 12
-            para.paragraphSpacing = 8
-        }
-        return [
-            .font: font,
-            .paragraphStyle: para,
-            .foregroundColor: concealed ? UIColor.clear : UIColor(Tokens.Text.written),
-        ]
-    }
-
-    /// Re-derives every line's attributes, preserving the caret. Skipped
-    /// while marked text is in flight (CJK composition, dictation marks).
+    /// Re-derives the whole format (first word large, measured first line
+    /// medium, body after, bullets italic — WrittenFormat, QA 2026-09-06),
+    /// preserving the caret. Skipped while marked text is in flight (CJK
+    /// composition, dictation marks).
     static func restyle(_ tv: UITextView, to newText: String? = nil, caretToEnd: Bool = false, concealed: Bool = false) {
         guard tv.markedTextRange == nil else {
             if let newText, tv.text != newText { tv.text = newText }
@@ -102,28 +88,18 @@ struct LivingWriteView: UIViewRepresentable {
         let caret = caretToEnd
             ? NSRange(location: ns.length, length: 0)
             : tv.selectedRange
-        let attr = NSMutableAttributedString(string: string)
-        var loc = 0
-        for line in string.components(separatedBy: "\n") {
-            let len = (line as NSString).length
-            attr.addAttributes(attributes(forLine: line, concealed: concealed),
-                               range: NSRange(location: loc, length: len))
-            loc += len + 1
-        }
-        tv.attributedText = attr
+        tv.attributedText = WrittenFormat.attributed(string, width: measureWidth(tv), concealed: concealed)
         tv.selectedRange = NSRange(location: min(caret.location, ns.length), length: 0)
         syncTypingAttributes(tv, concealed: concealed)
     }
 
-    /// Typing attributes follow the caret's line, so a fresh character on
-    /// a fresh line arrives at the right size before the restyle pass.
+    /// Typing attributes follow the caret's tier, so a fresh character
+    /// arrives at the right size before the restyle pass.
     static func syncTypingAttributes(_ tv: UITextView, concealed: Bool = false) {
-        let ns = (tv.text ?? "") as NSString
-        let pos = min(tv.selectedRange.location, ns.length)
-        let lineRange = ns.lineRange(for: NSRange(location: pos, length: 0))
-        let line = ns.substring(with: lineRange)
-            .trimmingCharacters(in: .newlines)
-        tv.typingAttributes = attributes(forLine: line, concealed: concealed)
+        let text = tv.text ?? ""
+        let pos = min(tv.selectedRange.location, (text as NSString).length)
+        let tier = WrittenFormat.tier(at: max(0, pos - 1), in: text, width: measureWidth(tv))
+        tv.typingAttributes = WrittenFormat.attributes(for: tier, concealed: concealed)
     }
 
     // MARK: Coordinator
@@ -141,6 +117,57 @@ struct LivingWriteView: UIViewRepresentable {
 
         func textViewDidChangeSelection(_ tv: UITextView) {
             LivingWriteView.syncTypingAttributes(tv, concealed: concealed)
+        }
+
+        /// The list assists (QA 2026-09-06): "- " at a line start becomes
+        /// "• "; Enter on a bullet line continues the list; Enter on an
+        /// empty bullet removes the marker and ends it.
+        func textView(_ tv: UITextView, shouldChangeTextIn range: NSRange,
+                      replacementText t: String) -> Bool {
+            let ns = (tv.text ?? "") as NSString
+            guard range.location <= ns.length, tv.markedTextRange == nil else { return true }
+
+            if t == " ", range.length == 0, range.location >= 1 {
+                let lr = ns.lineRange(for: NSRange(location: range.location - 1, length: 0))
+                let beforeCaret = ns.substring(
+                    with: NSRange(location: lr.location, length: range.location - lr.location))
+                if beforeCaret.trimmingCharacters(in: .whitespaces) == "-",
+                   beforeCaret.hasSuffix("-") {
+                    tv.textStorage.replaceCharacters(
+                        in: NSRange(location: range.location - 1, length: 1), with: "•")
+                    // Same length — the pending space still lands where it was.
+                }
+                return true
+            }
+
+            if t == "\n", range.length == 0 {
+                let lr = ns.lineRange(for: NSRange(location: range.location, length: 0))
+                let lineLen = max(0, min(lr.length, ns.length - lr.location))
+                let line = ns.substring(with: NSRange(location: lr.location, length: lineLen))
+                    .trimmingCharacters(in: .newlines)
+                let stripped = line.trimmingCharacters(in: .whitespaces)
+                if stripped == "•" || stripped == "• " {
+                    // Empty bullet: Enter ends the list — the marker leaves.
+                    tv.textStorage.replaceCharacters(
+                        in: NSRange(location: lr.location, length: (line as NSString).length), with: "")
+                    tv.selectedRange = NSRange(location: lr.location, length: 0)
+                    finishManualEdit(tv)
+                    return false
+                }
+                if stripped.hasPrefix("• ") {
+                    tv.textStorage.replaceCharacters(in: range, with: "\n• ")
+                    tv.selectedRange = NSRange(location: range.location + 3, length: 0)
+                    finishManualEdit(tv)
+                    return false
+                }
+            }
+            return true
+        }
+
+        private func finishManualEdit(_ tv: UITextView) {
+            LivingWriteView.restyle(tv, concealed: concealed)
+            let value = tv.text ?? ""
+            DispatchQueue.main.async { self.parent.text = value }
         }
 
         func textViewDidBeginEditing(_ tv: UITextView) {

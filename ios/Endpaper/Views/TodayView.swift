@@ -35,6 +35,9 @@ struct TodayView: View {
     @State private var pendingImport: PendingImport?
     @State private var barStamp = 0
     @State private var hookDone = false     // the first-word moment has played (or doesn't apply)
+    @State private var dateShrunk = false   // heading resting at "Sep 5" (QA 2026-09-06: 5s after typing)
+    @State private var shrinkArmed = false
+    @State private var reflectionCardExpected = false
     @State private var hookSeated = false
     @State private var hookWord = ""
     @State private var hookSeatScale: CGFloat = 1
@@ -47,10 +50,6 @@ struct TodayView: View {
 
     private let now = Date()
     private var key: String { DayFormat.key(for: now) }
-
-    private var headingShortened: Bool {
-        !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !todayEntries.isEmpty
-    }
 
     /// "3 entries · 4 min" — the old meta row minus its date.
     private var entriesMeta: String {
@@ -112,18 +111,17 @@ struct TodayView: View {
                 }
                 .padding(.top, Tokens.Space.sm)
 
-                // Once the day has words (a draft begun, or anything
-                // committed), the heading steps back to "Sep 5" — 30%
-                // smaller, smoothly — and stays there (QA 2026-09-05).
-                // scaleEffect keeps the shrink continuous (font sizes
-                // can't tween); the frame height animates the layout
-                // below it closed.
-                Text(headingShortened ? DayFormat.shortDay(now) : DayFormat.dayHeading(now))
+                // Five seconds after the day's first words, the heading
+                // steps back to "Sep 5" — 30% smaller, smoothly — and
+                // stays there (QA 2026-09-06). scaleEffect keeps the
+                // shrink continuous (font sizes can't tween); the frame
+                // height animates the layout below it closed.
+                Text(dateShrunk ? DayFormat.shortDay(now) : DayFormat.dayHeading(now))
                     .typeDisplay()
                     .contentTransition(.opacity)
-                    .scaleEffect(headingShortened ? 0.7 : 1, anchor: .topLeading)
-                    .frame(height: headingShortened ? 25 : 36, alignment: .topLeading)
-                    .animation(Tokens.Motion.base, value: headingShortened)
+                    .scaleEffect(dateShrunk ? 0.7 : 1, anchor: .topLeading)
+                    .frame(height: dateShrunk ? 25 : 36, alignment: .topLeading)
+                    .animation(Tokens.Motion.base, value: dateShrunk)
                     .padding(.top, Tokens.Space.xl)
 
                 // No repeated date here any more — just the day's tally,
@@ -167,22 +165,44 @@ struct TodayView: View {
                 // into view instead of sliding under the keyboard.
                 Color.clear.frame(height: 1).id("caret")
 
-                // Consent card / arrivals / January invite (reflection.js flow)
-                ReflectionFlowHost()
+                // The page's cards (reflections / reminder / rating). One
+                // card rests inline; more than one becomes a horizontal
+                // sliding set (QA 2026-09-06) — never a vertical stack,
+                // and every card carries its own no/later.
+                let cardCount = (reflectionCardExpected ? 1 : 0)
+                    + (reminderOffer ? 1 : 0) + (reviewOffer ? 1 : 0)
+                if cardCount > 1 {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: Tokens.Space.md) {
+                            if reflectionCardExpected {
+                                ReflectionFlowHost()
+                                    .containerRelativeFrame(.horizontal)
+                            }
+                            if reminderOffer {
+                                ReminderCard()
+                                    .containerRelativeFrame(.horizontal)
+                            }
+                            if reviewOffer {
+                                ReviewAskCard()
+                                    .containerRelativeFrame(.horizontal)
+                            }
+                        }
+                        .scrollTargetLayout()
+                    }
+                    .scrollTargetBehavior(.viewAligned)
+                    .scrollClipDisabled()
                     .padding(.top, Tokens.Space.xl)
-
-                // The reminder pre-prompt defers to the consent card — never
-                // two asks on one page.
-                if reminderOffer {
-                    ReminderCard()
+                } else {
+                    ReflectionFlowHost()
                         .padding(.top, Tokens.Space.xl)
-                }
-
-                // The rating ask waits its turn behind every other card —
-                // one ask per page, and this is the least urgent of them.
-                if reviewOffer {
-                    ReviewAskCard()
-                        .padding(.top, Tokens.Space.xl)
+                    if reminderOffer {
+                        ReminderCard()
+                            .padding(.top, Tokens.Space.xl)
+                    }
+                    if reviewOffer {
+                        ReviewAskCard()
+                            .padding(.top, Tokens.Space.xl)
+                    }
                 }
             }
             .padding(.horizontal, Tokens.Space.screenX)
@@ -256,9 +276,18 @@ struct TodayView: View {
             } else {
                 advanceHook(with: draft)   // a restored single word resumes at center
             }
-            let consentPending = ReflectionStore.shared.consentEligible(corpus: ReflectionStore.corpus(from: context))
+            let corpus = ReflectionStore.corpus(from: context)
+            let store = ReflectionStore.shared
+            let consentPending = store.consentEligible(corpus: corpus)
             reminderOffer = ReminderManager.shouldOfferPrompt(in: context) && !consentPending
             reviewOffer = ReviewAskState.eligible(in: context) && !consentPending && !reminderOffer
+            reflectionCardExpected = consentPending
+                || (store.consent == "yes"
+                    && (store.pendingMonthly(corpus: corpus) != nil
+                        || store.pendingWeekly(corpus: corpus) != nil))
+            // The heading rests short whenever the day already has words.
+            if !todayEntries.isEmpty { dateShrunk = true }
+            else if !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { armDateShrink() }
             focusSoon()   // cursor ready — the app opens writable
         }
         .onChange(of: scenePhase) { _, phase in
@@ -417,11 +446,17 @@ struct TodayView: View {
             }
             .frame(minHeight: hookMode ? 230 : nil, alignment: .topLeading)
             .animation(Tokens.Motion.base, value: hookDone)
+            // The editor's own hit area hugs its (small) text — the whole
+            // region must take the tap, especially with the centered ghost
+            // (QA 2026-09-06: "hard to select").
+            .contentShape(Rectangle())
+            .onTapGesture { writingFocused = true }
             .onChange(of: draft) { _, text in
                 draftDay = key
                 idleCommit?.cancel()
                 advanceHook(with: text)
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                armDateShrink()
                 // Stamp the session's start on the first real words — the
                 // committed section sorts by when writing BEGAN, so a
                 // voice note taken mid-draft lands after these words.
@@ -443,6 +478,16 @@ struct TodayView: View {
         }
     }
 
+    /// Five seconds after the first words land, the heading steps back —
+    /// long enough to not distract from the act of starting (QA 2026-09-06).
+    private func armDateShrink() {
+        guard !dateShrunk, !shrinkArmed else { return }
+        shrinkArmed = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            withAnimation(Tokens.Motion.base) { dateShrunk = true }
+        }
+    }
+
     /// The first space (or newline) after the first word seats it: the
     /// overlay travels from center to the top-left at the living-type
     /// size the line will actually render at, then the concealed editor
@@ -457,7 +502,7 @@ struct TodayView: View {
         hookWord = String(trimmed.split(whereSeparator: \.isWhitespace).first ?? "")
         let body = text.drop(while: \.isWhitespace)
         guard !hookSeated, body.contains(where: \.isWhitespace) else { return }
-        hookSeatScale = WrittenScale.size(for: String(body.prefix(while: { !$0.isNewline }))) / 40
+        hookSeatScale = WrittenFormat.large / 40
         withAnimation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 0.45)) { hookSeated = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.48) {
             hookDone = true
@@ -671,14 +716,12 @@ struct EntrySection: View {
                         .foregroundStyle(Tokens.Accent.capture)
                 }
             }
-            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                let size = WrittenScale.size(for: line)
-                Text(line)
-                    .typeWrittenScaled(size)
-                    .textSelection(.enabled)
-                    .padding(.top, size >= 36 ? 6 : 0)
-                    .padding(.bottom, size >= 36 ? 2 : 0)
-            }
+            // The simplified grammar (WrittenFormat, QA 2026-09-06): first
+            // word large, measured first line medium, body after, bullets
+            // italic — one concatenated Text so mixed sizes share a line.
+            WrittenFormat.text(for: entry.text)
+                .typeWrittenScaled(WrittenFormat.body)
+                .textSelection(.enabled)
         }
         .contextMenu {
             if EntryStore.isEditable(entry) {
@@ -716,12 +759,6 @@ struct EntrySection: View {
         "\(DayFormat.dayHeading(entry.at)) · \(DayFormat.timeOfDay(entry.at))\n\n\(entry.text)"
     }
 
-    private var lines: [String] {
-        entry.text
-            .components(separatedBy: "\n")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-    }
 }
 
 /// The reflections motif in miniature — one outlined circle, one filled,

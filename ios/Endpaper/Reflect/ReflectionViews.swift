@@ -442,6 +442,8 @@ struct ReflectionFlowHost: View {
                     } else {
                         presentWeekly(weekly)
                     }
+                } onLater: {
+                    withAnimation(Tokens.Motion.base) { readyWeekly = nil }
                 }
             }
             if let monthly = readyMonthly {
@@ -456,6 +458,8 @@ struct ReflectionFlowHost: View {
                     } else {
                         presentMonthly(monthly)
                     }
+                } onLater: {
+                    withAnimation(Tokens.Motion.base) { readyMonthly = nil }
                 }
             }
             if let year = januaryYear {
@@ -571,13 +575,19 @@ private struct ReadyCard: View {
     let meta: String
     let cta: String
     var onTap: () -> Void
+    var onLater: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             Text(title).typeTitle()
             Text(meta).typeMetaSmall()
-            Button(action: onTap) {
-                Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
+            HStack(spacing: Tokens.Space.lg) {
+                Button(action: onTap) {
+                    Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
+                }
+                Button(action: onLater) {
+                    Text("Later").typeMeta()
+                }
             }
             .padding(.top, Tokens.Space.xs)
         }

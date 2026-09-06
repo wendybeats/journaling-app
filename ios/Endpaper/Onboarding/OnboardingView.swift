@@ -427,7 +427,10 @@ private struct MorphDotsDemo: View {
             }
         }
         .frame(width: width, height: height)
-        .animation(.timingCurve(0.22, 0.61, 0.36, 1, duration: 0.45), value: stage)
+        // Stronger ease-out than the house curve (QA 2026-09-06): the
+        // split leaves fast and lands soft, so each stage reads as an
+        // arrival instead of a glide.
+        .animation(.timingCurve(0.16, 0.84, 0.24, 1, duration: 0.6), value: stage)
         .task {
             if reduceMotion {
                 stage = 2
