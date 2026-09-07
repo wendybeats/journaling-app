@@ -31,7 +31,7 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | The one app on my phone with no red dot, no badge, no push | quiet tech | minimalists | card / clip | fresh |
 | Writing that counts because it can't be taken back | permanence | practice crowd | card | fresh |
 | My journal costs what one good paper notebook costs | price | fence-sitters | card | fresh |
-| [quote worth keeping], shown on the page it was written on | quotes | everyone | quote-motion Reel | winner |
+| [quote worth keeping], shown on the page it was written on | quotes | everyone | quote-motion Reel | rested |
 | Wrote this one down so it would stop following me around | quotes | everyone | quote-motion caption | live |
 | Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | fresh |
 | One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | fresh |
@@ -43,7 +43,10 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | Guess how many of your own days you actually remember | generation effect | everyone | caption / cover | fresh |
 | Your notes app vs. your journal — only one matters in ten years | contrast | fence-sitters | card / VO | fresh |
 | A journal is your head, on paper | cognitive fluency | everyone | card / bio / VO close | fresh |
-| Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | fresh |
+| Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | live |
+| 10 years of journals. Never read them once | founder / loss aversion | lapsed journalers | face ≤20s recut, cold open | fresh |
+| Someone said something that stung. Don't answer — write these three questions | situational instruction | everyone | face ≤30s, session-framed | fresh |
+| Never forget what you want to say in your next session | therapy / self-relevance | practice crowd | face ≤30s + caption | fresh |
 | This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
 | Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |
 | A writing exercise for the day you have nothing to say | recs | lapsed journalers | list card | fresh |
