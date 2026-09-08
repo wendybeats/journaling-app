@@ -428,6 +428,14 @@ Round 3 (2026-09-06) — writing grammar, cards, polish:
       intentional
 - [ ] Hook handoff: when the first word seats, the caret reappears at
       the end of the text immediately (no caret-less state)
+- [ ] Hook start (2026-09-08): the blinking rule-cursor sits centered
+      BENEATH the ghost question, never off to its right; no autocorrect
+      bubble or grey marked-text box appears top-left while typing the
+      first word (assist sleeps while concealed, wakes on the seat —
+      confirm autocorrect works again from the second word on)
+- [ ] Notebook: archived pages render the same grammar as Today —
+      bullets stay body-size italic, lines after the first in a block
+      stay body; drop cap only on a body-size opening line
 - [ ] Bullets: "- " at a line start becomes "• " as you type; the line
       renders body-size ITALIC with a hanging indent; Enter continues
       the list; Enter on an empty bullet ends it (marker removed)

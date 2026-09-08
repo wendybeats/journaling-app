@@ -67,20 +67,19 @@ enum WrittenFormat {
     /// follows it is body, and anything following a bullet stays body
     /// until a blank line starts a new block. That blank line is the
     /// "two returns after a list" that brings the large line back.
-    static func segments(for text: String, width: CGFloat) -> [Segment] {
-        guard !text.isEmpty else { return [] }
-        var segs: [Segment] = []
+    struct Line {
+        let text: String     // without its newline
+        let tier: Tier
+    }
+
+    /// One tier per typed line, in order — the source of truth both the
+    /// writing surface (via `segments`) and the Notebook (line by line,
+    /// keeping its drop cap) render from, so archived pages keep exactly
+    /// the sizes they were written at.
+    static func lines(for text: String, width: CGFloat) -> [Line] {
+        var out: [Line] = []
         var heroUsed = false          // this block's resizing line is spent
-
-        var rest = Substring(text)
-        var first = true
-        while first || !rest.isEmpty {
-            let lineEnd = first
-                ? (rest.firstIndex(of: "\n") ?? rest.endIndex)
-                : (rest.dropFirst().firstIndex(of: "\n") ?? rest.endIndex)
-            let chunk = String(rest[..<lineEnd])        // ("\n" +) the line
-            let line = first ? chunk : String(chunk.dropFirst())
-
+        for line in text.components(separatedBy: "\n") {
             let tier: Tier
             if line.trimmingCharacters(in: .whitespaces).isEmpty {
                 heroUsed = false                        // blank line: new block
@@ -94,10 +93,17 @@ enum WrittenFormat {
             } else {
                 tier = .body
             }
-            segs.append(Segment(text: chunk, tier: tier))
+            out.append(Line(text: line, tier: tier))
+        }
+        return out
+    }
 
-            rest = rest[lineEnd...]
-            first = false
+    /// Contiguous segments covering `text` exactly (newlines ride with the
+    /// following line's segment), adjacent same-tier lines merged.
+    static func segments(for text: String, width: CGFloat) -> [Segment] {
+        guard !text.isEmpty else { return [] }
+        let segs = lines(for: text, width: width).enumerated().map { i, l in
+            Segment(text: (i == 0 ? "" : "\n") + l.text, tier: l.tier)
         }
         return merged(segs)
     }

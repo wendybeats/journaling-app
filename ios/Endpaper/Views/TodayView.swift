@@ -401,7 +401,11 @@ struct TodayView: View {
                     // rule-cursor blinking beside it — the "you can type
                     // here" the centered layout was missing (QA 2026-09-05).
                     if hookMode {
-                        HStack(alignment: .center, spacing: 7) {
+                        // The cursor sits centered BENEATH the question —
+                        // where the first word will land — not beside a
+                        // two-line block, where it read as right-aligned
+                        // (QA 2026-09-08).
+                        VStack(spacing: Tokens.Space.md) {
                             Text(ghostPrompt ?? "Write. This page is yours.")
                                 .font(ghostPrompt == nil
                                       ? .custom(EndpaperFont.body, size: 28)
@@ -409,7 +413,7 @@ struct TodayView: View {
                                 .lineSpacing(ghostPrompt == nil ? 0 : 9)
                                 .foregroundStyle(Tokens.Text.meta)
                                 .multilineTextAlignment(.center)
-                            BlinkingCursor(height: ghostPrompt == nil ? 30 : 26)
+                            BlinkingCursor(height: 30)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .allowsHitTesting(false)

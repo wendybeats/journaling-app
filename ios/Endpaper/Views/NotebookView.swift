@@ -115,9 +115,10 @@ struct NotebookDay: View {
 }
 
 /// The day's writing, line by line at the size it was written — the same
-/// WrittenScale classifier as the writing surface, so a preserved big
-/// word stays big in the notebook too. The two-line drop cap dresses the
-/// first line only when that line is body scale; a display-size opening
+/// WrittenFormat grammar as the writing surface (QA 2026-09-08: bullets
+/// had strayed large here), so a preserved big word stays big and a
+/// bullet stays a quiet italic line. The two-line drop cap dresses the
+/// first line only when that line is body size; a display-size opening
 /// line is already its own initial. All text is selectable — people will
 /// want to carry their own words out.
 struct DayText: View {
@@ -125,22 +126,25 @@ struct DayText: View {
     var dropCap = false
 
     var body: some View {
-        let lines = text
-            .components(separatedBy: "\n")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
+        // The same grammar as the writing surface (WrittenFormat), so an
+        // archived page keeps exactly the sizes it was written at — tiers
+        // are computed on the FULL text (blank lines reset blocks), then
+        // blank lines are dropped for display.
+        let lines = WrittenFormat.lines(for: text, width: WrittenFormat.pageWidth)
+            .map { WrittenFormat.Line(text: $0.text.trimmingCharacters(in: .whitespaces), tier: $0.tier) }
+            .filter { !$0.text.isEmpty }
 
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                let size = WrittenScale.size(for: line)
-                if dropCap && index == 0 && size == 17 {
-                    DropCapParagraph(text: line)
+                if dropCap && index == 0 && line.tier == .body {
+                    DropCapParagraph(text: line.text)
                 } else {
-                    Text(line)
-                        .typeWrittenScaled(size)
+                    Text(line.text)
+                        .typeWrittenScaled(line.tier.size)
+                        .italic(line.tier.italic)
                         .textSelection(.enabled)
-                        .padding(.top, size >= 36 ? 6 : 0)
-                        .padding(.bottom, size >= 36 ? 2 : 0)
+                        .padding(.top, line.tier == .large ? 6 : 0)
+                        .padding(.bottom, line.tier == .large ? 2 : 0)
                 }
             }
         }

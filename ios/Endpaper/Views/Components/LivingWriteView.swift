@@ -33,8 +33,24 @@ struct LivingWriteView: UIViewRepresentable {
         tv.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         tv.setContentHuggingPriority(.defaultLow, for: .horizontal)
         context.coordinator.concealed = concealed
+        Self.applyAssist(tv, concealed: concealed)
         Self.restyle(tv, to: text, caretToEnd: true, concealed: concealed)   // a restored draft opens ready to continue
         return tv
+    }
+
+    /// Autocorrect, spell-check and inline predictions anchor their
+    /// bubbles to the REAL text — top-left, invisible — while the hook's
+    /// overlay word sits centered (QA 2026-09-08: a stray "He ×" bubble
+    /// and marked-text box). They sleep while concealed and wake on the
+    /// reveal; reloadInputViews makes the keyboard honor the change
+    /// mid-session.
+    private static func applyAssist(_ tv: UITextView, concealed: Bool) {
+        tv.autocorrectionType = concealed ? .no : .default
+        tv.spellCheckingType = concealed ? .no : .default
+        if #available(iOS 17.0, *) {
+            tv.inlinePredictionType = concealed ? .no : .default
+        }
+        if tv.isFirstResponder { tv.reloadInputViews() }
     }
 
     func updateUIView(_ tv: UITextView, context: Context) {
@@ -42,6 +58,7 @@ struct LivingWriteView: UIViewRepresentable {
         if context.coordinator.concealed != concealed {
             context.coordinator.concealed = concealed
             tv.tintColor = concealed ? .clear : UIColor(Tokens.Line.cursor)
+            Self.applyAssist(tv, concealed: concealed)
             Self.restyle(tv, concealed: concealed)
             if !concealed {
                 // The caret doesn't repaint on a tint change alone — nudge
