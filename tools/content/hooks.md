@@ -224,6 +224,18 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-09: second Eden mining pass (quotes, IG mid-tier ≥3x outliers,
+  last quarter) — thin: one search useful, the "know yourself" search
+  returned one off-topic post. Lifted: "what you want becomes the
+  sacrifice" (131x, unattributed), "overthink the best" (3.4x,
+  unattributed), "clarity comes from action" (unattributed — the post
+  credited Kunal Shah; we don't attribute what we can't verify), and
+  Housel "wealth is what you don't see" (19.7x, verified — off-spine,
+  Wendell may veto). Bench topped to 8 with four session-framed
+  originals on the "say it in your next session" spine, plus six
+  session-framed questions. Analytics warehouse STILL zero IG rows
+  since Aug 17 — question-cut comment-rate verdict remains pending
+  until the Eden IG sync is re-authed in the Eden app.
 - 2026-08-12: first Eden mining pass ran (global corpus, outlier-ranked,
   last quarter). Four lines lifted from 5x–115x overperformers onto the
   bench (control/mind, emotions/button, ships/water, defeat is
@@ -356,3 +368,4 @@ convert to comments better than statements.
 | 2026-09-08 | IG Reel (manual, his ~21:00 = US Tue morning) | QUESTION-CUT "what am I still doing only because I *started*?" light | US-flip evening slot — reflective→light; questions 2 left after this (said-out-loud/change, cost-me); QUOTES EMPTY — mining restock owed on Eden reconnect | caption "Asked myself on Tuesday, Sep 8th at 6:55am", catalog audio, manual post |
 | 2026-09-09 | IG Reel (manual, his AM = US Tue evening) | QUESTION-CUT "if I said it out loud, what would have to *change*?" dark | US-flip morning slot — bench-empty bridge; confrontational→dark | caption "Asked myself on Tuesday, Sep 8th at 9:21pm", catalog audio, manual post |
 | 2026-09-09 | IG Reel (manual, his ~21:00 = US Wed morning) | QUESTION-CUT "what did this week actually *cost* me?" light | US-flip evening slot — LAST benched question; both benches empty after this; Eden mining pass run same morning (see restock) | caption "Asked myself on Wednesday, Sep 9th at 7:06am", catalog audio, manual post |
+| 2026-09-09 | NOTE: RESTOCK committed (Eden-validated pass, see Signals) — quotes.json +8 (3 mined unattributed, Housel verified, 4 originals), questions.json +6. Next kit (Sep 10 AM) opens on the restocked bench: dark = "what you want becomes the *sacrifice*", light = "overthink the *best*". | | | |
