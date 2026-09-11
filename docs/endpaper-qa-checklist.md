@@ -444,6 +444,63 @@ Round 3 (2026-09-06) — writing grammar, cards, polish:
       never stacked; every card has its no/later (ReadyCards gained
       "Later", which hides them until the next visit)
 
+## 18. Install-anchored week + the glimpse (2026-09-11, next archive 21)
+
+The reflection week now runs from the reader's first day, not the
+calendar (Sunday helpers in Reflect.swift stay for the parity suite).
+Demo footer (Notebook, DEBUG/TestFlight) gained **First day −7**: press
+once → today is day 7 (first reflection due); again → day 14 (the locked
+one). Seed demo first so the week has words.
+
+Cadence
+- [ ] Fresh install (or Clear demo + delete/reinstall): Today says
+      "Reflection in 7 days"; daily arrival "Your reflection is 7 days
+      away"; the ghost prompts run days 0–6
+- [ ] Each day the count drops by one; day 6 says "tomorrow"; day 7
+      "Reflection today" + arrival "is ready" — whatever weekday you
+      installed on
+- [ ] Day 7 with ≥2 written days and ≥150 words in days 0–6 (lowered
+      first-week bar): "Your week is ready." card; deck covers exactly
+      days 0–6 (the week label shows them); offer beat closes it
+- [ ] Day 7 with a thin week (say 1 day written): card "Not enough to
+      reflect on yet. Your first reflection moves to {weekday, date}",
+      only an "Okay" — dismiss once, it stays gone; no paywall that day
+- [ ] After the first weekly is read, regular weeks need the normal bar
+      (3 days / 300 words) again
+- [ ] Day 14 (press −7 again): "Your week is ready." with "Join to read
+      it →" for a non-member
+- [ ] Notes: Settings → Notifications pending (or observe): the eve note
+      lands the day before your reflection weekday at 22:00, the day note
+      on the weekday at 09:00 — not Saturday/Sunday unless you installed
+      on a Sunday
+- [ ] Monthly recaps are unchanged (calendar months)
+
+Glimpse
+- [ ] Day 0: write ~100 words that repeat a word ("stressed" ×2). No
+      highlight — needs two written days
+- [ ] Day 1 (or seed + write): write again using the word so it reaches
+      3 mentions across 2 days and the week has ≥120 words → after the
+      section commits, the LAST occurrence of the word in today's page
+      carries a soft wash (no colour, no underline); the live editor is
+      untouched
+- [ ] Tap the washed word → compact inverted sheet: the count large
+      ("3"), "A pattern emerges", "You wrote “stressed” 3 times this
+      week.", Noted. Noted → sheet closes, wash gone
+- [ ] Swipe the sheet away without Noted → wash stays; tap works again
+- [ ] Untapped, the wash is gone next day (fades at midnight); the
+      Notebook never shows a wash
+- [ ] Same word never fires again; a second glimpse in the same week
+      needs ≥5 mentions across ≥3 days of a NEW word; never more than
+      two glimpses per week; never on reflection day; never more than
+      one a day
+- [ ] Flat words never light ("work", "said", "morning", "didn")
+- [ ] "No thanks" to reflections → no glimpses; unasked → glimpses still
+      fire
+- [ ] Editing a section (long-press → Edit) re-evaluates; the wash moves
+      to the new last occurrence or disappears if the word is gone
+- [ ] VoiceOver reads the hint "A word that keeps coming back. Tap it."
+- [ ] Reduce Motion: sheet and wash are static, nothing missing
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

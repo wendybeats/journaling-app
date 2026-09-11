@@ -95,13 +95,46 @@ final class ReflectionStore {
     }
 
     /// The weekly reflection waiting to be shown, or nil (no consent /
-    /// already seen / insufficient week — silence).
+    /// already seen / insufficient week — silence). Install-anchored
+    /// (QA 2026-09-11): the week is the reader's own seven days, and until
+    /// a first weekly has been read the bar is lowered to two written
+    /// days and 150 words so day 7 has something to hand back.
     func pendingWeekly(corpus: Corpus, now: Date = .now) -> WeeklySignal? {
-        guard state.consent == "yes" else { return nil }
-        let signal = Reflect.weeklySignal(start: Reflect.lastCompletedWeekStart(now: now), corpus: corpus)
-        guard state.seen[signal.id] != true, signal.sufficient else { return nil }
+        guard state.consent == "yes",
+              let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
+        var signal = Reflect.weeklySignal(start: start, corpus: corpus)
+        guard state.seen[signal.id] != true else { return nil }
+        if !signal.sufficient, !weeklySeenEver, Self.thinBar(signal) { signal.sufficient = true }
+        guard signal.sufficient else { return nil }
         return signal
     }
+
+    /// Has any weekly ever been read on this device?
+    var weeklySeenEver: Bool {
+        state.archived.values.contains { if case .weekly = $0 { return true } else { return false } }
+    }
+
+    private static func thinBar(_ s: WeeklySignal) -> Bool { s.days >= 2 && s.words >= 150 }
+
+    /// Day 7 with nothing to hand back: the first week missed even the
+    /// lowered bar. Returns the date the first reflection moves to; shown
+    /// once per week boundary (dismissing marks it seen).
+    func pendingThinWeek(corpus: Corpus, now: Date = .now) -> Date? {
+        guard state.consent == "yes", !weeklySeenEver,
+              let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
+        guard state.seen[Self.thinID(start)] != true else { return nil }
+        let signal = Reflect.weeklySignal(start: start, corpus: corpus)
+        guard !signal.sufficient, !Self.thinBar(signal) else { return nil }
+        return ReflectionCadence.followingReflectionDate(now: now)
+    }
+
+    func markThinSeen(now: Date = .now) {
+        guard let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return }
+        state.seen[Self.thinID(start)] = true
+        persist()
+    }
+
+    private static func thinID(_ start: Date) -> String { "thin-" + DayFormat.key(for: start) }
 
     /// The previous month's recap, or nil (no consent / already seen /
     /// a month with no writing at all stays silent).

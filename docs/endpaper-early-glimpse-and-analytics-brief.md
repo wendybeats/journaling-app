@@ -1,6 +1,6 @@
 # Endpaper — PM brief: the early glimpse, and product analytics
 
-Status: BRAINSTORM, nothing implemented. Written 2026-09-11 against the
+Status: §1 (cadence + glimpse) BUILT 2026-09-11 for archive 21, QA §18; §2 analytics still a brainstorm. Written 2026-09-11 against the
 1.0.4 codebase (TestFlight build 20; next archive 21). Storyboard of the
 current first-reflection flow: `docs/reflection-storyboard/` (19 screens
 + 3 proposed).

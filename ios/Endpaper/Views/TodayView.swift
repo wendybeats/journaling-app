@@ -41,6 +41,8 @@ struct TodayView: View {
     @State private var hookSeated = false
     @State private var hookWord = ""
     @State private var hookSeatScale: CGFloat = 1
+    @State private var glimpse: GlimpseSignal? = nil   // today's lit word, if any (Glimpse.swift)
+    @State private var glimpseSheet = false
 
     struct PendingImport: Identifiable {
         let id = UUID()
@@ -60,7 +62,7 @@ struct TodayView: View {
 
     /// The resting countdown under the date (1.0.4).
     private var countdownLine: String {
-        switch Reflect.daysUntilReflection(now: now) {
+        switch ReflectionCadence.daysUntilReflection(now: now) {
         case 0: return "Reflection today"
         case 1: return "Reflection tomorrow"
         case let n: return "Reflection in \(n) days"
@@ -151,7 +153,9 @@ struct TodayView: View {
                 // The day's committed sections
                 VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                     ForEach(todayEntries, id: \.id) { entry in
-                        EntrySection(entry: entry, onEdited: { refresh() })
+                        EntrySection(entry: entry, onEdited: { refresh() },
+                                     glimpse: entry.id == glimpseEntryID ? glimpse?.forms : nil,
+                                     onGlimpseTap: { glimpseSheet = true })
                             .opacity(settlingID == entry.id ? 0 : 1)
                             .animation(Tokens.Motion.fast, value: settlingID)
                     }
@@ -250,6 +254,15 @@ struct TodayView: View {
                 commitCaptured(final, origin: pending.origin)
             }
         }
+        .sheet(isPresented: $glimpseSheet) {
+            if let g = glimpse {
+                GlimpseSheet(signal: g) {
+                    GlimpseStore.shared.acknowledge()
+                    glimpse = nil
+                    glimpseSheet = false
+                }
+            }
+        }
         .sheet(isPresented: $scanning) {
             DocScanner { pages in importPages(pages) }
                 .ignoresSafeArea()
@@ -284,7 +297,8 @@ struct TodayView: View {
             reflectionCardExpected = consentPending
                 || (store.consent == "yes"
                     && (store.pendingMonthly(corpus: corpus) != nil
-                        || store.pendingWeekly(corpus: corpus) != nil))
+                        || store.pendingWeekly(corpus: corpus) != nil
+                        || store.pendingThinWeek(corpus: corpus) != nil))
             // The heading rests short whenever the day already has words.
             if !todayEntries.isEmpty { dateShrunk = true }
             else if !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { armDateShrink() }
@@ -637,6 +651,16 @@ struct TodayView: View {
 
     private func refresh() {
         todayEntries = EntryStore.entries(forDay: key, in: context)
+        // The glimpse re-evaluates whenever the page's committed text
+        // changes — it can only light a word that is on today's page.
+        glimpse = GlimpseStore.shared.evaluate(corpus: ReflectionStore.corpus(from: context), todayKey: key)
+    }
+
+    /// The section carrying the lit word: the latest of today's entries
+    /// that contains any form of it.
+    private var glimpseEntryID: UUID? {
+        guard let g = glimpse else { return nil }
+        return todayEntries.last { Glimpse.lastRange(of: g.forms, in: $0.text) != nil }?.id
     }
 }
 
@@ -701,6 +725,10 @@ struct RecPill: View {
 struct EntrySection: View {
     let entry: Entry
     var onEdited: (() -> Void)? = nil
+    /// The glimpse (1.0.4): surface forms of the word that keeps coming
+    /// back — its last occurrence in this section lights up and taps.
+    var glimpse: [String]? = nil
+    var onGlimpseTap: (() -> Void)? = nil
 
     @State private var editing = false
 
@@ -723,9 +751,19 @@ struct EntrySection: View {
             // The simplified grammar (WrittenFormat, QA 2026-09-06): first
             // word large, measured first line medium, body after, bullets
             // italic — one concatenated Text so mixed sizes share a line.
-            WrittenFormat.text(for: entry.text)
-                .typeWrittenScaled(WrittenFormat.body)
-                .textSelection(.enabled)
+            if let forms = glimpse {
+                Text(WrittenFormat.attributed(for: entry.text, highlight: forms, link: Glimpse.link))
+                    .typeWrittenScaled(WrittenFormat.body)
+                    .environment(\.openURL, OpenURLAction { _ in
+                        onGlimpseTap?()
+                        return .handled
+                    })
+                    .accessibilityHint("A word that keeps coming back. Tap it.")
+            } else {
+                WrittenFormat.text(for: entry.text)
+                    .typeWrittenScaled(WrittenFormat.body)
+                    .textSelection(.enabled)
+            }
         }
         .contextMenu {
             if EntryStore.isEditable(entry) {

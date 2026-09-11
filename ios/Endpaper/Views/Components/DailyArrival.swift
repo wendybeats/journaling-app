@@ -56,7 +56,7 @@ struct DailyArrival: View {
         guard ReflectionStore.shared.consent != "no" else {
             return DayFormat.weekdayName(now) + "."
         }
-        switch Reflect.daysUntilReflection(now: now) {
+        switch ReflectionCadence.daysUntilReflection(now: now) {
         case 0: return "Your reflection\nis ready."
         case 1: return "Your reflection\narrives tomorrow."
         case let n: return "Your reflection\nis \(n) days away."

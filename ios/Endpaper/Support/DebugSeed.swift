@@ -185,6 +185,16 @@ enum DebugSeed {
         UserDefaults.standard.removeObject(forKey: seededIDsKey)
     }
 
+    /// Moves the first-day stamp back so the install-anchored reflection
+    /// week can be walked without waiting: −7 makes today day 7 (the
+    /// first reflection due), pressed again day 14 (the locked one).
+    static func rewindFirstDay(days: Int) {
+        let current = UserDefaults.standard.string(forKey: AppKeys.firstDay).map(DayFormat.date(fromKey:)) ?? .now
+        let moved = Calendar.current.date(byAdding: .day, value: -days, to: current) ?? current
+        UserDefaults.standard.set(DayFormat.key(for: moved), forKey: AppKeys.firstDay)
+        Task { await ReminderManager.rearmReflectionNotes() }
+    }
+
     /// Removes the seeded batch — and nothing else. The app itself has no
     /// delete path, by design; real entries stay untouchable even here.
     /// Also resets reflection + reminder state so the consent card and
@@ -200,6 +210,7 @@ enum DebugSeed {
         }
         UserDefaults.standard.removeObject(forKey: seededIDsKey)
         ReflectionStore.shared.resetAll()
+        GlimpseStore.shared.resetAll()
         UserDefaults.standard.removeObject(forKey: AppKeys.reminder)
     }
 }

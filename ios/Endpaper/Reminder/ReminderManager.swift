@@ -94,8 +94,9 @@ enum ReminderManager {
 
     // MARK: - The weekly reflection's two notes (QA 2026-09-05)
 
-    /// D6 teases, D7 announces: Saturday 22:00 "arrives tomorrow",
-    /// Sunday 9:00 "is here". Repeating calendar triggers, armed only
+    /// D6 teases, D7 announces: the eve of the reader's reflection day at
+    /// 22:00 "arrives tomorrow", the day itself at 9:00 "is here" (weekday
+    /// from the first-day anchor). Repeating calendar triggers, armed only
     /// while reflections consent is yes; consent changes call this with
     /// requestPermission so a reader who never enabled the daily
     /// reminder still gets the one permission ask their yes implies.
@@ -107,16 +108,20 @@ enum ReminderManager {
             _ = try? await center.requestAuthorization(options: [.alert, .sound])
         }
 
+        // Install-anchored cadence (QA 2026-09-11): the notes ride the
+        // reader's own reflection weekday, not the calendar's Sunday.
+        let reflectDay = ReflectionCadence.reflectionWeekday()
+        let eveDay = reflectDay == 1 ? 7 : reflectDay - 1
         let eve = UNMutableNotificationContent()
         eve.body = "Know yourself: your weekly reflection arrives tomorrow."
-        var sat = DateComponents(); sat.weekday = 7; sat.hour = 22; sat.minute = 0
+        var sat = DateComponents(); sat.weekday = eveDay; sat.hour = 22; sat.minute = 0
         try? await center.add(UNNotificationRequest(
             identifier: reflectionEveID, content: eve,
             trigger: UNCalendarNotificationTrigger(dateMatching: sat, repeats: true)))
 
         let day = UNMutableNotificationContent()
         day.body = "What did you say? Your weekly reflection is here."
-        var sun = DateComponents(); sun.weekday = 1; sun.hour = 9; sun.minute = 0
+        var sun = DateComponents(); sun.weekday = reflectDay; sun.hour = 9; sun.minute = 0
         try? await center.add(UNNotificationRequest(
             identifier: reflectionDayID, content: day,
             trigger: UNCalendarNotificationTrigger(dateMatching: sun, repeats: true)))

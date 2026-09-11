@@ -406,6 +406,7 @@ struct ReflectionFlowHost: View {
     @State private var readyMonthly: MonthlySignal? = nil
     @State private var monthlyLocked = false
     @State private var showMonthlyGate = false
+    @State private var thinWeek: Date? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.md) {
@@ -444,6 +445,20 @@ struct ReflectionFlowHost: View {
                     }
                 } onLater: {
                     withAnimation(Tokens.Motion.base) { readyWeekly = nil }
+                }
+            }
+            // Day 7 with a thin first week (QA 2026-09-11): say so, name
+            // the date, ask nothing.
+            if let moved = thinWeek {
+                ReadyCard(
+                    title: "Not enough to reflect on yet.",
+                    meta: "Your first reflection moves to \(DayFormat.weekdayName(moved)), \(DayFormat.shortDay(moved))",
+                    cta: nil,
+                    laterLabel: "Okay"
+                ) {
+                } onLater: {
+                    ReflectionStore.shared.markThinSeen()
+                    withAnimation(Tokens.Motion.base) { thinWeek = nil }
                 }
             }
             if let monthly = readyMonthly {
@@ -507,12 +522,15 @@ struct ReflectionFlowHost: View {
         // until the member joins.
         readyWeekly = nil
         readyMonthly = nil
+        thinWeek = nil
         if let monthly = store.pendingMonthly(corpus: corpus) {
             readyMonthly = monthly
             monthlyLocked = !entitled
         } else if let weekly = store.pendingWeekly(corpus: corpus) {
             readyWeekly = weekly
             weeklyLocked = !entitled && firstUsed
+        } else {
+            thinWeek = store.pendingThinWeek(corpus: corpus)
         }
 
         // January: the year is ready (spec §3.3) — a single quiet line.
@@ -573,7 +591,8 @@ struct ReflectionFlowHost: View {
 private struct ReadyCard: View {
     let title: String
     let meta: String
-    let cta: String
+    var cta: String? = nil
+    var laterLabel = "Later"
     var onTap: () -> Void
     var onLater: () -> Void
 
@@ -582,11 +601,13 @@ private struct ReadyCard: View {
             Text(title).typeTitle()
             Text(meta).typeMetaSmall()
             HStack(spacing: Tokens.Space.lg) {
-                Button(action: onTap) {
-                    Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
+                if let cta {
+                    Button(action: onTap) {
+                        Text(cta).typeMeta().foregroundStyle(Tokens.Text.written)
+                    }
                 }
                 Button(action: onLater) {
-                    Text("Later").typeMeta()
+                    Text(laterLabel).typeMeta().foregroundStyle(cta == nil ? Tokens.Text.written : Tokens.Text.meta)
                 }
             }
             .padding(.top, Tokens.Space.xs)

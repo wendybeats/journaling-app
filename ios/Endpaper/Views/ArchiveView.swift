@@ -95,6 +95,15 @@ private struct DebugSeedFooter: View {
                 Text("Clear demo").typeMetaSmall()
             }
             .buttonStyle(.plain)
+            // QA 2026-09-11: the reflection week is install-anchored, so
+            // reaching day 7 means moving the first day back a week.
+            Button {
+                DebugSeed.rewindFirstDay(days: 7)
+                onChange()
+            } label: {
+                Text("First day −7").typeMetaSmall()
+            }
+            .buttonStyle(.plain)
             Spacer()
         }
         .padding(.horizontal, Tokens.Space.screenX)
