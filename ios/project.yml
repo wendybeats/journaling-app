@@ -86,9 +86,10 @@ targets:
         # 20 (2026-09-06 — QA round 3: WrittenFormat grammar, bullets,
         # card carousel, hook + morph polish), 21 (2026-09-07 — uploaded
         # from the Mac before the glimpse/analytics work; consumed).
-        # 22 = install-anchored week + glimpse + PostHog. Next archive: 23.
+        # 22 = install-anchored week + glimpse + PostHog (uploaded 2026-09-11).
+        # 23 = QA round: Seed glimpse tool, card-body tap. Next archive: 24.
         MARKETING_VERSION: 1.0.4
-        CURRENT_PROJECT_VERSION: 22
+        CURRENT_PROJECT_VERSION: 23
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"
