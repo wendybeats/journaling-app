@@ -104,6 +104,13 @@ private struct DebugSeedFooter: View {
                 Text("First day −7").typeMetaSmall()
             }
             .buttonStyle(.plain)
+            Button {
+                DebugSeed.seedGlimpse(in: context)
+                onChange()
+            } label: {
+                Text("Seed glimpse").typeMetaSmall()
+            }
+            .buttonStyle(.plain)
             Spacer()
         }
         .padding(.horizontal, Tokens.Space.screenX)

@@ -185,6 +185,34 @@ enum DebugSeed {
         UserDefaults.standard.removeObject(forKey: seededIDsKey)
     }
 
+    /// The glimpse rehearsal (QA 2026-09-11): the glimpse needs two written
+    /// days in the anchored week and the word on TODAY's page, which a fresh
+    /// install can't reach. This writes yesterday — ~90 words with
+    /// "stressed" twice — and makes yesterday day 0, so one section today
+    /// using "stressed" once lights the word. Removed by Clear demo.
+    static func seedGlimpse(in context: ModelContext) {
+        let cal = Calendar.current
+        guard let yesterday = cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: .now)),
+              let at = cal.date(byAdding: .minute, value: 20 * 60 + 12, to: yesterday) else { return }
+        let text = """
+        Long day. The review moved to Thursday and I said fine to everyone who asked, \
+        which is what I say when I am stressed and don't want to talk about it. \
+        Walked home the long way to shake it off and it half worked. Dinner was quiet. \
+        Mom called and I let it ring, which I feel bad about. I am stressed about the \
+        money conversation too and keep putting it at the bottom of the list. \
+        Tomorrow I want to write the thing down before it turns into something I carry.
+        """
+        let entry = Entry(dayKey: DayFormat.key(for: at), at: at, text: text)
+        context.insert(entry)
+        try? context.save()
+        var ids = UserDefaults.standard.stringArray(forKey: seededIDsKey) ?? []
+        ids.append(entry.id.uuidString)
+        UserDefaults.standard.set(ids, forKey: seededIDsKey)
+        UserDefaults.standard.set(DayFormat.key(for: yesterday), forKey: AppKeys.firstDay)
+        GlimpseStore.shared.resetAll()
+        Task { await ReminderManager.rearmReflectionNotes() }
+    }
+
     /// Moves the first-day stamp back so the install-anchored reflection
     /// week can be walked without waiting: −7 makes today day 7 (the
     /// first reflection due), pressed again day 14 (the locked one).

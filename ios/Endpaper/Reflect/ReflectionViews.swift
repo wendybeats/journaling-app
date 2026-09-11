@@ -634,6 +634,10 @@ private struct ReadyCard: View {
         .padding(Tokens.Space.card)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Tokens.Surface.raised, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
+        // The card itself is the tap target (QA 2026-09-11: the mono link
+        // alone was too small to find); "Later" keeps its own button.
+        .contentShape(Rectangle())
+        .onTapGesture { if cta != nil { onTap() } }
     }
 }
 

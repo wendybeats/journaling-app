@@ -475,14 +475,16 @@ Cadence
       on a Sunday
 - [ ] Monthly recaps are unchanged (calendar months)
 
-Glimpse
-- [ ] Day 0: write ~100 words that repeat a word ("stressed" ×2). No
-      highlight — needs two written days
-- [ ] Day 1 (or seed + write): write again using the word so it reaches
-      3 mentions across 2 days and the week has ≥120 words → after the
-      section commits, the LAST occurrence of the word in today's page
-      carries a soft wash (no colour, no underline); the live editor is
-      untouched
+Glimpse — test BEFORE any "First day −7" (the glimpse never fires on a
+reflection day, and a fresh install's anchored week is one day long, so
+the demo footer's **Seed glimpse** writes yesterday for you)
+- [ ] Fresh install (or Clear demo): Notebook → Seed glimpse. It writes a
+      ~90-word entry for yesterday containing "stressed" twice and makes
+      yesterday day 0 (Today now says "Reflection in 6 days")
+- [ ] Today: write a short section that uses "stressed" once, commit
+      (tap away / wait for the idle commit) → the LAST "stressed" on
+      today's page carries a soft wash (no colour, no underline); the
+      live editor is untouched
 - [ ] Tap the washed word → compact inverted sheet: the count large
       ("3"), "A pattern emerges", "You wrote “stressed” 3 times this
       week.", Noted. Noted → sheet closes, wash gone
