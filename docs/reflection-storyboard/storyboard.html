@@ -1,0 +1,246 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"Newsreader";src:url("file:///home/user/journaling-app/site/fonts/Newsreader.woff2") format("woff2")}
+@font-face{font-family:"Newsreader";font-style:italic;src:url("file:///home/user/journaling-app/site/fonts/Newsreader-italic.woff2") format("woff2")}
+@font-face{font-family:"Fragment Mono";src:url("file:///home/user/journaling-app/site/fonts/FragmentMono.woff2") format("woff2")}
+@font-face{font-family:"Instrument Sans";src:url("file:///home/user/journaling-app/site/fonts/InstrumentSans.woff2") format("woff2")}
+:root{--bone:#E8E6E1;--boneRaised:#EFEDE8;--ink:#1A1A1A;--inkSoft:#262320;--char:#161514;--boneType:#E8E6E1;--meta:#8E8B85;--hair:#C9C6BF}
+body{margin:0;background:#D9D6CF;font-family:"Instrument Sans",system-ui;color:var(--ink)}
+section{padding:36px 40px 44px;background:#D9D6CF}
+section h2{font:500 22px/1.2 "Instrument Sans";margin:0 0 6px}
+section p.sub{font:12px/1.5 "Fragment Mono";letter-spacing:.06em;text-transform:uppercase;color:#6B6862;margin:0 0 26px}
+.row{display:flex;gap:34px;align-items:flex-start;flex-wrap:nowrap}
+.cell{width:300px;flex:none}
+.cell .cap{font:11px/1.45 "Fragment Mono";letter-spacing:.04em;color:#3a3835;margin-top:14px}
+.cell .cap b{display:block;font-weight:400;color:#1A1A1A;margin-bottom:2px}
+.frame{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;transform:scale(.769);transform-origin:top left;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.cellwrap{height:650px}
+.page{background:var(--bone);color:var(--ink)}
+.inv{background:var(--char);color:var(--boneType)}
+.pad{padding:64px 28px 0}
+.dh{font:500 32px/1.1 "Instrument Sans";letter-spacing:-.01em}
+.dh.small{font-size:22px}
+.meta{font:11px/1.4 "Fragment Mono";letter-spacing:.14em;text-transform:uppercase}
+.meta.s{font-size:10px}
+.page .meta{color:var(--meta)}
+.written{font:17px/1.8 "Newsreader";color:var(--inkSoft)}
+.card{background:var(--boneRaised);border-radius:14px;padding:22px;margin-top:34px}
+.card .t{font:500 22px/1.2 "Instrument Sans";letter-spacing:-.005em}
+.card .w{font:17px/1.8 "Newsreader";color:var(--inkSoft);margin-top:10px}
+.card .acts{display:flex;gap:34px;margin-top:16px}
+.card .acts .meta.on{color:var(--inkSoft)}
+.mark{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
+.mark i{width:9px;height:9px;border-radius:50%;border:1.2px solid var(--meta);display:inline-block}
+.mark i.f{background:var(--meta)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 28px}
+.arr{font:600 34px/1.15 "Instrument Sans";letter-spacing:-.01em}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--ink);margin-top:44px}
+.ghost{font:17px/1.8 "Newsreader";color:#A9A6A0;text-align:center}
+.cursor{width:1.5px;height:30px;background:var(--ink);margin:14px auto 0}
+.kick{position:absolute;top:64px;left:0;right:0;text-align:center;font:11px/1.4 "Fragment Mono";letter-spacing:.14em;text-transform:uppercase;color:rgba(232,230,225,.62)}
+.inv .meta{color:rgba(232,230,225,.55)}
+.h44{font:600 44px/1.08 "Instrument Sans";letter-spacing:-.01em}
+.h34{font:600 34px/1.12 "Instrument Sans";letter-spacing:-.01em;text-align:center}
+.h32{font:600 32px/1.15 "Instrument Sans";letter-spacing:-.01em;text-align:center}
+.h28{font:500 28px/1.2 "Instrument Sans"}
+.word{font:italic 54px/1.1 "Newsreader"}
+.big{font:500 46px/1.15 "Newsreader"}
+.q{font:italic 22px/1.4 "Newsreader";opacity:.95}
+.quote{font:italic 19px/1.45 "Newsreader";opacity:.9;margin-top:10px}
+.num{font:100px/1 "Fragment Mono"}
+.num.t{font-size:72px}
+.gap{height:34px}.gap-s{height:10px}.gap-m{height:22px}
+.dots{position:absolute;bottom:44px;left:0;right:0;display:flex;gap:6px;justify-content:center}
+.dots i{width:5px;height:5px;border-radius:50%;background:rgba(232,230,225,.3)}
+.dots i.on{background:#E8E6E1}
+.ring{position:absolute;right:-110px;top:-70px;width:256px;height:256px;border:2px solid var(--boneType);border-radius:50%}
+.disc{position:absolute;left:-90px;top:-90px;width:300px;height:300px;background:var(--boneType);border-radius:50%}
+.bl{position:absolute;left:28px;bottom:140px;right:28px}
+.wk{display:flex;gap:12px;justify-content:center;margin-bottom:34px}
+.wk i{width:14px;height:14px;border-radius:50%;border:1.2px solid var(--boneType);display:inline-block}
+.wk i.f{background:var(--boneType)}
+.btn{display:inline-block;background:var(--boneType);color:var(--char);font:500 17px/1 "Instrument Sans";padding:18px 44px;border-radius:14px;margin-top:10px}
+.dim{opacity:.55}
+.notif{position:absolute;left:14px;right:14px;background:rgba(240,238,233,.92);border-radius:22px;padding:14px 16px;color:#1A1A1A;backdrop-filter:blur(10px)}
+.notif .app{font:600 13px/1.3 "Instrument Sans";display:flex;justify-content:space-between}
+.notif .app span{font:400 11px "Instrument Sans";color:#6B6862}
+.notif .b{font:14px/1.4 "Instrument Sans";margin-top:2px}
+.lock{background:linear-gradient(#2a2826,#161514)}
+.time{position:absolute;top:120px;left:0;right:0;text-align:center;color:#E8E6E1}
+.time .t{font:200 84px/1 "Instrument Sans"}
+.time .d{font:16px "Instrument Sans";opacity:.8}
+.nb .day{font:500 22px/1.2 "Instrument Sans";margin-top:34px}
+.nb .rule{height:1px;background:var(--hair);margin:10px 0 16px}
+.nb .rw{background:var(--char);color:rgba(232,230,225,.7);border-radius:14px;padding:22px;font:11px/1.4 "Fragment Mono";letter-spacing:.14em;text-transform:uppercase;margin-top:12px}
+.tag{position:absolute;top:22px;left:0;right:0;text-align:center;font:10px "Fragment Mono";letter-spacing:.14em;text-transform:uppercase;color:#B0483A}
+</style></head><body>
+
+<section id="A">
+<h2>Week one — a new user's first seven days (current 1.0.4 build)</h2>
+<p class="sub">Install Monday Sep 7 · consent after the first entry · countdown every day · notes Sat 22:00 &amp; Sun 09:00</p>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="pad">
+<div class="dh">Monday, September 7</div>
+<div class="gap-s"></div>
+<div class="meta s">1 entry · 4 min</div>
+<div class="gap-s"></div>
+<div class="meta s">Reflection in 6 days <span class="mark"><i></i><i class="f"></i></span></div>
+<div class="gap"></div>
+<div class="written">Too much in my head today. The review is Thursday and I keep telling everyone I'm fine, which is the word I use when I'm stressed and don't want to talk about it.</div>
+<div class="card"><div class="t">Reflections – Your Week</div><div class="w">Where is your mind? At the end of each week, see what your words say about you. Always private, for your eyes only</div><div class="acts"><span class="meta on">Yes, reflect</span><span class="meta">No thanks</span></div></div>
+</div></div></div><div class="cap"><b>1 · Today, after the first entry</b>Consent card appears in the reflection slot the next time Today is evaluated. "Yes" arms the two weekly notes. Nothing presents.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="center"><div class="arr">Your reflection<br>is 5 days away.</div><div class="dot"></div></div></div></div><div class="cap"><b>2 · Daily arrival, day 2 (Tue)</b>First open of each day: the line holds 1.4s, the dot swells to fill the screen, fades into Today. Says "arrives tomorrow" on Saturday.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="pad">
+<div class="dh">Tuesday, September 8</div>
+<div class="gap-s"></div>
+<div class="meta s">Reflection in 5 days <span class="mark"><i></i><i class="f"></i></span></div>
+<div style="height:150px"></div>
+<div class="ghost">Who are you jealous of — and of what, exactly?</div>
+<div class="cursor"></div>
+</div></div></div><div class="cap"><b>3 · Today, resting</b>Countdown under the date every day of the week, plus the charged ghost prompt (days 1–7). Between here and Sunday the app is otherwise silent.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame lock">
+<div class="time"><div class="t">22:00</div><div class="d">Saturday, September 12</div></div>
+<div class="notif" style="top:300px"><div class="app">Endpaper <span>22:00</span></div><div class="b">Know yourself: your weekly reflection arrives tomorrow.</div></div>
+<div class="notif" style="top:390px;opacity:.85"><div class="app">Endpaper <span>Sun 09:00</span></div><div class="b">What did you say? Your weekly reflection is here.</div></div>
+</div></div><div class="cap"><b>4 · The two weekly notes</b>Saturday 22:00 and Sunday 09:00, local. Both fire on consent alone — the Sunday one fires even when the week was too thin to reflect (see brief §1.2).</div></div>
+
+</div></section>
+
+<section id="B">
+<h2>Sunday — the arrival and the opening of the deck</h2>
+<p class="sub">Reflection covers the completed Sun–Sat week · needs ≥3 written days and ≥300 words, else silence · nothing auto-presents</p>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="center"><div class="arr">Your reflection<br>is ready.</div><div class="dot"></div></div></div></div><div class="cap"><b>5 · Daily arrival, Sunday</b>Same beat, the promise resolved.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="pad">
+<div class="dh">Sunday, September 13</div>
+<div class="gap-s"></div>
+<div class="meta s">Reflection today <span class="mark"><i class="f"></i><i class="f"></i></span></div>
+<div class="card" style="margin-top:44px"><div class="t">Your week is ready.</div><div class="meta s" style="margin-top:8px">Seven days, read back to you</div><div class="acts"><span class="meta on">Read it →</span><span class="meta">Later</span></div></div>
+<div style="height:120px"></div>
+<div class="ghost">What would you write if no one could ever read it?</div>
+<div class="cursor"></div>
+</div></div></div><div class="cap"><b>6 · Today — the ready card</b>Rests in the consent card's slot. Tap opens the deck full-screen; "Later" hides it until the next open. The first weekly is always free.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="ring"></div>
+<div class="bl"><div class="meta" style="color:rgba(232,230,225,.62)">Reflections</div><div class="gap-m"></div><div class="h44">Your<br>week.</div><div class="gap-s"></div><div class="meta s">Sep 7 – Sep 13</div></div>
+<div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>7 · Deck 1 — opener</b>Inverted surface, hollow ring (a week is the outline of a month). Swipe to advance; page dots drawn by the deck.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">Reflections — Sep 7 – Sep 13</div>
+<div class="center"><div class="wk"><i class="f"></i><i class="f"></i><i></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></div><div class="h34">Evening<br>writer.</div><div class="gap-m"></div><div class="meta s">4 of 5 days · after 5 pm</div></div>
+<div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>8 · Deck 2 — the shape</b>Seven dots draw themselves; the dominant writing hour names the writer. Every prompt holds centered 1s, then seats at the top and the content rises.</div></div>
+
+</div></section>
+
+<section id="C">
+<h2>The deck, continued — what the week says back</h2>
+<p class="sub">Each beat is optional: a nil signal simply doesn't render (the silence rule). Order is fixed.</p>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">Kept surfacing</div>
+<div class="center"><div class="word">“stressed”</div><div class="gap-m"></div><div class="meta s">9 times · across 4 days</div><div class="quote">“I keep telling everyone I'm fine, which is the word I use when I'm stressed”</div><div class="gap-s"></div><div class="meta s">Monday</div></div>
+<div class="dots"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>9 · Deck 3 — the thread</b>The word that kept surfacing (≥3 days, or ≥3 mentions across 2 days), with one verbatim line. This is the beat the glimpse borrows.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">You wrote this large</div>
+<div class="center"><div class="big">Enough.</div><div class="gap-m"></div><div class="meta s">Wednesday</div></div>
+<div class="dots"><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>10 · Deck 4 — the big line</b>The week's largest written line (the format grammar's large tier).</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">You asked yourself</div>
+<div class="center"><div class="q">Why do I keep saying yes to things I don't want to do?</div><div class="gap-m"></div><div class="meta s">Thursday</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>11 · Deck 5 — the question</b>One verbatim "?" sentence from the week.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">Your longest sitting</div>
+<div class="center"><div class="num t">12:40</div><div class="gap-m"></div><div class="meta s">Tuesday · 412 words</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>12 · Deck 6 — the sitting</b>Longest single session, mono clock.</div></div>
+
+</div>
+<div style="height:40px"></div>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame inv">
+<div class="center"><div class="num">5</div><div class="gap-m"></div><div class="meta s">Days written</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
+</div></div><div class="cap"><b>13 · Deck 7 — days</b>Counter runs up from 0. Always present.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv">
+<div class="center"><div class="num">1,840</div><div class="gap-m"></div><div class="meta s">Words</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
+</div></div><div class="cap"><b>14 · Deck 8 — words</b>Always present.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">Challenges</div>
+<div class="center"><div class="quote" style="font-size:22px">“Thursday was the hardest day I've had at work in a year and I still didn't say anything in the room”</div><div class="gap-s"></div><div class="meta s">September 10, 2026</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div>
+</div></div><div class="cap"><b>15 · Deck 9 — the challenge</b>One explicit hard moment, stamped with the full date. The closer before the ask.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="kick">That was your week</div>
+<div class="center"><div class="h32">Every week.<br>Every month.<br>A year you can hold.</div><div class="gap-m"></div><div class="meta s">Writing stays free, forever</div><div class="gap-s"></div><div class="btn">Join — $39.99 a year, first week free</div><div class="gap-m"></div><div class="meta s dim">Not now</div></div>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+</div></div><div class="cap"><b>16 · Deck 10 — the offer (non-members)</b>Replaces "See you on the page / Continue". Members see the close instead. "Not now" dismisses; the card is archived either way.</div></div>
+
+</div></section>
+
+<section id="D">
+<h2>After the first reflection</h2>
+<p class="sub">The card rests in the Notebook · the second Sunday is where the membership gate actually lands</p>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame page nb"><div class="pad">
+<div class="dh small">September</div>
+<div class="day">Sunday 13</div><div class="rule"></div>
+<div class="rw">Reflection · Sep 7 – Sep 13</div>
+<div class="written" style="margin-top:22px">Quiet day. Read the week back and it was more honest than I remembered being.</div>
+<div class="day">Saturday 12</div><div class="rule"></div>
+<div class="written">Didn't want to write. Wrote anyway.</div>
+</div></div></div><div class="cap"><b>17 · Notebook — the card at rest</b>An inverted row at the week's last day; tap reopens the archived deck exactly as it was (never recomputed).</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="pad">
+<div class="dh">Sunday, September 20</div>
+<div class="gap-s"></div>
+<div class="meta s">Reflection today <span class="mark"><i class="f"></i><i class="f"></i></span></div>
+<div class="card" style="margin-top:44px"><div class="t">Your week is ready.</div><div class="meta s" style="margin-top:8px">Reflections are a membership — writing stays free</div><div class="acts"><span class="meta on">Join to read it →</span><span class="meta">Later</span></div></div>
+</div></div></div><div class="cap"><b>18 · Second Sunday — locked</b>The free weekly is spent; this card waits, whole, until they join. Tap runs the StoreKit purchase directly. This is the real conversion moment today.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="disc"></div>
+<div class="bl"><div class="meta" style="color:rgba(232,230,225,.62)">Recaps</div><div class="gap-m"></div><div class="h44" style="font-size:40px">Your September<br>recap is ready.</div><div class="gap-m"></div><div class="written" style="color:rgba(232,230,225,.9)">Join to read it — every week, every month, a year you can hold. Writing stays free, forever.</div><div class="gap-s"></div><div class="btn">Join — $39.99 a year, first week free</div><div class="gap-s"></div><div class="meta s dim">Not now</div></div>
+</div></div><div class="cap"><b>19 · Month end — locked recap</b>Full-screen gate in the recap's own grammar (cropped disc). For reference; not part of week one.</div></div>
+
+</div></section>
+
+<section id="E">
+<h2>Proposed — the early glimpse (not built)</h2>
+<p class="sub">Fires once, when readiness is met (see brief) · two beats · never a mini-reflection</p>
+<div class="row">
+
+<div class="cell"><div class="cellwrap"><div class="frame page"><div class="tag">Proposed</div><div class="pad">
+<div class="dh">Wednesday, September 9</div>
+<div class="gap-s"></div>
+<div class="meta s">Reflection in 4 days <span class="mark"><i></i><i class="f"></i></span></div>
+<div class="card" style="margin-top:44px"><div class="t">Something is starting to emerge.</div><div class="meta s" style="margin-top:8px">Three days in, one word keeps coming back</div><div class="acts"><span class="meta on">See it →</span><span class="meta">Later</span></div></div>
+<div style="height:120px"></div>
+<div class="ghost">What do you feel guilty about that nobody knows?</div>
+<div class="cursor"></div>
+</div></div></div><div class="cap"><b>G1 · Today — the glimpse card</b>Same slot, same grammar as the ready card. Tap to open; "Later" re-offers on the next open, then stops.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="tag" style="color:#E8A598">Proposed</div><div class="kick">Something is starting to emerge</div>
+<div class="center"><div class="word">“stressed”</div><div class="gap-m"></div><div class="meta s">9 times since you started writing</div></div>
+<div class="dots"><i class="on"></i><i></i></div>
+</div></div><div class="cap"><b>G2 · The glimpse</b>One beat, the thread grammar, no quote, no count-ups. Silent if no word clears the bar.</div></div>
+
+<div class="cell"><div class="cellwrap"><div class="frame inv"><div class="tag" style="color:#E8A598">Proposed</div><div class="kick">Sep 7 – Sep 13</div>
+<div class="center"><div class="h28">Keep writing.</div><div class="gap-m"></div><div class="meta s">Your first weekly reflection is Sunday</div><div class="gap"></div><div class="meta" style="color:#E8E6E1">Continue</div></div>
+<div class="dots"><i></i><i class="on"></i></div>
+</div></div><div class="cap"><b>G3 · The close</b>Names the destination. No offer here — the ask stays at the end of the first full deck.</div></div>
+
+</div></section>
+</body></html>
