@@ -38,90 +38,117 @@ Today none of it is visible. §2 exists for this.
 
 ---
 
-## 1. The early glimpse
+## 1. The early glimpse — v2 (2026-09-11, after Wendell's review)
 
-### 1.1 Job
-Prove the proposition before the first Sunday: *your words say
-something back*. One moment, once per install, restrained. It is not a
-reflection, does not get archived, and never carries the offer.
+Supersedes v1 (the card + two-beat deck). Decisions taken: no separate
+surface, no consent requirement, inline on the page, tap for the
+dialogue, at most once a day. Primary job: a retention lever to D7.
 
-### 1.2 Readiness — what fires it
-All on-device, on the existing engine (same tokenizer, stopwords and
-stemmer as `Reflect.weeklySignal`, so parity with the deck is automatic).
-Eligibility gates, then one pattern test:
+### 1.0 First: the reflection is calendar-anchored today, and must not be
+`Reflect.lastCompletedWeekStart` and `daysUntilReflection` are both
+built on Sunday; the two weekly notes are weekday-fixed (Sat 22:00,
+Sun 09:00). So a Friday installer's "week" is two days long. The new-user
+experience has to be the same whatever day they start:
 
-| Gate | Value | Why |
-|---|---|---|
-| Consent | `yes` | It's a reflection-family surface; the consent card comes first. |
-| Distinct written days | ≥ 2 | Days are the habit signal, not words. 2 (not 3) so a Thursday installer can qualify by Saturday. |
-| Total words since install | ≥ 200 | Cheap floor so one-line days don't qualify. |
-| Pattern | one stem with ≥ 3 mentions across ≥ 2 days | The weekly's own second arm (`count ≥ 3 && days ≥ 2`). Names excluded in v1 (topic words only). |
-| Never fired | `AppKeys.glimpseShown == nil` | Once per install, ever. |
-| No competing arrival | no pending weekly, first weekly not yet seen | The weekly always wins the slot; after the first weekly the glimpse is pointless. |
+- **Anchor = `AppKeys.firstDay`** (stamped on first-ever open in 1.0.4;
+  fall back to the earliest entry day for upgraders).
+- **Day 0–6 = the seven ghost prompts** (the array already has exactly
+  seven, indexed by days since firstDay).
+- **Day 7 (firstDay + 7, the D7 of retention math) = first reflection**
+  covering days 0–6, and the offer beat at its end. Countdown runs
+  7 → "tomorrow" → "ready". Then every 7 days on the same weekday; the
+  locked card lands on day 14.
+- Notes become relative: day 6 at 22:00 ("arrives tomorrow"), day 7 at
+  09:00 — via `UNCalendarNotificationTrigger` on the install weekday.
+- Monthly recaps stay calendar months.
+- **First-week sufficiency is lowered** to ≥2 written days and ≥150
+  words (regular weeks keep ≥3 / ≥300). If even that isn't met, day 7
+  shows a quiet card — *Not enough to reflect on yet. Your first
+  reflection moves to {weekday}.* — and the offer waits a week. The
+  Sunday-style promise into silence goes away.
 
-Not a score with weights — three gates and a pattern. If nothing clears
-the pattern bar, Endpaper stays quiet and the countdown remains the only
-promise. No sentiment lexicon, no "charged word" bonus: that would be
-analysis, and the brand rule is counting.
+Engine cost is small: `weeklySignal(start:)` already takes any start
+date; the change is in `pendingWeekly`, `daysUntilReflection`, the notes,
+and the week label.
 
-### 1.3 When it appears
-At the same point the reflection slot is evaluated today
-(`ReflectionFlowHost.evaluate`, Today `onAppear`) — so it shows on the
-**next open after** the qualifying entry, never mid-sentence and never
-auto-presented. Same rule as the ready card ("nothing auto-presents",
-QA 2026-09-05). If they tap **Later**, it re-offers on the next open once,
-then drops for good (`glimpseShown` stamped either way).
+### 1.1 How often it would actually fire — case examples
+The rule under test: a stem (≥4 letters, not a stopword) with ≥3
+mentions across ≥2 written days, after ≥2 written days and ≥N total
+words. Word-frequency reality: in 250 words of natural journaling the
+top content word appears 3–5 times, so the pattern half of the rule is
+nearly always met once the word floor is — **the floor is what decides
+when it fires, and the risk is over-firing, not silence.**
 
-### 1.4 The surface
-Storyboard G1–G3. Three moves, no more:
+| Persona | Writing | Fires (200-word floor) | Fires (120-word floor) | Note |
+|---|---|---|---|---|
+| A · one-liner | 25–40 words/day, most days | day 6–7 or never | day 4–5 | The churn-risk cohort; 200 words puts the lever after the week is lost. |
+| B · a paragraph | 100–150 words/day | day 3 (~90% likely), else day 4 | day 2–3 | The target user. Word will be "work", a name, or a feeling. |
+| C · the dump | 400+ words day 0, then sporadic | the first day-2 entry, whatever its length | same | Day 0 alone already has stems at 2–3 mentions. |
+| D · skipper | writes day 0, 2, 4 | day 2 or 4 | day 2 | Fine — days are counted, not streaks. |
+| E · voice notes | 200+ words/day, spoken | day 2 | day 2 | Spoken text repeats words more; expect 2–3 candidate stems at once. |
 
-1. **Today card** (ready-card grammar, same slot): title
-   *Something is starting to emerge.* · meta *One word keeps coming back*
-   · `See it →` / `Later`. The card deliberately does **not** show the
-   word — Today is a surface other people can glance at.
-2. **The glimpse** (inverted, one beat, thread grammar): kicker
-   *Something is starting to emerge* · the word in Newsreader italic 54 ·
-   *You've used this word 9 times since you started writing.* No quote,
-   no count-ups, no dots-drawing. One page.
-3. **The close**: *Keep writing.* · *Your first weekly reflection is
-   Sunday.* · `Continue`. When this week can't qualify (§0.1) the line
-   says the date instead: *Your first weekly reflection arrives Sunday,
-   Sep 20.*
+Measured on the synthetic parity corpus (~270 words/day, templated
+sentences, so an upper bound): fires on day 3 for 100% of 264 rolling
+starts, and with "one new stem per day" it fires **6 of 7 days**. The
+words it picked: boat, house, corner, kind, said, didn. Two lessons:
 
-Not archived in the Notebook (it isn't a reflection). No notification for
-it. No share card from it (v1). Free, always — never gated.
+1. **Cap it.** First glimpse at the floor; any later glimpse needs a
+   *stronger* pattern (≥5 mentions across ≥3 days, a new stem), and at
+   most two before the first reflection. Once a day is the ceiling,
+   not the target.
+2. **Flat words.** The tokenizer lets "said", "kind", "didn" (from
+   "didn't" — the apostrophe split) and "work" through. Add a glimpse-only
+   flat list (~40 words: said, kind, work, morning, night, home, people,
+   today…) and fix the contraction fragments (didn/wasn/couldn) in the
+   tokenizer — that fix also touches the weekly thread beat and the JS
+   parity suite, so it's its own change.
 
-### 1.5 Edge cases
-- Wrote 1,000 words on day one only → not eligible. Deliberate: day two
-  is the thing we want to reward.
-- Consent "no" → never. Consent flipped on later in Settings → eligible
-  from then.
-- The word is unflattering ("drunk", an ex's name) → it's their word, in
-  private, behind a neutral card. Names are excluded in v1 anyway.
-- Reduce Motion → both beats static, as PromptBeat already handles.
-- Reinstall → fires again (state is UserDefaults, not iCloud KV). Fine.
+**Recommendation: 120-word floor, 2 written days.** It moves persona A's
+lever inside the week, and B fires on day 2–3 where D7 retention is
+decided. The pattern bar (3 mentions / 2 days) already stops one-day
+dumps.
 
-### 1.6 Ship with it (same build, non-negotiable)
-- Countdown line + daily arrival: when the current week cannot reach
-  sufficiency (fewer than 3 writable days left and <3 written), say
-  *First reflection Sunday, Sep 20* instead of *Reflection in 2 days*.
-- Sunday 09:00 note: only schedule it when a weekly will actually be
-  pending (compute at Saturday seal, or gate the body on sufficiency).
-  Today it can fire into silence.
+### 1.2 The surface — inline highlight, tap, dialogue
+- **Where it appears:** on **committed** text — the entry sections
+  above the live editor on Today, and the Notebook. Never inside the
+  live UITextView (the WrittenFormat pipeline lives there; a tappable
+  run mid-typing is both the distraction and the bug farm). When a word
+  crosses the bar mid-entry, nothing happens until the next render of
+  the page after the section commits.
+- **What it looks like:** the most recent occurrence of the word gets a
+  soft ink-wash behind it (Tokens raised tint at ~40%), no underline, no
+  colour. One word, one place. Rendering only — the entry text is never
+  touched (permanence intact).
+- **Tap → the dialogue:** a compact inverted sheet from the bottom
+  (`presentationDetents([.height(240)])`): kicker *Something is starting
+  to emerge* · the word, Newsreader italic · *4 times across 2 days* ·
+  *Your first reflection is in 4 days.* Tap anywhere to dismiss. No
+  quote, no offer, no share.
+- **After the tap** the highlight fades. Untapped, it fades at midnight
+  with the day. The Notebook never shows a highlight.
+- **Consent:** not required (unasked = eligible). An explicit *No
+  thanks* to reflections is respected — no highlights.
+- **Frequency:** at most one highlight per day, one per stem ever, at
+  most two before the first reflection, none on reflection day.
+- **Reduce Motion / VoiceOver:** highlight is static; the run gets an
+  accessibility hint *Tap: this word keeps coming back.*
 
-### 1.7 Effort
-About one engineering day: `Reflect.glimpseSignal(corpus:)` (reuse the
-tokenizer; ~40 lines), `AppKeys.glimpseShown`, `GlimpseView` (two
-PromptBeats in a TabView, like WeeklyCardView), the card in
-`ReflectionFlowHost`, the §1.6 fixes, QA §18. Swift-only (no JS parity
-entry — it is not archived and not part of the reference engine).
+### 1.3 What it is not
+No notification, no card in the reflection slot, no archive, no offer,
+no share card, no analysis. Silence when nothing clears the bar.
 
-### 1.8 Decisions I need from you
-1. **2 written days or 3?** I recommend 2 (Thursday installers).
-2. **Next open, or same visit after the entry seals?** I recommend next
-   open (keeps "nothing auto-presents").
-3. **Does the countdown switch to a dated line when the week can't
-   qualify?** I recommend yes; it's a bug today regardless of the glimpse.
+### 1.4 Effort
+`Reflect.glimpseCandidates(corpus:)` (reuse tokenizer + flat list, ~50
+lines), `GlimpseState` in UserDefaults (fired stems, last-fired day,
+count), the highlight run in `EntrySection` (attributed `Text` run with
+a background), `GlimpseSheet`, plus the cadence change in §1.0 and the
+tokenizer fix. About two days with the cadence change; QA §18.
+
+### 1.5 Still open (small)
+1. 120 or 200 word floor — recommend 120.
+2. Highlight fades on tap, or stays faint until midnight — recommend
+   fades on tap.
+3. First-week sufficiency at 2 days / 150 words — recommend yes.
 
 ---
 
