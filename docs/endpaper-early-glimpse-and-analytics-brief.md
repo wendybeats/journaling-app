@@ -171,7 +171,7 @@ scrutiny. It has to be changed everywhere at once:
 | docs/endpaper-marketing-spec.md rule 3 | "no analytics/tracking" | "no tracking; anonymous usage counts, never content" |
 | Store screenshots | check screen 2 copy | only if it says "no analytics" |
 
-### 2.2 Recommendation: PostHog, EU cloud
+### 2.2 Recommendation: PostHog (built on the US cloud — the audience is US)
 - **Host:** `us.i.posthog.com` (decided: the project is on the US cloud, the audience is US; EU residency was the original thought — it reads well in the
   privacy page; free tier 1M events/month is years of runway).
 - **SDK:** `posthog-ios` via SPM (xcodegen `packages:` + a target
