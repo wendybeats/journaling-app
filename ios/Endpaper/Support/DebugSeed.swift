@@ -189,7 +189,7 @@ enum DebugSeed {
     /// week can be walked without waiting: −7 makes today day 7 (the
     /// first reflection due), pressed again day 14 (the locked one).
     static func rewindFirstDay(days: Int) {
-        let current = UserDefaults.standard.string(forKey: AppKeys.firstDay).map(DayFormat.date(fromKey:)) ?? .now
+        let current = UserDefaults.standard.string(forKey: AppKeys.firstDay).map { DayFormat.date(fromKey: $0) } ?? .now
         let moved = Calendar.current.date(byAdding: .day, value: -days, to: current) ?? current
         UserDefaults.standard.set(DayFormat.key(for: moved), forKey: AppKeys.firstDay)
         Task { await ReminderManager.rearmReflectionNotes() }
