@@ -17,7 +17,7 @@ import PostHog
 enum Analytics {
     /// PostHog project token — a public, write-only key. EU data residency.
     /// Replace with the project's token (PostHog → Settings → Project).
-    static let projectToken = "phc_REPLACE_ME"
+    static let projectToken = "phc_tvPTWHLx6jFoZQCwAX6GzAXhS4krcswzPifWpA3Zge9G"
     static let host = "https://eu.i.posthog.com"
 
     // MARK: Vocabulary
