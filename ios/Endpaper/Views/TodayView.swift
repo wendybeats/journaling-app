@@ -155,7 +155,10 @@ struct TodayView: View {
                     ForEach(todayEntries, id: \.id) { entry in
                         EntrySection(entry: entry, onEdited: { refresh() },
                                      glimpse: entry.id == glimpseEntryID ? glimpse?.forms : nil,
-                                     onGlimpseTap: { glimpseSheet = true })
+                                     onGlimpseTap: {
+                                         Analytics.track(.earlyInsightOpened)
+                                         glimpseSheet = true
+                                     })
                             .opacity(settlingID == entry.id ? 0 : 1)
                             .animation(Tokens.Motion.fast, value: settlingID)
                     }

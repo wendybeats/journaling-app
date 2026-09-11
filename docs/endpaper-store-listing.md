@@ -52,8 +52,9 @@ hidden in production builds.
 >
 > ONLY YOURS
 > Your writing lives on your device and in your private iCloud. No
-> account. No analytics. No tracking. No server of ours anywhere. We
-> couldn't read your journal if we wanted to — and we don't want to.
+> account. No tracking, no ads. We count taps, never words — we can see
+> that a page was written, never what it says. We couldn't read your
+> journal if we wanted to — and we don't want to.
 >
 > A WEEK, ON ME
 > Every page and every reflection, free for seven days. After that,
@@ -112,10 +113,19 @@ set in Instrument Sans Medium above — same system as the site hero.
 > (screen 2) and in the Terms (§3). The full notebook can be exported
 > as plain text from Settings at any time.
 >
-> Data: nothing is collected. Writing is stored on device and, if the
-> user enables it, in their own iCloud private database. No third-party
-> SDKs, no analytics. Notifications are local only and requested only
-> after an explicit in-app yes.
+> Data: writing is stored on device and, if the user enables it, in
+> their own iCloud private database — it is never transmitted to us.
+> The app records anonymous product-interaction events (e.g. "a page
+> was written", "a reflection was opened") via PostHog (EU), not linked
+> to the user, not used for tracking, no identifiers, switchable off in
+> Settings. Notifications are local only and requested only after an
+> explicit in-app yes.
+
+App Privacy (App Store Connect) — UPDATE BEFORE SUBMITTING 1.0.4:
+Data Not Collected → **Data Not Linked to You: Product Interaction**,
+purpose Analytics, "not used to track you". The privacy manifest in
+the bundle (PrivacyInfo.xcprivacy) declares the same; a mismatch is a
+review rejection.
 
 ## Category & rating
 

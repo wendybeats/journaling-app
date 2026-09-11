@@ -42,6 +42,7 @@ enum ReminderManager {
         UserDefaults.standard.set("yes", forKey: AppKeys.reminder)
         let center = UNUserNotificationCenter.current()
         let granted = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
+        Analytics.track(.notificationPermission, [.granted: .bool(granted)])
         if granted { await rearm(in: context) }
     }
 
@@ -105,7 +106,8 @@ enum ReminderManager {
         center.removePendingNotificationRequests(withIdentifiers: [reflectionEveID, reflectionDayID])
         guard ReflectionStore.shared.consent == "yes" else { return }
         if requestPermission {
-            _ = try? await center.requestAuthorization(options: [.alert, .sound])
+            let granted = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
+            Analytics.track(.notificationPermission, [.granted: .bool(granted)])
         }
 
         // Install-anchored cadence (QA 2026-09-11): the notes ride the

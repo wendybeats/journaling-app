@@ -49,6 +49,7 @@ struct WeeklyCardView: View {
     var onClose: () -> Void
 
     @State private var page = 0
+    @State private var completedSent = false
     @ObservedObject private var gate = TrialGate.shared
 
     private enum Beat: Hashable {
@@ -83,6 +84,18 @@ struct WeeklyCardView: View {
             // System page dots color by scheme, not by our inverted surface —
             // they'd vanish in light mode. The deck draws its own.
             .tabViewStyle(.page(indexDisplayMode: .never))
+            .onChange(of: page) { _, p in
+                // The last beat reached = the deck was read to its end; when
+                // that beat is the offer, the paywall was seen (page index,
+                // not onAppear — the pager pre-builds neighbours).
+                guard p == beats.count - 1, !completedSent else { return }
+                completedSent = true
+                Analytics.track(.weeklyReflectionCompleted,
+                                [.weekIndex: .int(Analytics.weekIndex), .beats: .int(beats.count)])
+                if beats[p] == .offer {
+                    Analytics.track(.paywallViewed, [.surface: .surface(.offerBeat)])
+                }
+            }
             if beats.count > 1 {
                 HStack(spacing: Tokens.Space.xs) {
                     ForEach(0..<beats.count, id: \.self) { i in
@@ -237,7 +250,7 @@ struct WeeklyCardView: View {
                     beatMeta("Writing stays free, forever")
                     Button {
                         Task {
-                            await TrialGate.shared.subscribe()
+                            await TrialGate.shared.subscribe(from: .offerBeat)
                             if TrialGate.shared.reflectionsUnlocked { onClose() }
                         }
                     } label: {
@@ -373,12 +386,14 @@ struct ConsentCard: View {
             HStack(spacing: Tokens.Space.lg) {
                 Button {
                     ReflectionStore.shared.setConsent("yes")
+                    Analytics.track(.consentAnswered, [.answer: .answer(.yes)])
                     onDecided(true)
                 } label: {
                     Text("Yes, reflect").typeMeta().foregroundStyle(Tokens.Text.written)
                 }
                 Button {
                     ReflectionStore.shared.setConsent("no")
+                    Analytics.track(.consentAnswered, [.answer: .answer(.no)])
                     onDecided(false)
                 } label: {
                     Text("No thanks").typeMeta()
@@ -433,8 +448,9 @@ struct ReflectionFlowHost: View {
                     cta: weeklyLocked ? "Join to read it →" : "Read it →"
                 ) {
                     if weeklyLocked {
+                        Analytics.track(.paywallViewed, [.surface: .surface(.lockedCard)])
                         Task {
-                            await TrialGate.shared.subscribe()
+                            await TrialGate.shared.subscribe(from: .lockedCard)
                             if TrialGate.shared.reflectionsUnlocked {
                                 weeklyLocked = false
                                 presentWeekly(weekly)
@@ -529,6 +545,8 @@ struct ReflectionFlowHost: View {
         } else if let weekly = store.pendingWeekly(corpus: corpus) {
             readyWeekly = weekly
             weeklyLocked = !entitled && firstUsed
+            Analytics.once(.weeklyReflectionEligible, key: weekly.id,
+                           [.locked: .bool(weeklyLocked), .weekIndex: .int(Analytics.weekIndex)])
         } else {
             thinWeek = store.pendingThinWeek(corpus: corpus)
         }
@@ -563,6 +581,7 @@ struct ReflectionFlowHost: View {
         if !TrialGate.shared.reflectionsUnlocked {
             UserDefaults.standard.set(true, forKey: AppKeys.firstWeeklyUsed)
         }
+        Analytics.track(.weeklyReflectionOpened, [.weekIndex: .int(Analytics.weekIndex)])
         present(.weekly(weekly), archiving: .weekly(weekly))
     }
 
@@ -632,6 +651,7 @@ struct MonthlyGateView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             Tokens.Surface.inverted.ignoresSafeArea()
+                .onAppear { Analytics.track(.paywallViewed, [.surface: .surface(.monthlyGate)]) }
             GeometryReader { geo in
                 Circle()
                     .fill(Tokens.Text.onInverted)
@@ -652,7 +672,7 @@ struct MonthlyGateView: View {
                     .foregroundStyle(Tokens.Text.onInverted.opacity(0.9))
                 Button {
                     Task {
-                        await TrialGate.shared.subscribe()
+                        await TrialGate.shared.subscribe(from: .monthlyGate)
                         if TrialGate.shared.reflectionsUnlocked { onJoin() }
                     }
                 } label: {

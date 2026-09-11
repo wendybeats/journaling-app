@@ -36,6 +36,7 @@ enum EntryStore {
             last.text += "\n\n" + text
             last.lastAt = lastAt ?? at
             try? context.save()
+            noteWriting(day: key, in: context)
             return last
         }
 
@@ -43,7 +44,16 @@ enum EntryStore {
         entry.lastAt = lastAt ?? at
         context.insert(entry)
         try? context.save()
+        noteWriting(day: key, in: context)
         return entry
+    }
+
+    /// The analytics seam for writing: the first entry ever, and each
+    /// day's first commit — day index and a word BUCKET, never the words.
+    private static func noteWriting(day key: String, in context: ModelContext) {
+        Analytics.once(.firstEntryCreated)
+        let words = entries(forDay: key, in: context).reduce(0) { $0 + Reflect.wordCount($1.text) }
+        Analytics.writingDay(dayKey: key, wordsSoFar: words)
     }
 
     /// Editable while its day is still today; permanent after midnight.

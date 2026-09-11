@@ -169,6 +169,7 @@ final class GlimpseStore {
         state.lastDay = todayKey
         state.weekCounts[weekKey, default: 0] += 1
         persist()
+        Analytics.track(.earlyInsightEligible)   // that a word lit up — never which
         return found
     }
 
@@ -176,6 +177,7 @@ final class GlimpseStore {
     func acknowledge() {
         state.active = nil
         persist()
+        Analytics.track(.earlyInsightNoted)
     }
 
     /// Demo tools only (DEBUG + TestFlight), beside ReflectionStore.resetAll.

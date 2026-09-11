@@ -28,6 +28,14 @@ schemes:
     archive:
       config: Release
 
+# PostHog iOS (product analytics, decided 2026-09-11 — "we count taps,
+# never words"; see Support/Analytics.swift). 3.30+ has person-less
+# events (personProfiles) and the apiKey initializer alias.
+packages:
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios
+    from: 3.30.0
+
 targets:
   Endpaper:
     type: application
@@ -57,6 +65,8 @@ targets:
           - Newsreader-Italic.ttf
           - InstrumentSans.ttf
           - FragmentMono-Regular.ttf
+    dependencies:
+      - package: PostHog
     entitlements:
       path: Endpaper/Endpaper.entitlements
       properties:

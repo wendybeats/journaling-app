@@ -99,18 +99,38 @@ final class TrialGate: ObservableObject {
     /// "Keep writing" — the paywall's purchase for lapsed/offline-onboarded
     /// users. Apple applies the intro offer only if this account never
     /// used it, so nobody is promised a second free week.
-    func subscribe() async {
-        guard let product else { return }
-        if let result = try? await product.purchase(),
-           case .success(.verified(let transaction)) = result {
-            await transaction.finish()
-            await refresh()
+    func subscribe(from surface: Analytics.Surface = .paywall) async {
+        guard let product else {
+            Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.noProduct)])
+            return
+        }
+        do {
+            switch try await product.purchase() {
+            case .success(.verified(let transaction)):
+                await transaction.finish()
+                await refresh()
+                // Whether Apple applied the intro week is the only thing we
+                // note about the purchase — never the price or the account.
+                Analytics.track(.subscriptionStarted,
+                                [.surface: .surface(surface), .intro: .bool(transaction.offerType == .introductory)])
+            case .success(.unverified):
+                Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.unverified)])
+            case .userCancelled:
+                Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.cancelled)])
+            case .pending:
+                Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.pending)])
+            @unknown default:
+                Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.failed)])
+            }
+        } catch {
+            Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.failed)])
         }
     }
 
     func restore() async {
         try? await AppStore.sync()
         await refresh()
+        if subscribed { Analytics.track(.subscriptionRestored) }
     }
 
     /// The hard paywall's question. During development (no product loaded),

@@ -501,6 +501,58 @@ Glimpse
 - [ ] VoiceOver reads the hint "A word that keeps coming back. Tap it."
 - [ ] Reduce Motion: sheet and wash are static, nothing missing
 
+## 19. Anonymous usage analytics — PostHog (2026-09-11, archive 21)
+
+Setup on the Mac, once: paste the project token into
+`Support/Analytics.swift` (`projectToken`), confirm the host matches the
+project's region (EU → `https://eu.i.posthog.com`, US →
+`https://us.i.posthog.com`), then `xcodegen` (the PostHog package
+resolves on first build; needs network). With the placeholder token the
+whole seam is a no-op.
+
+Before submitting 1.0.4: App Store Connect → App Privacy → Data Not
+Linked to You → Product Interaction (Analytics, not used for tracking).
+The bundle's PrivacyInfo.xcprivacy says the same; they must agree.
+
+- [ ] PostHog → Activity shows events from the TestFlight build within
+      ~30 s of the action (batching), each carrying app_version, build,
+      days_since_install_bucket, consent, membership, install_week — and
+      NOTHING that came from the page
+- [ ] Fresh install: `onboarding_completed` once; `app_opened` once per
+      day (kill and reopen — no second one)
+- [ ] First entry: `first_entry_created` once ever; `writing_day` once
+      per day with day_index (1 on the first day) and words_bucket
+      (lt_100 / 100_500 / 500_plus) — a second commit the same day sends
+      nothing new
+- [ ] Consent card: `consent_answered` answer yes/no
+- [ ] Glimpse: `early_insight_eligible` when a word lights,
+      `early_insight_opened` on tap, `early_insight_noted` on Noted —
+      none of them carry the word
+- [ ] Day 7 (First day −7): `weekly_reflection_eligible` (locked false,
+      week_index 1) once — reopening Today doesn't repeat it;
+      `weekly_reflection_opened` on Read it; swiping to the last beat
+      sends `weekly_reflection_completed` (beats = count) and, for a
+      non-member, `paywall_viewed` surface offer_beat
+- [ ] Day 14: `weekly_reflection_eligible` locked true; tapping "Join to
+      read it" sends `paywall_viewed` locked_card, then
+      `subscription_started` (intro true/false) or `purchase_failed`
+      reason cancelled when the sheet is dismissed
+- [ ] Monthly gate: `paywall_viewed` monthly_gate; Settings reflections
+      toggle → sheet: `paywall_viewed` settings_sheet; Settings Join:
+      surface settings
+- [ ] Restore purchase (as a member): `subscription_restored`
+- [ ] Notification permission dialog: `notification_permission` granted
+      true/false (both the reminder path and the reflections-on path)
+- [ ] Settings → Share anonymous usage OFF: one final `usage_sharing`
+      sharing false, then NOTHING arrives for any action; ON again:
+      `usage_sharing` true and events resume. Off survives relaunch
+- [ ] PostHog → Persons: no person profiles are created (person-less
+      events); no session recordings; no $screen / $pageview / lifecycle
+      autocapture events
+- [ ] Copy: onboarding account slide, Settings footer, privacy page all
+      read "we count taps, never words" — no "no analytics" left
+      anywhere (check the store screenshots' overlay copy too)
+
 ## Payment flow — reliable testing recipe (2026-08-18)
 
 The confusing sightings post-launch were all environment artifacts, not

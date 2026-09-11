@@ -23,6 +23,7 @@ struct SettingsView: View {
     @State private var syncLine = ""
     @State private var redeeming = false
     @State private var membershipOffer = false
+    @State private var usageOn = Analytics.sharing
     @ObservedObject private var gate = TrialGate.shared
 
     var body: some View {
@@ -199,7 +200,7 @@ struct SettingsView: View {
                             .typeMetaSmall()
                     } else {
                         Button {
-                            Task { await TrialGate.shared.subscribe() }
+                            Task { await TrialGate.shared.subscribe(from: .settings) }
                         } label: {
                             Text("Join — reflections, every week").typeWritten()
                         }
@@ -231,7 +232,22 @@ struct SettingsView: View {
 
                 rule
 
-                Text("Endpaper · no analytics, no tracking")
+                // --- Anonymous usage (decided 2026-09-11) ---
+                // Product-state counts only; the words never leave the
+                // device. Off is remembered forever.
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    Toggle(isOn: $usageOn) {
+                        Text("Share anonymous usage").typeWritten()
+                    }
+                    .tint(Tokens.Surface.inverted)
+                    .onChange(of: usageOn) { _, on in Analytics.setSharing(on) }
+                    Text("Counts taps, never words — no profile, no tracking")
+                        .typeMetaSmall()
+                }
+
+                rule
+
+                Text("Endpaper · no tracking · we count taps, never words")
                     .typeMetaSmall()
             }
             .padding(.horizontal, Tokens.Space.screenX)

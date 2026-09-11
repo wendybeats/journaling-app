@@ -27,6 +27,7 @@ enum AppKeys {
     static let firstDay = "endpaper.firstday.v1"      // day key of first open — drives the ghost-prompt week
     static let lastArrival = "endpaper.lastarrival.v1" // day key the daily splash last played
     static let firstWeeklyUsed = "endpaper.reflection.first.v1" // Bool — the free weekly has been spent
+    static let usage = "endpaper.usage.v1"          // "yes" | "no" — share anonymous usage (Analytics.swift)
     static let glimpse = "endpaper.glimpse.v1"        // GlimpseStore state (fired stems, today's highlight)
 }
 

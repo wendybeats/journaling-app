@@ -51,6 +51,7 @@ struct OnboardingView: View {
                         } else {
                             accountMode = mode.rawValue
                             onboarded = true
+                            Analytics.once(.onboardingCompleted)
                         }
                     }
                 }
@@ -486,7 +487,7 @@ private struct AccountSlide: View {
             Text("Keep your notebook.")
                 .typeDisplay()
                 .multilineTextAlignment(.center)
-            Text("Your writing stays in your private storage. No profile, no analytics, nothing read by anyone but you.")
+            Text("Your writing stays in your private storage. No profile, nothing read by anyone but you. We count taps, never words.")
                 .typeWritten()
                 .multilineTextAlignment(.center)
 

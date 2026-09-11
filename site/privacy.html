@@ -22,7 +22,7 @@
   <p class="kicker">Applies to the Endpaper iOS app and endpaper.space</p>
 
   <h2>The short version</h2>
-  <p>We don’t collect your data. Not “we collect it carefully” — we never receive it in the first place. Endpaper has no accounts, no analytics, no tracking, no advertising, and no server of ours anywhere in the product.</p>
+  <p>We never receive your writing. Not “we store it carefully” — it does not leave your device except to your own iCloud. Endpaper has no accounts, no tracking, no advertising, and no server of ours holding a word you wrote. What we do count, anonymously, is described below in one paragraph: taps, never words.</p>
 
   <h2>Your writing</h2>
   <p>Everything you write in Endpaper is stored on your device. If you turn on <em>Back up with iCloud</em>, your writing syncs to <em>your</em> private iCloud database — storage that belongs to your Apple account, governed by your Apple ID and Apple’s terms. We have no access to it: no admin panel, no database, no copy. There is nothing on our side to breach, subpoena, or sell.</p>
@@ -35,9 +35,18 @@
   <h2>What we don’t do</h2>
   <ul>
     <li>No account, profile, or sign-up — we don’t know your name or email.</li>
-    <li>No analytics or usage tracking of any kind, first- or third-party.</li>
-    <li>No third-party SDKs. The app contains our code and Apple’s frameworks, nothing else.</li>
+    <li>No tracking across apps or sites, no advertising identifiers, no fingerprinting.</li>
+    <li>One third-party SDK, for the anonymous counts below (PostHog). Nothing else beyond our code and Apple’s frameworks.</li>
     <li>No advertising, no data sharing, no data sale — there is no data.</li>
+  </ul>
+
+  <h2>What we count (anonymous usage)</h2>
+  <p>Since version 1.0.4 the app sends a small set of anonymous product events so we can tell whether Endpaper works as a product — for example <em>a page was written today</em>, <em>a reflection was opened</em>, <em>the membership offer was shown</em>. Each event carries only coarse state: app version, how many days since install (bucketed), whether reflections are on, whether you are a member. That is all.</p>
+  <ul>
+    <li>Never your writing, words, names, the words a reflection found, or exact counts of anything you wrote.</li>
+    <li>No profile: there is no user record, no email, no advertising ID, and events are not linked to you. A reinstall is a new anonymous device.</li>
+    <li>Processed by PostHog on servers in the European Union.</li>
+    <li>Off at any time in Settings → <em>Share anonymous usage</em>. Off is remembered.</li>
   </ul>
 
   <h2>Notifications</h2>

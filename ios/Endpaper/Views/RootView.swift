@@ -57,7 +57,9 @@ struct RootView: View {
     /// Play the arrival once per calendar day — but never on the day the
     /// user onboards (two splashes in a minute), and never over the lock.
     private func armArrival() {
-        guard onboarded, !locked, !arriving else { return }
+        guard onboarded else { return }
+        Analytics.daily(.appOpened)
+        guard !locked, !arriving else { return }
         if UserDefaults.standard.string(forKey: AppKeys.firstDay) == nil {
             armFirstDay()   // first open ever (or an upgrade): stamp, no splash
             return

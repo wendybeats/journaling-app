@@ -12,7 +12,7 @@ Owner: Wendell Barton (hello@wendellbarton.com), posting from EEST.*
 to you. Four non-negotiable rules: **permanence** (entries seal at
 midnight, no edits, no deletions), **no AI** (reflections are pattern
 recognition over your own words, verbatim — never analysis, never a
-chatbot), **no analytics/tracking**, **no accounts** (on-device +
+chatbot), **no tracking** (anonymous usage counts only — "we count taps, never words"), **no accounts** (on-device +
 private iCloud; nothing on any server of ours).
 
 Core loop: one quiet page a day → each day you write, a dot fills in →

@@ -17,6 +17,7 @@ struct EndpaperApp: App {
         // TestFlight demo data must not follow a tester into the App Store
         // build, where the demo controls (and their only delete path) hide.
         DebugSeed.sweepProductionLeftovers(in: container.mainContext)
+        Analytics.start()
     }
 
     private static func makeContainer(icloud: Bool) -> ModelContainer {

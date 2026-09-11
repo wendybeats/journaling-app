@@ -13,6 +13,7 @@ struct MembershipSheet: View {
     var body: some View {
         ZStack {
             Tokens.Surface.inverted.ignoresSafeArea()
+                .onAppear { Analytics.track(.paywallViewed, [.surface: .surface(.settingsSheet)]) }
             VStack(spacing: Tokens.Space.lg) {
                 Spacer()
                 Text("Reflections")
@@ -30,7 +31,7 @@ struct MembershipSheet: View {
                     .multilineTextAlignment(.center)
                 Button {
                     Task {
-                        await TrialGate.shared.subscribe()
+                        await TrialGate.shared.subscribe(from: .settingsSheet)
                         if TrialGate.shared.reflectionsUnlocked { dismiss() }
                     }
                 } label: {
