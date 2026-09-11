@@ -505,8 +505,8 @@ Glimpse
 
 Setup on the Mac, once: paste the project token into
 `Support/Analytics.swift` (`projectToken`), confirm the host matches the
-project's region (EU → `https://eu.i.posthog.com`, US →
-`https://us.i.posthog.com`), then `xcodegen` (the PostHog package
+project's region (US → `https://us.i.posthog.com` — the project is US; EU →
+`https://eu.i.posthog.com`), then `xcodegen` (the PostHog package
 resolves on first build; needs network). With the placeholder token the
 whole seam is a no-op.
 

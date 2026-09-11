@@ -3,8 +3,8 @@
 // events so the funnel — onboarding → first entry → second day → glimpse
 // → first weekly → offer → membership — is visible. Never journal
 // content, words, names, topic words, reflection contents, exact counts,
-// or ad identifiers. PostHog, EU cloud, person-less: no profile, no
-// identify, no autocapture, no replay, no IDFA.
+// or ad identifiers. PostHog, US cloud, person-less: no profile, no
+// identify, no autocapture, no replay, no IDFA. US cloud.
 //
 // The guard is structural: `Event`, `Prop` and every `Value` case are
 // closed vocabularies — there is no API that accepts a free String, so
@@ -15,10 +15,10 @@ import Foundation
 import PostHog
 
 enum Analytics {
-    /// PostHog project token — a public, write-only key. EU data residency.
+    /// PostHog project token — a public, write-only key. US cloud (decided 2026-09-11: the audience is US).
     /// Replace with the project's token (PostHog → Settings → Project).
     static let projectToken = "phc_tvPTWHLx6jFoZQCwAX6GzAXhS4krcswzPifWpA3Zge9G"
-    static let host = "https://eu.i.posthog.com"
+    static let host = "https://us.i.posthog.com"
 
     // MARK: Vocabulary
 

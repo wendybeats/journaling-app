@@ -172,7 +172,7 @@ scrutiny. It has to be changed everywhere at once:
 | Store screenshots | check screen 2 copy | only if it says "no analytics" |
 
 ### 2.2 Recommendation: PostHog, EU cloud
-- **Host:** `eu.i.posthog.com` (EU data residency reads well in the
+- **Host:** `us.i.posthog.com` (decided: the project is on the US cloud, the audience is US; EU residency was the original thought — it reads well in the
   privacy page; free tier 1M events/month is years of runway).
 - **SDK:** `posthog-ios` via SPM (xcodegen `packages:` + a target
   dependency). It ships its own privacy manifest; the app also needs a

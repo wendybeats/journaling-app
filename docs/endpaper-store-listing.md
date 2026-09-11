@@ -116,7 +116,7 @@ set in Instrument Sans Medium above — same system as the site hero.
 > Data: writing is stored on device and, if the user enables it, in
 > their own iCloud private database — it is never transmitted to us.
 > The app records anonymous product-interaction events (e.g. "a page
-> was written", "a reflection was opened") via PostHog (EU), not linked
+> was written", "a reflection was opened") via PostHog (US), not linked
 > to the user, not used for tracking, no identifiers, switchable off in
 > Settings. Notifications are local only and requested only after an
 > explicit in-app yes.
