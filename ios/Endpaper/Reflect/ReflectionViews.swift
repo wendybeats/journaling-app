@@ -88,11 +88,12 @@ struct WeeklyCardView: View {
                 // The last beat reached = the deck was read to its end; when
                 // that beat is the offer, the paywall was seen (page index,
                 // not onAppear — the pager pre-builds neighbours).
-                guard p == beats.count - 1, !completedSent else { return }
+                let b = beats
+                guard b.indices.contains(p), p == b.count - 1, !completedSent else { return }
                 completedSent = true
                 Analytics.track(.weeklyReflectionCompleted,
-                                [.weekIndex: .int(Analytics.weekIndex), .beats: .int(beats.count)])
-                if beats[p] == .offer {
+                                [.weekIndex: .int(Analytics.weekIndex), .beats: .int(b.count)])
+                if b[p] == .offer {
                     Analytics.track(.paywallViewed, [.surface: .surface(.offerBeat)])
                 }
             }

@@ -43,6 +43,7 @@ struct TodayView: View {
     @State private var hookSeatScale: CGFloat = 1
     @State private var glimpse: GlimpseSignal? = nil   // today's lit word, if any (Glimpse.swift)
     @State private var glimpseSheet = false
+    @State private var glimpseEntryID: UUID? = nil
 
     struct PendingImport: Identifiable {
         let id = UUID()
@@ -657,13 +658,11 @@ struct TodayView: View {
         // The glimpse re-evaluates whenever the page's committed text
         // changes — it can only light a word that is on today's page.
         glimpse = GlimpseStore.shared.evaluate(corpus: ReflectionStore.corpus(from: context), todayKey: key)
-    }
-
-    /// The section carrying the lit word: the latest of today's entries
-    /// that contains any form of it.
-    private var glimpseEntryID: UUID? {
-        guard let g = glimpse else { return nil }
-        return todayEntries.last { Glimpse.lastRange(of: g.forms, in: $0.text) != nil }?.id
+        // The section carrying the lit word: the latest of today's entries
+        // that contains any form of it — found once here, not per row.
+        glimpseEntryID = glimpse.flatMap { g in
+            todayEntries.last { Glimpse.lastRange(of: g.forms, in: $0.text) != nil }?.id
+        }
     }
 }
 

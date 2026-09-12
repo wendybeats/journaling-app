@@ -164,12 +164,9 @@ enum Analytics {
         case 8...14: daysBucket = "8_14"
         default: daysBucket = "15_plus"
         }
-        // TrialGate is main-actor; every caller is on main, but the seam
-        // stays nonisolated so model code (EntryStore) can call it.
-        let (member, unpayable): (Bool, Bool) = Thread.isMainThread
-            ? MainActor.assumeIsolated { (TrialGate.shared.subscribed, TrialGate.shared.paymentsUnavailable) }
-            : (false, false)
-        let membership = unpayable ? "unpayable" : (member ? "member" : "none")
+        // TrialGate mirrors its coarse state to UserDefaults on refresh, so
+        // the seam never touches the main actor (model code calls it too).
+        let membership = UserDefaults.standard.string(forKey: AppKeys.membershipState) ?? "none"
         let anchor = ReflectionCadence.anchor()
         let iso = Calendar(identifier: .iso8601)
         let week = String(format: "%04d-W%02d",

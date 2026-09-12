@@ -59,6 +59,9 @@ final class TrialGate: ObservableObject {
         }
         product = try? await Product.products(for: [Self.yearlyID]).first
         subscribed = await currentEntitlementExists()
+        // Coarse state for analytics super-properties, readable off-actor.
+        UserDefaults.standard.set(paymentsUnavailable ? "unpayable" : (subscribed ? "member" : "none"),
+                                  forKey: AppKeys.membershipState)
     }
 
     private func currentEntitlementExists() async -> Bool {
