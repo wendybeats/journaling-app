@@ -40,6 +40,7 @@ final class ReflectionStore {
         var consent: String? = nil          // "yes" | "no" | nil (never asked)
         var seen: [String: Bool] = [:]
         var archived: [String: ArchivedReflection] = [:]
+        var deferred: [String: String]? = nil   // reflection id → day key it was put off (optional: older state decodes)
     }
 
     private var state: State
@@ -144,7 +145,16 @@ final class ReflectionStore {
         let c = calendar.dateComponents([.year, .month], from: prev)
         let signal = Reflect.monthlySignal(year: c.year!, month: c.month!, corpus: corpus)
         guard state.seen[signal.id] != true, signal.days > 0 else { return nil }
+        guard state.deferred?[signal.id] != DayFormat.key(for: now) else { return nil }
         return signal
+    }
+
+    /// "Later" on a recap: out of the slot for the rest of today.
+    func deferMonthly(id: String, now: Date = .now) {
+        var d = state.deferred ?? [:]
+        d[id] = DayFormat.key(for: now)
+        state.deferred = d
+        persist()
     }
 
     // MARK: Archive

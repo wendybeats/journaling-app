@@ -19,6 +19,11 @@ struct LivingWriteView: UIViewRepresentable {
     /// page shows the large centered overlay word instead, and the seat
     /// animation ends by flipping this off to reveal the real text.
     var concealed = false
+    /// The glimpse (QA 2026-09-12): surface forms of the word that keeps
+    /// coming back — its last occurrence in the draft carries the wash
+    /// the moment the word is finished; tapping it opens the dialogue.
+    var glimpseForms: [String]? = nil
+    var onGlimpseTap: (() -> Void)? = nil
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -35,6 +40,10 @@ struct LivingWriteView: UIViewRepresentable {
         context.coordinator.concealed = concealed
         Self.applyAssist(tv, concealed: concealed)
         Self.restyle(tv, to: text, caretToEnd: true, concealed: concealed)   // a restored draft opens ready to continue
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped(_:)))
+        tap.cancelsTouchesInView = false
+        tap.delegate = context.coordinator
+        tv.addGestureRecognizer(tap)
         return tv
     }
 
@@ -81,6 +90,7 @@ struct LivingWriteView: UIViewRepresentable {
         } else if !focused, tv.isFirstResponder {
             tv.resignFirstResponder()
         }
+        context.coordinator.syncWash(tv)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
@@ -130,13 +140,27 @@ struct LivingWriteView: UIViewRepresentable {
 
     // MARK: Coordinator
 
-    final class Coordinator: NSObject, UITextViewDelegate {
+    final class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
         var parent: LivingWriteView
         var concealed = false
+        var wash: GlimpseWashView? = nil
         init(_ parent: LivingWriteView) { self.parent = parent }
+
+        func syncWash(_ tv: UITextView) {
+            GlimpseWashView.sync(in: tv, forms: concealed ? nil : parent.glimpseForms, stored: &wash)
+        }
+
+        @objc func tapped(_ g: UITapGestureRecognizer) {
+            guard let wash, let tv = g.view else { return }
+            if wash.frame.insetBy(dx: -12, dy: -12).contains(g.location(in: tv)) { parent.onGlimpseTap?() }
+        }
+
+        func gestureRecognizer(_ g: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
 
         func textViewDidChange(_ tv: UITextView) {
             LivingWriteView.restyle(tv, concealed: concealed)
+            syncWash(tv)
             let value = tv.text ?? ""
             DispatchQueue.main.async { self.parent.text = value }
         }

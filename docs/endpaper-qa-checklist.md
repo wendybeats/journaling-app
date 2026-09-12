@@ -456,6 +456,14 @@ Cadence
 - [ ] Fresh install (or Clear demo + delete/reinstall): Today says
       "Reflection in 7 days"; daily arrival "Your reflection is 7 days
       away"; the ghost prompts run days 0–6
+- [ ] Consent card "Yes, reflect": NO system notification prompt appears
+      (build 25) — the reminder card's pre-prompt is the only ask
+- [ ] A pending monthly recap outranks the weekly (one card at a time).
+      "Later" on the recap now defers it for the day and the weekly card
+      takes the slot immediately (build 25) — this is how to reach the
+      weekly on a device with iCloud history
+- [ ] Onboarding "Each day": the thirty-dot month fills one dot at a time
+      (~55 ms each, three ringed misses), no one→week→month morph
 - [ ] Each day the count drops by one; day 6 says "tomorrow"; day 7
       "Reflection today" + arrival "is ready" — whatever weekday you
       installed on
@@ -477,24 +485,23 @@ Cadence
 
 Glimpse — test BEFORE any "First day −7" (the glimpse never fires on a
 reflection day, and a fresh install's anchored week is one day long, so
-the demo footer's **Seed glimpse** writes yesterday for you)
+the demo footer's **Seed glimpse** writes yesterday for you). Build 25:
+the wash lives in the LIVE editor and lands the moment the word is
+finished.
 - [ ] Fresh install (or Clear demo): Notebook → Seed glimpse. It writes a
       ~90-word entry for yesterday containing "stressed" twice and makes
       yesterday day 0 (Today now says "Reflection in 6 days")
-- [ ] Today: write a short section that uses "stressed" once, commit
-      (tap away / wait for the idle commit) → the LAST "stressed" on
-      today's page carries a soft wash (no colour, no underline); the
-      live editor is untouched
-- [ ] Tap the washed word → compact inverted sheet: the count large
-      ("3"), "A pattern emerges", "You wrote “stressed” 3 times this
-      week.", Noted. Noted → sheet closes, wash gone
-- [ ] Swipe the sheet away without Noted → wash stays; tap works again
-- [ ] Untapped, the wash is gone next day (fades at midnight); the
-      Notebook never shows a wash
-- [ ] Same word never fires again; a second glimpse in the same week
-      needs ≥5 mentions across ≥3 days of a NEW word; never more than
-      two glimpses per week; never on reflection day; never more than
-      one a day
+- [ ] Today: type a sentence and finish the word "stressed" with a space
+      → while still typing, that word takes a soft wash that draws in
+      left→right (ease-out, ~0.5s). The wash hugs the word's line (no
+      extra band below), follows the word if the text reflows, and
+      nothing happens on "stress" or "stresse" — only the finished word
+- [ ] Keep typing after it: the wash stays on the last "stressed"; type
+      the word again → the wash moves to the newest one (no re-animation)
+- [ ] Tap the washed word (in the editor) → the sheet: count large, "A
+      pattern emerges", "You wrote “stressed” N times this week.", Noted
+- [ ] Let the draft commit (tap away / idle): the wash moves to the
+      committed section, same word, still tappable
 - [ ] Flat words never light ("work", "said", "morning", "didn")
 - [ ] "No thanks" to reflections → no glimpses; unasked → glimpses still
       fire

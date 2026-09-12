@@ -44,6 +44,7 @@ struct TodayView: View {
     @State private var glimpse: GlimpseSignal? = nil   // today's lit word, if any (Glimpse.swift)
     @State private var glimpseSheet = false
     @State private var glimpseEntryID: UUID? = nil
+    @State private var editorGlimpseForms: [String]? = nil
 
     struct PendingImport: Identifiable {
         let id = UUID()
@@ -156,10 +157,7 @@ struct TodayView: View {
                     ForEach(todayEntries, id: \.id) { entry in
                         EntrySection(entry: entry, onEdited: { refresh() },
                                      glimpse: entry.id == glimpseEntryID ? glimpse?.forms : nil,
-                                     onGlimpseTap: {
-                                         Analytics.track(.earlyInsightOpened)
-                                         glimpseSheet = true
-                                     })
+                                     onGlimpseTap: openGlimpse)
                             .opacity(settlingID == entry.id ? 0 : 1)
                             .animation(Tokens.Motion.fast, value: settlingID)
                     }
@@ -446,7 +444,9 @@ struct TodayView: View {
                     }
                 }
                 LivingWriteView(text: $draft, focused: $writingFocused,
-                                concealed: hookMode)
+                                concealed: hookMode,
+                                glimpseForms: editorGlimpseForms,
+                                onGlimpseTap: openGlimpse)
                 // The overlay word — what the reader sees themselves type,
                 // rule-cursor riding its right edge until it seats. Same
                 // animation family as the prompt choreography.
@@ -477,6 +477,7 @@ struct TodayView: View {
                 draftDay = key
                 idleCommit?.cancel()
                 advanceHook(with: text)
+                syncGlimpse()
                 guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                 armDateShrink()
                 // Stamp the session's start on the first real words — the
@@ -657,12 +658,34 @@ struct TodayView: View {
         todayEntries = EntryStore.entries(forDay: key, in: context)
         // The glimpse re-evaluates whenever the page's committed text
         // changes — it can only light a word that is on today's page.
-        glimpse = GlimpseStore.shared.evaluate(corpus: ReflectionStore.corpus(from: context), todayKey: key)
-        // The section carrying the lit word: the latest of today's entries
-        // that contains any form of it — found once here, not per row.
-        glimpseEntryID = glimpse.flatMap { g in
-            todayEntries.last { Glimpse.lastRange(of: g.forms, in: $0.text) != nil }?.id
+        GlimpseStore.shared.prime(corpus: ReflectionStore.corpus(from: context), todayKey: key)
+        syncGlimpse()
+    }
+
+    /// The glimpse over the primed week plus the live draft — runs on
+    /// every keystroke (cheap: only the draft is re-read). The wash lives
+    /// in the editor while the draft holds the word, else on the latest
+    /// committed section that does.
+    private func syncGlimpse() {
+        glimpse = GlimpseStore.shared.evaluate(draft: draft, todayKey: key)
+        guard let g = glimpse else {
+            editorGlimpseForms = nil
+            glimpseEntryID = nil
+            return
         }
+        if Glimpse.lastRange(of: g.forms, in: draft) != nil {
+            editorGlimpseForms = g.forms
+            glimpseEntryID = nil
+        } else {
+            editorGlimpseForms = nil
+            glimpseEntryID = todayEntries.last { Glimpse.lastRange(of: g.forms, in: $0.text) != nil }?.id
+        }
+    }
+
+    private func openGlimpse() {
+        guard glimpse != nil else { return }
+        Analytics.track(.earlyInsightOpened)
+        glimpseSheet = true
     }
 }
 
@@ -754,12 +777,7 @@ struct EntrySection: View {
             // word large, measured first line medium, body after, bullets
             // italic — one concatenated Text so mixed sizes share a line.
             if let forms = glimpse {
-                Text(WrittenFormat.attributed(for: entry.text, highlight: forms, link: Glimpse.link))
-                    .typeWrittenScaled(WrittenFormat.body)
-                    .environment(\.openURL, OpenURLAction { _ in
-                        onGlimpseTap?()
-                        return .handled
-                    })
+                WashedTextView(text: entry.text, forms: forms, onTap: onGlimpseTap)
                     .accessibilityHint("A word that keeps coming back. Tap it.")
             } else {
                 WrittenFormat.text(for: entry.text)

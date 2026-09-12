@@ -88,10 +88,12 @@ targets:
         # from the Mac before the glimpse/analytics work; consumed).
         # 22 = install-anchored week + glimpse + PostHog (uploaded 2026-09-11).
         # 23 = QA round: Seed glimpse tool, card-body tap (not uploaded).
-        # 24 = hardening: analytics off-actor, deck page hook, glimpse cache.
-        # Next archive: 25.
+        # 24 = hardening: analytics off-actor, deck page hook, glimpse cache
+        # (uploaded 2026-09-12). 25 = live glimpse wash in the editor, consent
+        # without the permission ask, monthly Later defers, month-fill
+        # onboarding beat, swizzling off. Next archive: 26.
         MARKETING_VERSION: 1.0.4
-        CURRENT_PROJECT_VERSION: 24
+        CURRENT_PROJECT_VERSION: 25
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"

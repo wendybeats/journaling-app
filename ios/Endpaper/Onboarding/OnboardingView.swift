@@ -185,7 +185,7 @@ private struct WriteBeat: View {
     var body: some View {
         PromptBeat(prompt: "Each day", onPage: true, hold: 0.5) {
             VStack(spacing: Tokens.Space.lg) {
-                MorphDotsDemo()
+                MonthFillDemo()
                 Text("Write each day,\nsealed at midnight.")
                     .font(.custom(EndpaperFont.heading, size: 34).weight(.semibold))
                     .foregroundStyle(Tokens.Text.heading)
@@ -396,83 +396,51 @@ private struct ReadyBeat: View {
 /// center of the week row to its grid seat, so the story is one day
 /// becoming a record. Three days stay unfilled (an honest month).
 /// Reduce Motion: the finished grid, at rest.
-private struct MorphDotsDemo: View {
+/// The month drawing itself (QA 2026-09-12): the recap grid's own
+/// choreography — thirty dots filling one by one, a day at a time, the
+/// three ringed misses staying open. Replaces the one→week→month morph.
+private struct MonthFillDemo: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var stage = 0            // 0 one dot · 1 week · 2 month
+    @State private var drawn = 0
 
     private let missed: Set<Int> = [5, 12, 26]
-    private let dot: CGFloat = 16
-    private let gap: CGFloat = 13
+    private let dot: CGFloat = 14
+    private let gap: CGFloat = 12
     private let cols = 7
     private let count = 30
 
-    private var cell: CGFloat { dot + gap }
-    private var width: CGFloat { CGFloat(cols) * dot + CGFloat(cols - 1) * gap }
-    private var height: CGFloat { 5 * dot + 4 * gap }
-    private let weekRow = 2                 // indices 14–20; its center is index 17
-
     var body: some View {
-        ZStack {
-            ForEach(0..<count, id: \.self) { i in
-                let p = position(of: i)
+        let columns = Array(repeating: GridItem(.fixed(dot), spacing: gap), count: cols)
+        LazyVGrid(columns: columns, spacing: gap) {
+            ForEach(1...count, id: \.self) { day in
                 Group {
-                    if missed.contains(i) {
+                    if missed.contains(day) {
                         Circle().strokeBorder(Tokens.Dot.empty, lineWidth: 1)
                     } else {
                         Circle().fill(Tokens.Dot.filled)
                     }
                 }
                 .frame(width: dot, height: dot)
-                .opacity(opacity(of: i))
-                .position(x: p.x, y: p.y)
+                .scaleEffect(day <= drawn ? 1 : 0.35)
+                .opacity(day <= drawn ? 1 : 0.15)
+                .animation(.timingCurve(0.16, 0.84, 0.24, 1, duration: 0.35), value: drawn)
             }
         }
-        .frame(width: width, height: height)
-        // Stronger ease-out than the house curve (QA 2026-09-06): the
-        // split leaves fast and lands soft, so each stage reads as an
-        // arrival instead of a glide.
-        .animation(.timingCurve(0.16, 0.84, 0.24, 1, duration: 0.6), value: stage)
+        .fixedSize()
         .task {
             if reduceMotion {
-                stage = 2
+                drawn = count
                 return
             }
-            // PromptBeat reveals the content ~1.15s in (0.5 hold + 0.4
-            // slide + 0.25 rise) — the single dot must hold ALONE on
-            // screen before splitting (QA 2026-09-05: the solo was
-            // playing while still invisible).
-            try? await Task.sleep(for: .seconds(1.8))
-            stage = 1
-            try? await Task.sleep(for: .seconds(0.8))
-            stage = 2
+            // PromptBeat reveals the content ~1.15s in — the grid must be
+            // visible before it starts filling.
+            try? await Task.sleep(for: .seconds(1.3))
+            for d in 1...count {
+                drawn = d
+                try? await Task.sleep(for: .milliseconds(55))
+            }
         }
         .accessibilityHidden(true)
-    }
-
-    private func gridPoint(_ i: Int) -> CGPoint {
-        CGPoint(x: CGFloat(i % cols) * cell + dot / 2,
-                y: CGFloat(i / cols) * cell + dot / 2)
-    }
-
-    /// Everything not yet revealed waits at the week row's center, so
-    /// each stage change reads as a split outward from what exists.
-    private func position(of i: Int) -> CGPoint {
-        let center = gridPoint(weekRow * cols + 3)
-        let inWeek = i / cols == weekRow
-        switch stage {
-        case 0: return center
-        case 1: return inWeek ? gridPoint(i) : center
-        default: return gridPoint(i)
-        }
-    }
-
-    private func opacity(of i: Int) -> Double {
-        let inWeek = i / cols == weekRow
-        switch stage {
-        case 0: return i == weekRow * cols + 3 ? 1 : 0
-        case 1: return inWeek ? 1 : 0
-        default: return 1
-        }
     }
 }
 

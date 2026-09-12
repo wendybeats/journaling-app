@@ -432,9 +432,11 @@ struct ReflectionFlowHost: View {
                     if accepted {
                         // Opting in never presents anything (QA 2026-09-05:
                         // a new user has no week yet — the card is the
-                        // notice, the arrival is a later card). It does arm
-                        // the D6/D7 weekly notes.
-                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: true) }
+                        // notice, the arrival is a later card). It arms the
+                        // D6/D7 weekly notes but asks NO permission here
+                        // (QA 2026-09-12) — the reminder card's pre-prompt is
+                        // the one system ask; the notes ride whatever it grants.
+                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: false) }
                         evaluate()
                     }
                 }
@@ -491,7 +493,10 @@ struct ReflectionFlowHost: View {
                         presentMonthly(monthly)
                     }
                 } onLater: {
-                    withAnimation(Tokens.Motion.base) { readyMonthly = nil }
+                    // Deferring the recap for the day lets the weekly, which
+                    // it outranks, take the slot (QA 2026-09-12).
+                    ReflectionStore.shared.deferMonthly(id: monthly.id)
+                    withAnimation(Tokens.Motion.base) { evaluate() }
                 }
             }
             if let year = januaryYear {

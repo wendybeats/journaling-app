@@ -180,33 +180,6 @@ enum WrittenFormat {
     /// One concatenated Text carrying the whole grammar — apply
     /// `.typeWrittenScaled(WrittenFormat.body)` outside for color and the
     /// body line rhythm; per-run fonts here win over the outer modifier.
-    /// The same grammar as `text(for:)` as one AttributedString, with the
-    /// glimpse highlight (1.0.4): the LAST whole-word occurrence of any of
-    /// `forms` carries a soft wash, keeps the written colour, and taps
-    /// through `link` (handled by the section's OpenURLAction). Rendering
-    /// only — the entry's words are never touched.
-    static func attributed(for string: String, width: CGFloat = WrittenFormat.pageWidth,
-                           highlight forms: [String], link: URL) -> AttributedString {
-        var out = AttributedString()
-        for seg in segments(for: string, width: width) {
-            var run = AttributedString(seg.text)
-            var font = Font.custom(EndpaperFont.body, size: seg.tier.size)
-            if seg.tier.italic { font = font.italic() }
-            run.font = font
-            out.append(run)
-        }
-        // Segments cover the string exactly, so a character offset in the
-        // string is the same offset in the attributed characters.
-        if let hit = Glimpse.lastRange(of: forms, in: string) {
-            let start = out.characters.index(out.startIndex, offsetBy: hit.offset)
-            let end = out.characters.index(start, offsetBy: hit.length)
-            out[start..<end].backgroundColor = Tokens.Text.meta.opacity(0.22)
-            out[start..<end].foregroundColor = Tokens.Text.written
-            out[start..<end].link = link
-        }
-        return out
-    }
-
     static func text(for string: String, width: CGFloat = WrittenFormat.pageWidth) -> Text {
         segments(for: string, width: width).reduce(Text(verbatim: "")) { acc, seg in
             var t = Text(verbatim: seg.text)

@@ -88,6 +88,7 @@ enum Analytics {
         config.captureApplicationLifecycleEvents = false   // we send app_opened ourselves, daily
         config.captureScreenViews = false
         config.sessionReplay = false
+        config.enableSwizzling = false                     // no UIKit hooks at all (a $rageclick got through, 2026-09-12)
         config.personProfiles = .never                     // person-less events: no profile, ever
         config.preloadFeatureFlags = false
         config.sendFeatureFlagEvent = false
