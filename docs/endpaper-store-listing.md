@@ -124,9 +124,15 @@ set in Instrument Sans Medium above — same system as the site hero.
 ## App Review notes (paste into the Review Notes field)
 
 > Endpaper is a private journaling app with no account system — the
-> reviewer can use every feature immediately after the onboarding
-> sequence. The subscription (7-day free trial → $39.99/year) starts
-> from the final onboarding screen ("A week, on me.").
+> reviewer can write immediately after the onboarding sequence, with no
+> purchase. Writing is free. Reflections (a weekly and a monthly
+> read-back of the user's own words, computed on device) are the
+> auto-renewing membership: $39.99/year with a 7-day free introductory
+> offer. The first weekly reflection is free; the purchase is offered at
+> the end of that first reflection, when a later locked reflection is
+> tapped, and in Settings → Membership (with Restore Purchases). A
+> reflection needs several days of writing to exist, so the reviewer may
+> not reach one during review — every other surface is available at once.
 >
 > There is deliberately no way to edit or delete a committed entry —
 > permanence is the product's core rule, disclosed during onboarding
