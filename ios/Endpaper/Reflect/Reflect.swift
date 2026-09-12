@@ -55,7 +55,7 @@ struct WeeklySignal: Codable {
     var challenge: RQuote? = nil       // one explicit hard moment (closer)
 }
 
-struct MonthlySignal: Codable, Identifiable {
+struct MonthlySignal: Codable {
     struct Topic: Codable {
         var stem: String
         var word: String
