@@ -74,7 +74,26 @@ final class ReflectionStore {
 
     // MARK: Corpus bridge
 
+    /// The corpus is cached between commits (perf 2026-09-12: Today was
+    /// fetching the whole notebook five times per appearance — five
+    /// seconds on a year of iCloud entries). A cheap row count catches
+    /// entries that arrive from iCloud in the background; local writes
+    /// and edits call `invalidateCorpus()`; a short TTL covers the rest.
+    private static var cached: (count: Int, at: Date, corpus: Corpus)? = nil
+
+    static func invalidateCorpus() { cached = nil }
+
     static func corpus(from context: ModelContext) -> Corpus {
+        let count = (try? context.fetchCount(FetchDescriptor<Entry>())) ?? -1
+        if let c = cached, c.count == count, count >= 0, Date().timeIntervalSince(c.at) < 120 {
+            return c.corpus
+        }
+        let built = build(from: context)
+        cached = (count, Date(), built)
+        return built
+    }
+
+    private static func build(from context: ModelContext) -> Corpus {
         let all = (try? context.fetch(FetchDescriptor<Entry>(sortBy: [SortDescriptor(\.at)]))) ?? []
         var byDay: [String: [String]] = [:]
         var sessions: [String: [RSession]] = [:]

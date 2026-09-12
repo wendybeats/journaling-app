@@ -343,7 +343,8 @@ enum Reflect {
         for entry in all {
             for raw in entry.text.components(separatedBy: "\n") {
                 let line = raw.trimmingCharacters(in: .whitespaces)
-                guard !line.isEmpty else { continue }
+                // A word, never a stray letter (QA 2026-09-12: a lone "T").
+                guard line.filter(\.isLetter).count >= 2 else { continue }
                 let size = WrittenScale.size(for: line)
                 guard size >= 28 else { continue }
                 if best == nil || size > best!.size {

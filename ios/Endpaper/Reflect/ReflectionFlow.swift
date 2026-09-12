@@ -49,8 +49,8 @@ final class ReflectionFlow: ObservableObject {
 
     // MARK: Evaluate
 
-    func evaluate(context: ModelContext) {
-        corpus = ReflectionStore.corpus(from: context)
+    func evaluate(corpus: Corpus) {
+        self.corpus = corpus
         let store = ReflectionStore.shared
         let entitled = TrialGate.shared.reflectionsUnlocked
         let firstUsed = UserDefaults.standard.bool(forKey: AppKeys.firstWeeklyUsed)

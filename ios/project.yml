@@ -93,9 +93,11 @@ targets:
         # without the permission ask, monthly Later defers, month-fill
         # onboarding beat, swizzling off (uploaded 2026-09-12). 26 = reflections
         # on by default (no consent card), all pending reflections as carousel
-        # cards, arrival sheet, one-shot notes gated on the week. Next: 27.
+        # cards, arrival sheet, one-shot notes gated on the week (uploaded
+        # 2026-09-12). 27 = perf (one cached corpus fetch), weekly deck on the
+        # sequence, week label, sitting in minutes, polish. Next: 28.
         MARKETING_VERSION: 1.0.4
-        CURRENT_PROJECT_VERSION: 26
+        CURRENT_PROJECT_VERSION: 27
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"

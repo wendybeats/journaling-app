@@ -165,6 +165,7 @@ enum DebugSeed {
             }
         }
         try? context.save()
+        ReflectionStore.invalidateCorpus()
         UserDefaults.standard.set(seededIDs, forKey: seededIDsKey)
     }
 
@@ -205,6 +206,7 @@ enum DebugSeed {
         let entry = Entry(dayKey: DayFormat.key(for: at), at: at, text: text)
         context.insert(entry)
         try? context.save()
+        ReflectionStore.invalidateCorpus()
         var ids = UserDefaults.standard.stringArray(forKey: seededIDsKey) ?? []
         ids.append(entry.id.uuidString)
         UserDefaults.standard.set(ids, forKey: seededIDsKey)
@@ -237,6 +239,7 @@ enum DebugSeed {
             try? context.save()
         }
         UserDefaults.standard.removeObject(forKey: seededIDsKey)
+        ReflectionStore.invalidateCorpus()
         ReflectionStore.shared.resetAll()
         GlimpseStore.shared.resetAll()
         UserDefaults.standard.removeObject(forKey: AppKeys.reminder)

@@ -56,9 +56,11 @@ hidden in production builds.
 > that a page was written, never what it says. We couldn't read your
 > journal if we wanted to — and we don't want to.
 >
-> A WEEK, ON ME
-> Every page and every reflection, free for seven days. After that,
-> Endpaper is $39.99 a year — about the price of one good paper notebook.
+> WRITING IS FREE, FOREVER
+> Every page, every day, free — no trial, no clock. Reflections are a
+> membership: your first weekly reflection is on me; after that, $39.99
+> a year for every week and every month read back — about the price of
+> one good paper notebook.
 >
 > ---
 >
@@ -70,7 +72,25 @@ hidden in production builds.
 `journal,diary,journaling,reflection,private,writing,daily,notebook,voice,minimal,mindful,therapy`
 (96 chars. Don't repeat "Endpaper" — the name field already indexes.)
 
-## What's New — 1.0.3 (1.0.2's train closed already approved; same notes)
+## What's New — 1.0.4 (the free model; paste this one)
+
+> Writing is free, forever.
+>
+> — Every page, every day, free — no trial. Reflections are now a
+>   membership, and your first weekly reflection is on me.
+> — Your first week: a question worth answering each day, and a
+>   countdown to your first reflection — whatever day you start.
+> — A glimpse: when a word keeps coming back, it lights up on the page.
+>   Tap it.
+> — A finished week or month announces itself. The deck opens when
+>   you're ready — tap either side to move through it.
+> — Share a line, or a month of dots, as a card.
+> — The page types the way handwriting settles: the first word large,
+>   the first line medium, the rest body. Lists, too.
+> — Anonymous usage counts — taps, never words — so I can see what's
+>   working. Off in Settings.
+
+## What's New — 1.0.3 (shipped; kept for the version history)
 
 Only what's new since the live version's notes (which already announced
 voice, handwriting capture, file import, recaps, and dictation

@@ -36,6 +36,7 @@ enum EntryStore {
             last.text += "\n\n" + text
             last.lastAt = lastAt ?? at
             try? context.save()
+            ReflectionStore.invalidateCorpus()
             noteWriting(day: key, in: context)
             return last
         }
@@ -44,6 +45,7 @@ enum EntryStore {
         entry.lastAt = lastAt ?? at
         context.insert(entry)
         try? context.save()
+        ReflectionStore.invalidateCorpus()
         noteWriting(day: key, in: context)
         return entry
     }
@@ -71,6 +73,7 @@ enum EntryStore {
         guard !trimmed.isEmpty else { return }
         entry.text = trimmed
         try? context.save()
+        ReflectionStore.invalidateCorpus()
     }
 
     static func entries(forDay key: String, in context: ModelContext) -> [Entry] {

@@ -25,10 +25,17 @@ enum PresentedReflection: Identifiable {
 
 // MARK: - Labels
 
+/// "Sep 4 – 11", or "Aug 30 – Sep 5" across a month boundary (QA
+/// 2026-09-12: the long form bled off the page at the prompt's 1.5×).
 func weekLabel(_ signal: WeeklySignal) -> String {
+    let cal = Calendar.current
     let start = DayFormat.date(fromKey: signal.startKey)
-    let c = Calendar.current.dateComponents([.month, .day], from: start)
-    return "Week of \(DayFormat.monthName(c.month!)) \(c.day!)"
+    let end = cal.date(byAdding: .day, value: 6, to: start) ?? start
+    let a = cal.dateComponents([.month, .day], from: start)
+    let b = cal.dateComponents([.month, .day], from: end)
+    let am = String(DayFormat.monthName(a.month!).prefix(3))
+    let bm = String(DayFormat.monthName(b.month!).prefix(3))
+    return a.month == b.month ? "\(am) \(a.day!) – \(b.day!)" : "\(am) \(a.day!) – \(bm) \(b.day!)"
 }
 
 func inlineLabel(_ reflection: ArchivedReflection) -> String {
@@ -48,7 +55,6 @@ struct WeeklyCardView: View {
     let signal: WeeklySignal
     var onClose: () -> Void
 
-    @State private var page = 0
     @State private var completedSent = false
     @ObservedObject private var gate = TrialGate.shared
 
@@ -73,42 +79,30 @@ struct WeeklyCardView: View {
         return b
     }
 
+    /// Every beat rides the recap's sequence (QA 2026-09-12): the reverse
+    /// countdown bar on timed beats, tap right to continue, left to go
+    /// back; the close/offer beat holds for its button.
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Tokens.Surface.inverted.ignoresSafeArea()
-            TabView(selection: $page) {
-                ForEach(Array(beats.enumerated()), id: \.offset) { i, beat in
-                    beatView(beat).tag(i)
+        let b = beats
+        SlideSequenceView(
+            slides: b.map { beat in
+                SequenceSlide(duration: beat == .close || beat == .offer ? nil : (beat == .intro ? 4 : 5.5)) {
+                    beatView(beat)
                 }
-            }
-            // System page dots color by scheme, not by our inverted surface —
-            // they'd vanish in light mode. The deck draws its own.
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .onChange(of: page) { _, p in
+            },
+            onDone: onClose,
+            onIndex: { i in
                 // The last beat reached = the deck was read to its end; when
-                // that beat is the offer, the paywall was seen (page index,
-                // not onAppear — the pager pre-builds neighbours).
-                let b = beats
-                guard b.indices.contains(p), p == b.count - 1, !completedSent else { return }
+                // that beat is the offer, the paywall was seen.
+                guard i == b.count - 1, !completedSent else { return }
                 completedSent = true
                 Analytics.track(.weeklyReflectionCompleted,
                                 [.weekIndex: .int(Analytics.weekIndex), .beats: .int(b.count)])
-                if b[p] == .offer {
+                if b[i] == .offer {
                     Analytics.track(.paywallViewed, [.surface: .surface(.offerBeat)])
                 }
             }
-            if beats.count > 1 {
-                HStack(spacing: Tokens.Space.xs) {
-                    ForEach(0..<beats.count, id: \.self) { i in
-                        Circle()
-                            .fill(Tokens.Text.onInverted.opacity(i == page ? 1 : 0.3))
-                            .frame(width: 5, height: 5)
-                    }
-                }
-                .padding(.bottom, Tokens.Space.xl)
-                .animation(Tokens.Motion.fast, value: page)
-            }
-        }
+        )
     }
 
     @ViewBuilder
@@ -146,7 +140,7 @@ struct WeeklyCardView: View {
             }
         case .shape:
             if let shape = signal.shape {
-                PromptBeat(prompt: "Reflections — \(weekLabel(signal))") {
+                PromptBeat(prompt: "Reflections: \(weekLabel(signal))") {
                     VStack(spacing: Tokens.Space.lg) {
                         weekDots
                         Text(shapeStatement(shape))
@@ -205,8 +199,10 @@ struct WeeklyCardView: View {
             if let sitting = signal.sitting {
                 PromptBeat(prompt: "Your longest sitting") {
                     VStack(spacing: Tokens.Space.lg) {
-                        Text(String(format: "%02d:%02d", sitting.seconds / 60, sitting.seconds % 60))
-                            .font(.custom(EndpaperFont.meta, size: 72))
+                        // Minutes, not a clock — "08:40" read as a time of day
+                        // (QA 2026-09-12).
+                        Text(sitting.seconds >= 60 ? "\(sitting.seconds / 60) min" : "\(sitting.seconds) sec")
+                            .font(.custom(EndpaperFont.meta, size: 64))
                             .monospacedDigit()
                             .foregroundStyle(Tokens.Text.onInverted)
                         beatMeta("\(DayFormat.weekdayName(DayFormat.date(fromKey: sitting.day))) · \(sitting.words) words")

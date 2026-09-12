@@ -322,16 +322,15 @@ struct TodayView: View {
             }
             reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
             reviewOffer = ReviewAskState.eligible(in: context) && !reminderOffer
-            flow.evaluate(context: context)
-            // The arrival sheet rises once the day's splash has cleared —
-            // or right away when there was none.
+            // refresh() above already evaluated the cards on ONE corpus
+            // fetch. The arrival sheet rises once the day's splash has
+            // cleared — or right away when there was none.
             if flow.arrivalDue, !DailyArrival.playing {
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(500))
                     flow.showArrivalIfDue()
                 }
             }
-            Task { @MainActor in await ReminderManager.rearmReflectionNotes(in: context) }
             // The heading rests short whenever the day already has words.
             if !todayEntries.isEmpty { dateShrunk = true }
             else if !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { armDateShrink() }
@@ -689,10 +688,13 @@ struct TodayView: View {
         todayEntries = EntryStore.entries(forDay: key, in: context)
         // The glimpse re-evaluates whenever the page's committed text
         // changes — it can only light a word that is on today's page.
-        GlimpseStore.shared.prime(corpus: ReflectionStore.corpus(from: context), todayKey: key)
+        // ONE corpus fetch feeds the glimpse, the cards and the notes
+        // (perf 2026-09-12).
+        let corpus = ReflectionStore.corpus(from: context)
+        GlimpseStore.shared.prime(corpus: corpus, todayKey: key)
         syncGlimpse()
-        flow.evaluate(context: context)
-        Task { @MainActor in await ReminderManager.rearmReflectionNotes(in: context) }
+        flow.evaluate(corpus: corpus)
+        Task { @MainActor in await ReminderManager.rearmReflectionNotes(corpus: corpus) }
     }
 
     /// The glimpse over the primed week plus the live draft — runs on

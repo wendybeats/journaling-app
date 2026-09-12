@@ -524,6 +524,29 @@ finished.
 - [ ] VoiceOver reads the hint "A word that keeps coming back. Tap it."
 - [ ] Reduce Motion: sheet and wash are static, nothing missing
 
+## 18b. Build 27 — perf + weekly deck polish (2026-09-12)
+
+- [ ] PERF: cold open lands on Today in under a second on a device with a
+      year of iCloud entries; Calendar → month → day → back to Today is
+      instant (one cached notebook fetch per appearance; the cache
+      refreshes on any commit/edit, on a row-count change from iCloud,
+      or after two minutes)
+- [ ] Weekly deck: no page dots — the recap's reverse countdown bar on
+      each timed beat (opener 4 s, beats 5.5 s); the offer/close beat
+      holds. Tap the RIGHT two-thirds to continue, the LEFT third to go
+      back; press-and-hold pauses. Monthly recap gains the same back tap
+- [ ] Opener/shape prompt reads "Reflections: Sep 4 – 11" (or "Aug 30 –
+      Sep 5"); nothing bleeds off the page at the prompt's large moment
+- [ ] "You wrote this large" never shows a single letter — a line needs
+      at least two letters to qualify
+- [ ] "Your longest sitting" shows minutes ("8 min", or "40 sec"), with
+      "{weekday} · {n} words" beneath — no clock-looking figure
+- [ ] Settings: Voice language offers Match device and English only; no
+      footer line under the usage switch
+- [ ] App Store build (not TestFlight): the Notebook footer shows NO
+      Seed demo / Clear demo / First day −7 / Seed glimpse (gated on the
+      sandbox receipt; DEBUG and TestFlight keep them)
+
 ## 19. Anonymous usage analytics — PostHog (2026-09-11, archive 21)
 
 Setup on the Mac, once: paste the project token into

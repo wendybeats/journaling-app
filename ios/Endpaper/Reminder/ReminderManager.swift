@@ -91,7 +91,7 @@ enum ReminderManager {
         try? await center.add(UNNotificationRequest(identifier: requestID, content: content, trigger: trigger))
 
         await rearmEditsClose()
-        await rearmReflectionNotes(in: context)
+        await rearmReflectionNotes(corpus: ReflectionStore.corpus(from: context))
     }
 
     // MARK: - The weekly reflection's two notes (QA 2026-09-05)
@@ -102,7 +102,7 @@ enum ReminderManager {
     /// while reflections consent is yes; consent changes call this with
     /// requestPermission so a reader who never enabled the daily
     /// reminder still gets the one permission ask their yes implies.
-    static func rearmReflectionNotes(requestPermission: Bool = false, in context: ModelContext? = nil) async {
+    static func rearmReflectionNotes(requestPermission: Bool = false, corpus: Corpus? = nil) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [reflectionEveID, reflectionDayID])
         guard ReflectionStore.shared.reflectionsOn else { return }
@@ -115,9 +115,8 @@ enum ReminderManager {
         // One-shot notes for the NEXT reflection day, re-armed on every
         // open and commit — and only when the week so far already has
         // enough to reflect on (QA 2026-09-12: no "it's here" into a thin
-        // week). Without a context (demo tools) the week is assumed fine.
-        if let context {
-            let corpus = ReflectionStore.corpus(from: context)
+        // week). Without a corpus (demo tools) the week is assumed fine.
+        if let corpus {
             let signal = Reflect.weeklySignal(start: ReflectionCadence.currentWeekStart(), corpus: corpus)
             let lowered = !ReflectionStore.shared.weeklySeenEver
             let ok = signal.sufficient || (lowered && signal.days >= 2 && signal.words >= 150)

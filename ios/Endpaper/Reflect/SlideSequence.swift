@@ -19,6 +19,8 @@ struct SequenceSlide: Identifiable {
 struct SlideSequenceView: View {
     let slides: [SequenceSlide]
     var onDone: () -> Void
+    /// Called with each slide index as it shows (analytics).
+    var onIndex: ((Int) -> Void)? = nil
 
     @State private var index = 0
     @State private var progress: Double = 1     // 1 → 0, the reverse countdown
@@ -63,15 +65,26 @@ struct SlideSequenceView: View {
                         }
                     }
                 }
-                .onEnded { _ in
+                .onEnded { value in
                     let quick = pressBegan.map { Date().timeIntervalSince($0) < 0.25 } ?? false
                     pressBegan = nil
                     paused = false
-                    if quick { advance() }   // tap continues on every slide, timed or held
+                    // A tap on the left third steps back, elsewhere forward
+                    // (QA 2026-09-12) — on every slide, timed or held.
+                    guard quick else { return }
+                    if value.location.x < UIScreen.main.bounds.width / 3 { back() } else { advance() }
                 }
         )
-        .onAppear { run() }
+        .onAppear { run(); onIndex?(index) }
         .onDisappear { runner?.cancel() }
+    }
+
+    private func back() {
+        guard index > 0 else { return }
+        runner?.cancel()
+        index -= 1
+        run()
+        onIndex?(index)
     }
 
     private func advance() {
@@ -79,6 +92,7 @@ struct SlideSequenceView: View {
         if index + 1 < slides.count {
             index += 1
             run()
+            onIndex?(index)
         } else {
             onDone()
         }

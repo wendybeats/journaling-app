@@ -90,7 +90,7 @@ struct SettingsView: View {
                         ReflectionStore.shared.setConsent(on ? "yes" : "no")
                         Analytics.track(.consentAnswered, [.answer: .answer(on ? .yes : .no)])
                         // The weekly D6/D7 notes ride the switch.
-                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on, in: context) }
+                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on, corpus: ReflectionStore.corpus(from: context)) }
                         // Turning reflections on is the subscription moment
                         // for a non-member (QA 2026-09-05) — the offer rises
                         // on the inverted surface; dismissing costs nothing.
@@ -114,7 +114,6 @@ struct SettingsView: View {
                     HStack(spacing: Tokens.Space.sm) {
                         voiceLocaleChip("Match device", tag: "")
                         voiceLocaleChip("English", tag: "en-US")
-                        voiceLocaleChip("Русский", tag: "ru-RU")
                     }
                     Text("Spoken notes are transcribed on this device")
                         .typeMetaSmall()
@@ -245,11 +244,6 @@ struct SettingsView: View {
                     Text("Counts taps, never words — no profile, no tracking")
                         .typeMetaSmall()
                 }
-
-                rule
-
-                Text("Endpaper · no tracking · we count taps, never words")
-                    .typeMetaSmall()
             }
             .padding(.horizontal, Tokens.Space.screenX)
             .padding(.bottom, Tokens.Space.xxl)
