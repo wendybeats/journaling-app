@@ -224,6 +224,14 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-12 (Wendell): **kits dialed back to 3/week.** Views tanked on
+  the last five daily kits — read as the faceless-quote cadence hurting
+  reach rather than helping it. New rotation via the routine: Mon quote
+  light · Wed quote dark · Fri question cut light, one kit per run, all
+  in the US-morning slot (his ~21:00). No more paired dark/light days,
+  no Sunday question day. Face/situational content carries growth;
+  quotes are maintenance only. Re-read the per-post views after two
+  weeks of the new cadence before touching it again.
 - 2026-09-12 (Wendell): **1.0.4 submitted for review — PRODUCT FREEZE.**
   Writing free forever, reflections membership, glimpse, install-anchored
   week, arrival sheet, PostHog counts. Barring a review issue, nothing in
@@ -398,3 +406,4 @@ convert to comments better than statements.
 | 2026-09-11 | IG Reel (manual, his ~21:00 = US Fri morning) | quote-motion "Clarity comes from action, not from *overthinking*." light | US-flip evening slot — action/anti-rumination for US Friday morning; Eden-mined, unattributed (source credited Kunal Shah, unverified); quote bench 4 left after this (Housel off-spine, forgot-to-bring-up, witnessing, before-you-carry), questions 6 | caption "Thought of Friday, Sep 11th at 7:04am", catalog audio, manual post |
 | 2026-09-12 | IG Reel (manual, his AM = US Fri evening) | quote-motion "The thing you forgot to bring up is the thing you needed to *say*." dark | US-flip morning slot — session-framed original ("next session" spine); confrontational→dark; unattributed | caption "Thought of Friday, Sep 11th at 9:44pm", catalog audio, manual post |
 | 2026-09-12 | IG Reel (manual, his ~21:00 = US Sat morning) | quote-motion "Most feelings don't need fixing. They need *witnessing*." light | US-flip evening slot — warm/therapeutic for US Saturday morning; unattributed original. Bench was 2 after this (Housel off-spine, before-you-carry) → RESTOCK +5 from the Sep 12 mining pass (see Signals), 7 on the bench; Sunday Sep 13 = question day (6 questions benched) | caption "Thought of Saturday, Sep 12th at 7:19am", catalog audio, manual post |
+| 2026-09-12 | NOTE: cadence change — daily 2-kit runs END here. From Mon Sep 14: one kit Mon/Wed/Fri (quote light / quote dark / question light), US-morning slot only. Routine trig_014hCJ4ugfdWVqvAyeczyfvB updated. | | | |
