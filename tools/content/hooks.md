@@ -224,6 +224,22 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-12: third Eden mining pass (IG, last quarter; standard search
+  thin again — one off-topic post; the deep "overthinking quote" search
+  fell back to the standout index, 15 posts). Lifted, all posted
+  unattributed: "you usually know the answer before you start
+  overthinking it" (35x, unattributed source), "I felt so much that I
+  started to feel nothing at all" (12,000x-class outlier on a lit
+  account, 38k likes — widely credited to Dostoevsky online but not a
+  verified line of his, so NO attribution), "overthinking is the silent
+  thief of your energy" (7.6x, Hal Elrod's own caption — not verified
+  as his coinage, unattributed), "what you didn't do weighs more than
+  what you got wrong" (rephrased from a 530k-view graphic), "peace is
+  expensive, stop giving it away for free" (8.3x). Validation: "overthink
+  the best" surfaced again at 20k likes on a 429k account — our Sep 10
+  light kit rides a real line. Anxiety/overthinking is now the clearest
+  outlier family in three passes; rumination lines should lead the
+  bench.
 - 2026-09-09: second Eden mining pass (quotes, IG mid-tier ≥3x outliers,
   last quarter) — thin: one search useful, the "know yourself" search
   returned one off-topic post. Lifted: "what you want becomes the
@@ -373,3 +389,5 @@ convert to comments better than statements.
 | 2026-09-10 | IG Reel (manual, his ~21:00 = US Thu morning) | quote-motion "overthink the *best*" light | US-flip evening slot — anxiety-reframe (3.4x Eden-mined) for US Thursday morning; unattributed; quote bench 6 left after this, questions 6 | caption "Thought of Thursday, Sep 10th at 7:11am", catalog audio, manual post |
 | 2026-09-11 | IG Reel (manual, his AM = US Thu evening) | quote-motion "Half of what you carry is just things you never *said*." dark | US-flip morning slot — session-framed original ("say it" spine); confrontational→dark; unattributed | caption "Thought of Thursday, Sep 10th at 9:30pm", catalog audio, manual post |
 | 2026-09-11 | IG Reel (manual, his ~21:00 = US Fri morning) | quote-motion "Clarity comes from action, not from *overthinking*." light | US-flip evening slot — action/anti-rumination for US Friday morning; Eden-mined, unattributed (source credited Kunal Shah, unverified); quote bench 4 left after this (Housel off-spine, forgot-to-bring-up, witnessing, before-you-carry), questions 6 | caption "Thought of Friday, Sep 11th at 7:04am", catalog audio, manual post |
+| 2026-09-12 | IG Reel (manual, his AM = US Fri evening) | quote-motion "The thing you forgot to bring up is the thing you needed to *say*." dark | US-flip morning slot — session-framed original ("next session" spine); confrontational→dark; unattributed | caption "Thought of Friday, Sep 11th at 9:44pm", catalog audio, manual post |
+| 2026-09-12 | IG Reel (manual, his ~21:00 = US Sat morning) | quote-motion "Most feelings don't need fixing. They need *witnessing*." light | US-flip evening slot — warm/therapeutic for US Saturday morning; unattributed original. Bench was 2 after this (Housel off-spine, before-you-carry) → RESTOCK +5 from the Sep 12 mining pass (see Signals), 7 on the bench; Sunday Sep 13 = question day (6 questions benched) | caption "Thought of Saturday, Sep 12th at 7:19am", catalog audio, manual post |
