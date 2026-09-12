@@ -374,245 +374,69 @@ struct InlineReflectionRow: View {
     }
 }
 
-// MARK: - Consent card
+// MARK: - The cards on Today
 
-struct ConsentCard: View {
-    var onDecided: (Bool) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            Text("Reflections – Your Week").typeTitle()
-            Text("Where is your mind? At the end of each week, see what your words say about you. Always private, for your eyes only")
-                .typeWritten()
-            HStack(spacing: Tokens.Space.lg) {
-                Button {
-                    ReflectionStore.shared.setConsent("yes")
-                    Analytics.track(.consentAnswered, [.answer: .answer(.yes)])
-                    onDecided(true)
-                } label: {
-                    Text("Yes, reflect").typeMeta().foregroundStyle(Tokens.Text.written)
-                }
-                Button {
-                    ReflectionStore.shared.setConsent("no")
-                    Analytics.track(.consentAnswered, [.answer: .answer(.no)])
-                    onDecided(false)
-                } label: {
-                    Text("No thanks").typeMeta()
-                }
-            }
-        }
-        .padding(Tokens.Space.card)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Tokens.Surface.raised, in: RoundedRectangle(cornerRadius: Tokens.Radius.card))
-    }
-}
-
-// MARK: - The flow on Today
-
-/// Wires the reflection flow into Today: consent first; afterwards one
-/// arrival per visit — monthly wins, weekly follows on the next open.
-/// January adds the single quiet wrapped invite.
-struct ReflectionFlowHost: View {
-    @Environment(\.modelContext) private var context
-    @State private var showConsent = false
-    @State private var presented: PresentedReflection? = nil
-    @State private var januaryYear: YearlySignal? = nil
-    @State private var readyWeekly: WeeklySignal? = nil
-    @State private var weeklyLocked = false
-    @State private var readyMonthly: MonthlySignal? = nil
-    @State private var monthlyLocked = false
-    @State private var showMonthlyGate = false
-    @State private var thinWeek: Date? = nil
+/// Every pending reflection as its own card (rev. 2026-09-12) — the page's
+/// carousel lays them side by side with the reminder and rating cards.
+/// State and presentation live in ReflectionFlow, owned by Today.
+struct ReflectionCards: View {
+    @ObservedObject var flow: ReflectionFlow
+    /// In the carousel each card takes the page width.
+    var carousel: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Tokens.Space.md) {
-            if showConsent {
-                ConsentCard { accepted in
-                    withAnimation(Tokens.Motion.base) { showConsent = false }
-                    if accepted {
-                        // Opting in never presents anything (QA 2026-09-05:
-                        // a new user has no week yet — the card is the
-                        // notice, the arrival is a later card). It arms the
-                        // D6/D7 weekly notes but asks NO permission here
-                        // (QA 2026-09-12) — the reminder card's pre-prompt is
-                        // the one system ask; the notes ride whatever it grants.
-                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: false) }
-                        evaluate()
-                    }
-                }
-            }
-            // End of week: the same card position announces the arrival —
-            // the reader taps to open the deck, nothing auto-presents.
-            if let weekly = readyWeekly {
-                ReadyCard(
-                    title: "Your week is ready.",
-                    meta: weeklyLocked ? "Reflections are a membership — writing stays free"
-                                       : "Seven days, read back to you",
-                    cta: weeklyLocked ? "Join to read it →" : "Read it →"
-                ) {
-                    if weeklyLocked {
-                        Analytics.track(.paywallViewed, [.surface: .surface(.lockedCard)])
-                        Task {
-                            await TrialGate.shared.subscribe(from: .lockedCard)
-                            if TrialGate.shared.reflectionsUnlocked {
-                                weeklyLocked = false
-                                presentWeekly(weekly)
-                            }
-                        }
-                    } else {
-                        presentWeekly(weekly)
-                    }
-                } onLater: {
-                    withAnimation(Tokens.Motion.base) { readyWeekly = nil }
-                }
-            }
-            // Day 7 with a thin first week (QA 2026-09-11): say so, name
-            // the date, ask nothing.
-            if let moved = thinWeek {
-                ReadyCard(
-                    title: "Not enough to reflect on yet.",
-                    meta: "Your first reflection moves to \(DayFormat.weekdayName(moved)), \(DayFormat.shortDay(moved))",
-                    cta: nil,
-                    laterLabel: "Okay"
-                ) {
-                } onLater: {
-                    ReflectionStore.shared.markThinSeen()
-                    withAnimation(Tokens.Motion.base) { thinWeek = nil }
-                }
-            }
-            if let monthly = readyMonthly {
-                ReadyCard(
-                    title: "Your \(DayFormat.monthName(monthly.month)) recap is ready.",
-                    meta: monthlyLocked ? "Reflections are a membership — writing stays free"
-                                        : "A month, handed back",
-                    cta: monthlyLocked ? "Open →" : "Read it →"
-                ) {
-                    if monthlyLocked {
-                        showMonthlyGate = true
-                    } else {
-                        presentMonthly(monthly)
-                    }
-                } onLater: {
-                    // Deferring the recap for the day lets the weekly, which
-                    // it outranks, take the slot (QA 2026-09-12).
-                    ReflectionStore.shared.deferMonthly(id: monthly.id)
-                    withAnimation(Tokens.Motion.base) { evaluate() }
-                }
-            }
-            if let year = januaryYear {
-                Button {
-                    presented = .yearly(year)
-                } label: {
-                    Text("Your year is ready →").typeMeta()
-                }
-                .buttonStyle(.plain)
-            }
+        ForEach(flow.cards) { card in
+            cardView(card)
+                .modifier(PageWidth(on: carousel))
         }
-        .onAppear(perform: evaluate)
-        .fullScreenCover(item: $presented) { item in
-            reflectionCover(item)
-        }
-        // The locked monthly's full-screen moment (QA 2026-09-05): the
-        // recap opener's own design carrying the offer, join or dismiss.
-        .fullScreenCover(isPresented: $showMonthlyGate) {
-            if let monthly = readyMonthly {
-                MonthlyGateView(signal: monthly) {
-                    showMonthlyGate = false
-                    monthlyLocked = false
-                    presentMonthly(monthly)
-                } onClose: {
-                    showMonthlyGate = false
-                }
-            }
-        }
-    }
-
-    private func evaluate() {
-        let corpus = ReflectionStore.corpus(from: context)
-        let store = ReflectionStore.shared
-        let entitled = TrialGate.shared.reflectionsUnlocked
-        let firstUsed = UserDefaults.standard.bool(forKey: AppKeys.firstWeeklyUsed)
-
-        if store.consentEligible(corpus: corpus) {
-            showConsent = true
-            return
-        }
-
-        // Ready cards, monthly first. Free model (1.0.4): monthly is
-        // members-only; the weekly plays free exactly once. A locked
-        // pending reflection is never marked seen — it waits, whole,
-        // until the member joins.
-        readyWeekly = nil
-        readyMonthly = nil
-        thinWeek = nil
-        if let monthly = store.pendingMonthly(corpus: corpus) {
-            readyMonthly = monthly
-            monthlyLocked = !entitled
-        } else if let weekly = store.pendingWeekly(corpus: corpus) {
-            readyWeekly = weekly
-            weeklyLocked = !entitled && firstUsed
-            Analytics.once(.weeklyReflectionEligible, key: weekly.id,
-                           [.locked: .bool(weeklyLocked), .weekIndex: .int(Analytics.weekIndex)])
-        } else {
-            thinWeek = store.pendingThinWeek(corpus: corpus)
-        }
-
-        // January: the year is ready (spec §3.3) — a single quiet line.
-        let now = Date()
-        let cal = Calendar.current
-        if store.consent == "yes", cal.component(.month, from: now) == 1 {
-            let lastYear = Reflect.yearlySignal(year: cal.component(.year, from: now) - 1, corpus: corpus)
-            if lastYear.days > 0 { januaryYear = lastYear }
-        }
-    }
-
-    private func presentMonthly(_ monthly: MonthlySignal) {
-        let corpus = ReflectionStore.corpus(from: context)
-        present(.monthly(monthly, writtenDays: writtenDayNumbers(of: monthly, corpus: corpus)),
-                archiving: .monthly(monthly))
-    }
-
-    /// An arrival is marked seen (and archived) the moment it presents —
-    /// backgrounding or killing the app mid-sequence must not re-arrive
-    /// the same card on the next open. Nothing is lost: the full signal
-    /// already rests in the Notebook archive.
-    private func present(_ item: PresentedReflection, archiving reflection: ArchivedReflection) {
-        ReflectionStore.shared.markSeen(reflection)
-        presented = item
-    }
-
-    /// Weekly presentation spends the one free weekly for non-members —
-    /// stamped at presentation, so backgrounding mid-deck can't re-mint it.
-    private func presentWeekly(_ weekly: WeeklySignal) {
-        if !TrialGate.shared.reflectionsUnlocked {
-            UserDefaults.standard.set(true, forKey: AppKeys.firstWeeklyUsed)
-        }
-        Analytics.track(.weeklyReflectionOpened, [.weekIndex: .int(Analytics.weekIndex)])
-        present(.weekly(weekly), archiving: .weekly(weekly))
     }
 
     @ViewBuilder
-    private func reflectionCover(_ item: PresentedReflection) -> some View {
-        switch item {
-        case .weekly(let signal):
-            WeeklyCardView(signal: signal) {
-                presented = nil
-            }
-        case .monthly(let signal, let writtenDays):
-            RecapView(signal: signal, writtenDays: writtenDays) {
-                presented = nil
-            }
-        case .yearly(let signal):
-            WrappedView(signal: signal) {
-                presented = nil
-            }
+    private func cardView(_ card: ReflectionFlow.Card) -> some View {
+        switch card {
+        case .weekly(_, let locked):
+            ReadyCard(
+                title: "Your week is ready.",
+                meta: locked ? "Reflections are a membership — writing stays free"
+                             : "Seven days, read back to you",
+                cta: locked ? "Join to read it →" : "Read it →"
+            ) { flow.read(card) } onLater: { flow.later(card) }
+        case .monthly(let s, let locked):
+            ReadyCard(
+                title: "Your \(DayFormat.monthName(s.month)) recap is ready.",
+                meta: locked ? "Reflections are a membership — writing stays free"
+                             : "A month, handed back",
+                cta: locked ? "Open →" : "Read it →"
+            ) { flow.read(card) } onLater: { flow.later(card) }
+        case .thin(let moved):
+            // Day 7 with a thin first week (QA 2026-09-11): say so, name
+            // the date, ask nothing.
+            ReadyCard(
+                title: "Not enough to reflect on yet.",
+                meta: "Your first reflection moves to \(DayFormat.weekdayName(moved)), \(DayFormat.shortDay(moved))",
+                cta: nil,
+                laterLabel: "Okay"
+            ) { } onLater: { flow.later(card) }
+        case .year:
+            ReadyCard(
+                title: "Your year is ready.",
+                meta: "Twelve months, in your own words",
+                cta: "Read it →"
+            ) { flow.read(card) } onLater: { flow.later(card) }
         }
     }
 }
 
-/// The arrival card — the consent card's sibling, resting in the same
-/// position on Today: a reflection is ready, tap to open it. Nothing
-/// auto-presents any more (QA 2026-09-05).
+private struct PageWidth: ViewModifier {
+    let on: Bool
+    func body(content: Content) -> some View {
+        if on { content.containerRelativeFrame(.horizontal) } else { content }
+    }
+}
+
+/// The arrival card, resting in the page's card slot: a reflection is
+/// ready, tap to open it. The deck itself never auto-presents; the
+/// arrival sheet (ReflectionFlow) announces it once.
 private struct ReadyCard: View {
     let title: String
     let meta: String

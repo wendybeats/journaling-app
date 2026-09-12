@@ -61,9 +61,11 @@ final class ReflectionStore {
         }
     }
 
-    // MARK: Consent
+    // MARK: Reflections on/off (rev. 2026-09-12: ON by default — no consent
+    // card; Settings turns them off, and "no" is remembered)
 
     var consent: String? { state.consent }
+    var reflectionsOn: Bool { state.consent != "no" }
 
     func setConsent(_ value: String) {
         state.consent = value
@@ -86,22 +88,13 @@ final class ReflectionStore {
 
     // MARK: Pending arrivals (one per visit; monthly wins — reflection.js)
 
-    /// The consent moment appears as soon as there is any writing at all —
-    /// early enough that the user knows what's coming at the end of the
-    /// week, not a surprise after one. (Beta feedback July 2026; the web
-    /// prototype waited for a sufficient week.)
-    func consentEligible(corpus: Corpus, now: Date = .now) -> Bool {
-        guard state.consent == nil else { return false }
-        return !corpus.byDay.isEmpty
-    }
-
     /// The weekly reflection waiting to be shown, or nil (no consent /
     /// already seen / insufficient week — silence). Install-anchored
     /// (QA 2026-09-11): the week is the reader's own seven days, and until
     /// a first weekly has been read the bar is lowered to two written
     /// days and 150 words so day 7 has something to hand back.
     func pendingWeekly(corpus: Corpus, now: Date = .now) -> WeeklySignal? {
-        guard state.consent == "yes",
+        guard reflectionsOn,
               let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
         var signal = Reflect.weeklySignal(start: start, corpus: corpus)
         guard state.seen[signal.id] != true else { return nil }
@@ -121,7 +114,7 @@ final class ReflectionStore {
     /// lowered bar. Returns the date the first reflection moves to; shown
     /// once per week boundary (dismissing marks it seen).
     func pendingThinWeek(corpus: Corpus, now: Date = .now) -> Date? {
-        guard state.consent == "yes", !weeklySeenEver,
+        guard reflectionsOn, !weeklySeenEver,
               let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
         guard state.seen[Self.thinID(start)] != true else { return nil }
         let signal = Reflect.weeklySignal(start: start, corpus: corpus)
@@ -140,7 +133,7 @@ final class ReflectionStore {
     /// The previous month's recap, or nil (no consent / already seen /
     /// a month with no writing at all stays silent).
     func pendingMonthly(corpus: Corpus, now: Date = .now, calendar: Calendar = .current) -> MonthlySignal? {
-        guard state.consent == "yes" else { return nil }
+        guard reflectionsOn else { return nil }
         let prev = calendar.date(byAdding: .month, value: -1, to: now)!
         let c = calendar.dateComponents([.year, .month], from: prev)
         let signal = Reflect.monthlySignal(year: c.year!, month: c.month!, corpus: corpus)

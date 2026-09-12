@@ -456,12 +456,26 @@ Cadence
 - [ ] Fresh install (or Clear demo + delete/reinstall): Today says
       "Reflection in 7 days"; daily arrival "Your reflection is 7 days
       away"; the ghost prompts run days 0–6
-- [ ] Consent card "Yes, reflect": NO system notification prompt appears
-      (build 25) — the reminder card's pre-prompt is the only ask
-- [ ] A pending monthly recap outranks the weekly (one card at a time).
-      "Later" on the recap now defers it for the day and the weekly card
-      takes the slot immediately (build 25) — this is how to reach the
-      weekly on a device with iCloud history
+- [ ] Build 26: there is NO consent card. Reflections are on from the
+      first open; Settings → Reflections off silences cards, sheet, notes
+      and the glimpse, and off is remembered (Analytics: consent_answered
+      fires from the switch)
+- [ ] Build 26: every pending reflection is its own card — a monthly and
+      a weekly show side by side in the carousel with the reminder and
+      rating cards; "Later" on each is independent (monthly: rest of the
+      day; weekly/year: this visit; thin: for good)
+- [ ] Build 26 — the arrival sheet: on the first open that finds a ready
+      week or month (after the day's splash, if it played), an inverted
+      bottom sheet rises: kicker, "Your week is ready." / "Your {Month}
+      recap is ready.", meta, "Read it" / "Later". Read it dismisses the
+      sheet then opens the deck; Later leaves the card. It shows ONCE per
+      arrival — reopen the app: no sheet, the card is still there. Locked:
+      the button is the join (weekly: StoreKit; monthly: the full-screen
+      gate) and paywall_viewed carries surface arrival_sheet
+- [ ] Build 26 — notes: the day-6 22:00 / day-7 09:00 notes are one-shots
+      for the NEXT reflection day, re-armed on every open and commit, and
+      only exist while the week so far already qualifies (thin week → no
+      "is here" note into silence)
 - [ ] Onboarding "Each day": the thirty-dot month fills one dot at a time
       (~55 ms each, three ringed misses), no one→week→month morph
 - [ ] Each day the count drops by one; day 6 says "tomorrow"; day 7

@@ -160,7 +160,7 @@ struct CalendarView: View {
                         HStack {
                             Text(String(year)).typeMeta()
                             Spacer()
-                            if ReflectionStore.shared.consent == "yes" {
+                            if ReflectionStore.shared.reflectionsOn {
                                 Button {
                                     let corpus = ReflectionStore.corpus(from: context)
                                     wrappedSignal = Reflect.yearlySignal(year: year, corpus: corpus)

@@ -200,7 +200,7 @@ final class GlimpseStore {
     /// silence. An explicit "no" to reflections is respected; unasked is
     /// eligible. Cheap enough to run on every keystroke.
     func evaluate(draft: String, todayKey: String, now: Date = .now) -> GlimpseSignal? {
-        guard ReflectionStore.shared.consent != "no" else { return nil }
+        guard ReflectionStore.shared.reflectionsOn else { return nil }
         if let active = state.active, active.dayKey == todayKey { return active }
         if state.active != nil {                       // yesterday's faded at midnight
             state.active = nil

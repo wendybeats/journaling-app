@@ -37,7 +37,7 @@ struct TodayView: View {
     @State private var hookDone = false     // the first-word moment has played (or doesn't apply)
     @State private var dateShrunk = false   // heading resting at "Sep 5" (QA 2026-09-06: 5s after typing)
     @State private var shrinkArmed = false
-    @State private var reflectionCardExpected = false
+    @StateObject private var flow = ReflectionFlow()
     @State private var hookSeated = false
     @State private var hookWord = ""
     @State private var hookSeatScale: CGFloat = 1
@@ -139,7 +139,7 @@ struct TodayView: View {
                 // The week's destination, resting under the date — the same
                 // line the daily arrival held large (1.0.4 retention pair),
                 // with the reflections motif in miniature beside it.
-                if ReflectionStore.shared.consent != "no" {
+                if ReflectionStore.shared.reflectionsOn {
                     HStack(spacing: Tokens.Space.xs + 2) {
                         Text(countdownLine).typeMetaSmall()
                         ReflectMark()
@@ -175,15 +175,12 @@ struct TodayView: View {
                 // card rests inline; more than one becomes a horizontal
                 // sliding set (QA 2026-09-06) — never a vertical stack,
                 // and every card carries its own no/later.
-                let cardCount = (reflectionCardExpected ? 1 : 0)
+                let cardCount = flow.cards.count
                     + (reminderOffer ? 1 : 0) + (reviewOffer ? 1 : 0)
                 if cardCount > 1 {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(alignment: .top, spacing: Tokens.Space.md) {
-                            if reflectionCardExpected {
-                                ReflectionFlowHost()
-                                    .containerRelativeFrame(.horizontal)
-                            }
+                            ReflectionCards(flow: flow, carousel: true)
                             if reminderOffer {
                                 ReminderCard()
                                     .containerRelativeFrame(.horizontal)
@@ -199,7 +196,7 @@ struct TodayView: View {
                     .scrollClipDisabled()
                     .padding(.top, Tokens.Space.xl)
                 } else {
-                    ReflectionFlowHost()
+                    ReflectionCards(flow: flow, carousel: false)
                         .padding(.top, Tokens.Space.xl)
                     if reminderOffer {
                         ReminderCard()
@@ -256,6 +253,38 @@ struct TodayView: View {
                 commitCaptured(final, origin: pending.origin)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: DailyArrival.finished)) { _ in
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(300))
+                flow.showArrivalIfDue()
+            }
+        }
+        .fullScreenCover(item: $flow.presented) { item in
+            switch item {
+            case .weekly(let signal):
+                WeeklyCardView(signal: signal) { flow.presented = nil }
+            case .monthly(let signal, let writtenDays):
+                RecapView(signal: signal, writtenDays: writtenDays) { flow.presented = nil }
+            case .yearly(let signal):
+                WrappedView(signal: signal) { flow.presented = nil }
+            }
+        }
+        // The locked monthly's full-screen moment (QA 2026-09-05): the
+        // recap opener's own design carrying the offer, join or dismiss.
+        .fullScreenCover(item: $flow.monthlyGate) { monthly in
+            MonthlyGateView(signal: monthly) {
+                flow.joinedFromGate(monthly)
+            } onClose: {
+                flow.monthlyGate = nil
+            }
+        }
+        .sheet(item: $flow.arrival) { a in
+            ArrivalSheet(arrival: a) {
+                flow.readFromArrival(a)
+            } onLater: {
+                flow.arrival = nil
+            }
+        }
         .sheet(isPresented: $glimpseSheet) {
             if let g = glimpse {
                 GlimpseSheet(signal: g) {
@@ -291,16 +320,18 @@ struct TodayView: View {
             } else {
                 advanceHook(with: draft)   // a restored single word resumes at center
             }
-            let corpus = ReflectionStore.corpus(from: context)
-            let store = ReflectionStore.shared
-            let consentPending = store.consentEligible(corpus: corpus)
-            reminderOffer = ReminderManager.shouldOfferPrompt(in: context) && !consentPending
-            reviewOffer = ReviewAskState.eligible(in: context) && !consentPending && !reminderOffer
-            reflectionCardExpected = consentPending
-                || (store.consent == "yes"
-                    && (store.pendingMonthly(corpus: corpus) != nil
-                        || store.pendingWeekly(corpus: corpus) != nil
-                        || store.pendingThinWeek(corpus: corpus) != nil))
+            reminderOffer = ReminderManager.shouldOfferPrompt(in: context)
+            reviewOffer = ReviewAskState.eligible(in: context) && !reminderOffer
+            flow.evaluate(context: context)
+            // The arrival sheet rises once the day's splash has cleared —
+            // or right away when there was none.
+            if flow.arrivalDue, !DailyArrival.playing {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(500))
+                    flow.showArrivalIfDue()
+                }
+            }
+            Task { @MainActor in await ReminderManager.rearmReflectionNotes(in: context) }
             // The heading rests short whenever the day already has words.
             if !todayEntries.isEmpty { dateShrunk = true }
             else if !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { armDateShrink() }
@@ -660,6 +691,8 @@ struct TodayView: View {
         // changes — it can only light a word that is on today's page.
         GlimpseStore.shared.prime(corpus: ReflectionStore.corpus(from: context), todayKey: key)
         syncGlimpse()
+        flow.evaluate(context: context)
+        Task { @MainActor in await ReminderManager.rearmReflectionNotes(in: context) }
     }
 
     /// The glimpse over the primed week plus the live draft — runs on

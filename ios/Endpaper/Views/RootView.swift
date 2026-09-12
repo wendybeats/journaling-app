@@ -34,6 +34,8 @@ struct RootView: View {
                 if arriving {
                     DailyArrival {
                         withAnimation(Tokens.Motion.base) { arriving = false }
+                        DailyArrival.playing = false
+                        NotificationCenter.default.post(name: DailyArrival.finished, object: nil)
                     }
                 }
             }
@@ -66,6 +68,7 @@ struct RootView: View {
         }
         guard DailyArrival.due else { return }
         DailyArrival.markPlayed()
+        DailyArrival.playing = true
         arriving = true
     }
 

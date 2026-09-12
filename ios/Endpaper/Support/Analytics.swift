@@ -49,7 +49,7 @@ enum Analytics {
         case weekIndex = "week_index"
     }
 
-    enum Surface: String { case offerBeat = "offer_beat", lockedCard = "locked_card", monthlyGate = "monthly_gate", settingsSheet = "settings_sheet", settings, paywall }
+    enum Surface: String { case offerBeat = "offer_beat", lockedCard = "locked_card", monthlyGate = "monthly_gate", settingsSheet = "settings_sheet", arrivalSheet = "arrival_sheet", settings, paywall }
     enum Answer: String { case yes, no }
     enum Reason: String { case cancelled, pending, unverified, failed, noProduct = "no_product" }
     enum Bucket: String { case under100 = "lt_100", from100 = "100_500", over500 = "500_plus" }
@@ -177,7 +177,7 @@ enum Analytics {
             "app_version": info?["CFBundleShortVersionString"] as? String ?? "",
             "build": info?["CFBundleVersion"] as? String ?? "",
             "days_since_install_bucket": daysBucket,
-            "consent": ReflectionStore.shared.consent ?? "unasked",
+            "consent": ReflectionStore.shared.reflectionsOn ? "on" : "off",
             "membership": membership,
             "install_week": week,
         ]

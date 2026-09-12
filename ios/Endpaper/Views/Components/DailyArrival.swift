@@ -10,6 +10,11 @@ import SwiftUI
 struct DailyArrival: View {
     var onDone: () -> Void
 
+    /// Today listens for the end of the splash before raising the
+    /// arrival sheet (a sheet would otherwise rise over the splash).
+    static let finished = Notification.Name("endpaper.arrival.finished")
+    static var playing = false
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var filling = false
     @State private var faded = false
@@ -53,7 +58,7 @@ struct DailyArrival: View {
     /// The countdown, or the bare weekday for readers who said no to
     /// reflections — the moment still belongs to the day, never to a pitch.
     static func line(now: Date = .now) -> String {
-        guard ReflectionStore.shared.consent != "no" else {
+        guard ReflectionStore.shared.reflectionsOn else {
             return DayFormat.weekdayName(now) + "."
         }
         switch ReflectionCadence.daysUntilReflection(now: now) {

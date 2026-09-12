@@ -17,7 +17,7 @@ struct SettingsView: View {
     @State private var reminderOn = ReminderManager.enabled
     @State private var reminderTime = Date()
     @State private var editsCloseOn = ReminderManager.editsCloseEnabled
-    @State private var reflectionsOn = ReflectionStore.shared.consent == "yes"
+    @State private var reflectionsOn = ReflectionStore.shared.reflectionsOn
     @State private var replaying = false
     @State private var exportURL: URL? = nil
     @State private var syncLine = ""
@@ -77,7 +77,7 @@ struct SettingsView: View {
                 rule
 
                 // --- Reflections ---
-                // The same consent the in-page card asks for, revisitable.
+                // On by default (rev. 2026-09-12; the consent card is gone).
                 // Off means silence: no weekly card, no monthly recap, no
                 // January invite. Already-archived reflections stay in the
                 // Notebook — they're part of the record.
@@ -88,8 +88,9 @@ struct SettingsView: View {
                     .tint(Tokens.Surface.inverted)
                     .onChange(of: reflectionsOn) { _, on in
                         ReflectionStore.shared.setConsent(on ? "yes" : "no")
-                        // The weekly D6/D7 notes ride consent.
-                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on) }
+                        Analytics.track(.consentAnswered, [.answer: .answer(on ? .yes : .no)])
+                        // The weekly D6/D7 notes ride the switch.
+                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on, in: context) }
                         // Turning reflections on is the subscription moment
                         // for a non-member (QA 2026-09-05) — the offer rises
                         // on the inverted surface; dismissing costs nothing.

@@ -91,7 +91,7 @@ enum ReminderManager {
         try? await center.add(UNNotificationRequest(identifier: requestID, content: content, trigger: trigger))
 
         await rearmEditsClose()
-        await rearmReflectionNotes()
+        await rearmReflectionNotes(in: context)
     }
 
     // MARK: - The weekly reflection's two notes (QA 2026-09-05)
@@ -102,33 +102,48 @@ enum ReminderManager {
     /// while reflections consent is yes; consent changes call this with
     /// requestPermission so a reader who never enabled the daily
     /// reminder still gets the one permission ask their yes implies.
-    static func rearmReflectionNotes(requestPermission: Bool = false) async {
+    static func rearmReflectionNotes(requestPermission: Bool = false, in context: ModelContext? = nil) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [reflectionEveID, reflectionDayID])
-        guard ReflectionStore.shared.consent == "yes" else { return }
+        guard ReflectionStore.shared.reflectionsOn else { return }
         if requestPermission {
             let asked = await center.notificationSettings().authorizationStatus == .notDetermined
             let granted = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
             if asked { Analytics.track(.notificationPermission, [.granted: .bool(granted)]) }
         }
 
-        // Install-anchored cadence (QA 2026-09-11): the notes ride the
-        // reader's own reflection weekday, not the calendar's Sunday.
-        let reflectDay = ReflectionCadence.reflectionWeekday()
-        let eveDay = reflectDay == 1 ? 7 : reflectDay - 1
-        let eve = UNMutableNotificationContent()
-        eve.body = "Know yourself: your weekly reflection arrives tomorrow."
-        var sat = DateComponents(); sat.weekday = eveDay; sat.hour = 22; sat.minute = 0
-        try? await center.add(UNNotificationRequest(
-            identifier: reflectionEveID, content: eve,
-            trigger: UNCalendarNotificationTrigger(dateMatching: sat, repeats: true)))
+        // One-shot notes for the NEXT reflection day, re-armed on every
+        // open and commit — and only when the week so far already has
+        // enough to reflect on (QA 2026-09-12: no "it's here" into a thin
+        // week). Without a context (demo tools) the week is assumed fine.
+        if let context {
+            let corpus = ReflectionStore.corpus(from: context)
+            let signal = Reflect.weeklySignal(start: ReflectionCadence.currentWeekStart(), corpus: corpus)
+            let lowered = !ReflectionStore.shared.weeklySeenEver
+            let ok = signal.sufficient || (lowered && signal.days >= 2 && signal.words >= 150)
+            guard ok else { return }
+        }
 
-        let day = UNMutableNotificationContent()
-        day.body = "What did you say? Your weekly reflection is here."
-        var sun = DateComponents(); sun.weekday = reflectDay; sun.hour = 9; sun.minute = 0
-        try? await center.add(UNNotificationRequest(
-            identifier: reflectionDayID, content: day,
-            trigger: UNCalendarNotificationTrigger(dateMatching: sun, repeats: true)))
+        let cal = Calendar.current
+        let until = ReflectionCadence.daysUntilReflection()
+        let day = cal.date(byAdding: .day, value: until == 0 ? 7 : until, to: cal.startOfDay(for: .now))!
+        if let eveAt = cal.date(bySettingHour: 22, minute: 0, second: 0,
+                                of: cal.date(byAdding: .day, value: -1, to: day)!), eveAt > .now {
+            let eve = UNMutableNotificationContent()
+            eve.body = "Know yourself: your weekly reflection arrives tomorrow."
+            let comps = cal.dateComponents([.year, .month, .day, .hour, .minute], from: eveAt)
+            try? await center.add(UNNotificationRequest(
+                identifier: reflectionEveID, content: eve,
+                trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
+        }
+        if let dayAt = cal.date(bySettingHour: 9, minute: 0, second: 0, of: day), dayAt > .now {
+            let note = UNMutableNotificationContent()
+            note.body = "What did you say? Your weekly reflection is here."
+            let comps = cal.dateComponents([.year, .month, .day, .hour, .minute], from: dayAt)
+            try? await center.add(UNNotificationRequest(
+                identifier: reflectionDayID, content: note,
+                trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
+        }
     }
 
     // MARK: - The day's last call (11 PM)

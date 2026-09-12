@@ -29,6 +29,7 @@ enum AppKeys {
     static let firstWeeklyUsed = "endpaper.reflection.first.v1" // Bool — the free weekly has been spent
     static let membershipState = "endpaper.membership.state.v1" // "none" | "member" | "unpayable" — mirrored by TrialGate.refresh for Analytics
     static let usage = "endpaper.usage.v1"          // "yes" | "no" — share anonymous usage (Analytics.swift)
+    static let arrivalSheet = "endpaper.arrival.sheet.v1" // id of the last reflection the arrival sheet announced
     static let glimpse = "endpaper.glimpse.v1"        // GlimpseStore state (fired stems, today's highlight)
 }
 
