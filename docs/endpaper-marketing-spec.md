@@ -237,3 +237,10 @@ share card (type-on video export) as share v2.
 → shoot the three spawned founder/situational hooks in the ≤30s shape →
 prompt-list carousel test → LinkedIn build-story → read everything
 against the founder baseline (74.7% skip / 5s avg watch).
+
+## Decision log addendum — 2026-09-12
+
+**1.0.4 (the free model) is submitted for review. Product freeze.** No
+product work until review settles, then only review-driven fixes.
+All effort goes to distribution. Product ideas and QA notes collect
+under a 1.0.5 heading in the QA checklist, not in the codebase.

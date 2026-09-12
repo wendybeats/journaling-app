@@ -95,7 +95,9 @@ targets:
         # on by default (no consent card), all pending reflections as carousel
         # cards, arrival sheet, one-shot notes gated on the week (uploaded
         # 2026-09-12). 27 = perf (one cached corpus fetch), weekly deck on the
-        # sequence, week label, sitting in minutes, polish. Next: 28.
+        # sequence, week label, sitting in minutes, polish — SUBMITTED FOR
+        # REVIEW 2026-09-12 (the free-model release). PRODUCT FREEZE: no
+        # product changes until review settles; distribution only. Next: 28.
         MARKETING_VERSION: 1.0.4
         CURRENT_PROJECT_VERSION: 27
         CODE_SIGN_STYLE: Automatic

@@ -648,3 +648,10 @@ Everything left is **accounts and assets, not code**:
    which is live)
 
 Fixes from this QA pass fold in before the upload. That's the whole gap.
+
+## 1.0.5 — parking lot (product freeze from 2026-09-12; nothing here is scheduled)
+
+- Daily arrival splash says "is ready" on a thin day 7 (no corpus in the splash)
+- `share_card_created` is not instrumented (ShareLink has no completion)
+- Notebook drop cap vs. the WrittenFormat grammar — decide
+- Cyrillic serif; "a year ago today"; motion share card v2

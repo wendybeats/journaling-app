@@ -224,6 +224,13 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-12 (Wendell): **1.0.4 submitted for review — PRODUCT FREEZE.**
+  Writing free forever, reflections membership, glimpse, install-anchored
+  week, arrival sheet, PostHog counts. Barring a review issue, nothing in
+  the product gets touched now; every session is distribution: founder /
+  situational content, question cuts, the paid-acquisition test, Eden
+  analytics re-auth, LinkedIn founder post, TikTok cross-post. Product
+  learnings go to a 1.0.5 list, not to code.
 - 2026-09-12: third Eden mining pass (IG, last quarter; standard search
   thin again — one off-topic post; the deep "overthinking quote" search
   fell back to the standout index, 15 posts). Lifted, all posted
