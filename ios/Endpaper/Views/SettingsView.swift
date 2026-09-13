@@ -90,7 +90,11 @@ struct SettingsView: View {
                         ReflectionStore.shared.setConsent(on ? "yes" : "no")
                         Analytics.track(.consentAnswered, [.answer: .answer(on ? .yes : .no)])
                         // The weekly D6/D7 notes ride the switch.
-                        Task { await ReminderManager.rearmReflectionNotes(requestPermission: on, corpus: ReflectionStore.corpus(from: context)) }
+                        Task {
+                            let week = Reflect.weeklySignal(start: ReflectionCadence.currentWeekStart(),
+                                                            corpus: ReflectionStore.corpus(from: context))
+                            await ReminderManager.rearmReflectionNotes(requestPermission: on, currentWeek: week)
+                        }
                         // Turning reflections on is the subscription moment
                         // for a non-member (QA 2026-09-05) — the offer rises
                         // on the inverted surface; dismissing costs nothing.

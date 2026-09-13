@@ -46,11 +46,36 @@ final class ReflectionFlow: ObservableObject {
     private var corpus = Corpus(byDay: [:])
     private var hidden = Set<String>()          // "Later" this visit (weekly / year)
     private var pendingArrival: Arrival? = nil
+    private var signals: ReflectionStore.Signals? = nil
+    private var signalsToken = ""
+    private var evalTask: Task<Void, Never>? = nil
 
     // MARK: Evaluate
 
-    func evaluate(corpus: Corpus) {
+    /// Signals are computed once per corpus snapshot per day, detached
+    /// from the main thread (perf 2026-09-13); the page appears at once
+    /// and the cards fill in a beat later. Re-entering Today on the same
+    /// snapshot only re-runs the cheap guards.
+    func evaluate(corpus: Corpus, now: Date = .now) {
         self.corpus = corpus
+        let token = corpus.token + "|" + DayFormat.key(for: now)
+        if token == signalsToken, let signals {
+            apply(signals)
+            return
+        }
+        evalTask?.cancel()
+        evalTask = Task.detached(priority: .userInitiated) { [corpus] in
+            let computed = ReflectionStore.computeSignals(corpus: corpus, now: now)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                self.signals = computed
+                self.signalsToken = token
+                self.apply(computed)
+            }
+        }
+    }
+
+    private func apply(_ signals: ReflectionStore.Signals) {
         let store = ReflectionStore.shared
         let entitled = TrialGate.shared.reflectionsUnlocked
         let firstUsed = UserDefaults.standard.bool(forKey: AppKeys.firstWeeklyUsed)
@@ -60,28 +85,35 @@ final class ReflectionFlow: ObservableObject {
         // Free model (1.0.4): monthly is members-only; the weekly plays
         // free exactly once. A locked pending reflection is never marked
         // seen — it waits, whole, until the member joins.
-        if let monthly = store.pendingMonthly(corpus: corpus) {
+        if let monthly = store.pendingMonthly(from: signals) {
             next.append(.monthly(monthly, locked: !entitled))
             pendingArrival = .monthly(monthly, locked: !entitled)
         }
-        if let weekly = store.pendingWeekly(corpus: corpus), !hidden.contains(weekly.id) {
+        if let weekly = store.pendingWeekly(from: signals), !hidden.contains(weekly.id) {
             let locked = !entitled && firstUsed
             next.append(.weekly(weekly, locked: locked))
             Analytics.once(.weeklyReflectionEligible, key: weekly.id,
                            [.locked: .bool(locked), .weekIndex: .int(Analytics.weekIndex)])
             if pendingArrival == nil { pendingArrival = .weekly(weekly, locked: locked) }
         }
-        if let moved = store.pendingThinWeek(corpus: corpus) {
+        if let moved = store.pendingThinWeek(from: signals) {
             next.append(.thin(moved))
         }
-        // January: the year is ready (spec §3.3).
-        let now = Date()
-        let cal = Calendar.current
-        if store.reflectionsOn, cal.component(.month, from: now) == 1 {
-            let lastYear = Reflect.yearlySignal(year: cal.component(.year, from: now) - 1, corpus: corpus)
-            if lastYear.days > 0, !hidden.contains(lastYear.id) { next.append(.year(lastYear)) }
+        if store.reflectionsOn, let lastYear = signals.lastYear, !hidden.contains(lastYear.id) {
+            next.append(.year(lastYear))
         }
-        cards = next
+        if cards.map(\.id) != next.map(\.id) { cards = next }
+
+        // The notes ride the week being written; the arrival sheet rises
+        // once the day's splash has cleared (Today re-checks on that cue).
+        let week = signals.currentWeek
+        Task { await ReminderManager.rearmReflectionNotes(currentWeek: week) }
+        if arrivalDue, !DailyArrival.playing {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(500))
+                self.showArrivalIfDue()
+            }
+        }
     }
 
     // MARK: The arrival sheet — once per arrival

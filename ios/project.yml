@@ -95,11 +95,13 @@ targets:
         # on by default (no consent card), all pending reflections as carousel
         # cards, arrival sheet, one-shot notes gated on the week (uploaded
         # 2026-09-12). 27 = perf (one cached corpus fetch), weekly deck on the
-        # sequence, week label, sitting in minutes, polish — SUBMITTED FOR
-        # REVIEW 2026-09-12 (the free-model release). PRODUCT FREEZE: no
-        # product changes until review settles; distribution only. Next: 28.
+        # sequence, week label, sitting in minutes, polish — submitted for
+        # review 2026-09-12. 28 = perf: reflection signals computed once per
+        # corpus, detached (Today was recomputing the month recap on the
+        # main thread per appearance). Replaces 27 in review. PRODUCT FREEZE
+        # otherwise. Next: 29.
         MARKETING_VERSION: 1.0.4
-        CURRENT_PROJECT_VERSION: 27
+        CURRENT_PROJECT_VERSION: 28
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: DW5Z7N8HF9             # so command-line archives sign without overrides
         SWIFT_VERSION: "5.9"

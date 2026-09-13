@@ -144,6 +144,8 @@ struct RSession {
 struct Corpus {
     let byDay: [String: [String]]
     var sessions: [String: [RSession]] = [:]
+    /// Identity of this snapshot (ReflectionStore sets it) — signal caches key on it.
+    var token: String = ""
 
     func has(_ key: String) -> Bool {
         !(byDay[key] ?? []).isEmpty

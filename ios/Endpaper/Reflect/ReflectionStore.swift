@@ -102,20 +102,52 @@ final class ReflectionStore {
             sessions[entry.dayKey, default: []].append(
                 RSession(text: entry.text, at: entry.at, lastAt: entry.lastAt, origin: entry.origin))
         }
-        return Corpus(byDay: byDay, sessions: sessions)
+        var c = Corpus(byDay: byDay, sessions: sessions)
+        c.token = "\(all.count)-\(Int(Date().timeIntervalSince1970))"
+        return c
     }
 
-    // MARK: Pending arrivals (one per visit; monthly wins — reflection.js)
+    // MARK: Signals — computed once per corpus, off the main thread
 
-    /// The weekly reflection waiting to be shown, or nil (no consent /
-    /// already seen / insufficient week — silence). Install-anchored
-    /// (QA 2026-09-11): the week is the reader's own seven days, and until
-    /// a first weekly has been read the bar is lowered to two written
-    /// days and 150 words so day 7 has something to hand back.
-    func pendingWeekly(corpus: Corpus, now: Date = .now) -> WeeklySignal? {
-        guard reflectionsOn,
-              let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
-        var signal = Reflect.weeklySignal(start: start, corpus: corpus)
+    /// Everything the page might need, computed in one pass over a
+    /// corpus snapshot (perf 2026-09-13: the previous month's recap was
+    /// being recomputed on the main thread on every Today appearance).
+    /// Pure — safe to run detached; ReflectionFlow caches the result by
+    /// corpus token + day.
+    struct Signals {
+        var monthly: MonthlySignal?      // the previous calendar month
+        var lastWeek: WeeklySignal?      // the last completed anchored week (nil before day 7)
+        var currentWeek: WeeklySignal    // the week being written (gates the notes)
+        var lastYear: YearlySignal?      // January only
+    }
+
+    static func computeSignals(corpus: Corpus, now: Date = .now, calendar: Calendar = .current) -> Signals {
+        let prev = calendar.date(byAdding: .month, value: -1, to: now)!
+        let c = calendar.dateComponents([.year, .month], from: prev)
+        let monthly = Reflect.monthlySignal(year: c.year!, month: c.month!, corpus: corpus)
+        let lastWeek = ReflectionCadence.lastCompletedWeekStart(now: now, calendar: calendar)
+            .map { Reflect.weeklySignal(start: $0, corpus: corpus, calendar: calendar) }
+        let currentWeek = Reflect.weeklySignal(start: ReflectionCadence.currentWeekStart(now: now, calendar: calendar),
+                                               corpus: corpus, calendar: calendar)
+        var lastYear: YearlySignal? = nil
+        if calendar.component(.month, from: now) == 1 {
+            let y = Reflect.yearlySignal(year: calendar.component(.year, from: now) - 1, corpus: corpus)
+            if y.days > 0 { lastYear = y }
+        }
+        return Signals(monthly: monthly.days > 0 ? monthly : nil, lastWeek: lastWeek,
+                       currentWeek: currentWeek, lastYear: lastYear)
+    }
+
+    // MARK: Pending arrivals — cheap guards over precomputed signals
+
+    private static func thinBar(_ s: WeeklySignal) -> Bool { s.days >= 2 && s.words >= 150 }
+
+    /// The weekly reflection waiting to be shown, or nil (reflections off /
+    /// already seen / insufficient week — silence). Until a first weekly
+    /// has been read the bar is lowered to two written days and 150 words
+    /// so day 7 has something to hand back.
+    func pendingWeekly(from signals: Signals) -> WeeklySignal? {
+        guard reflectionsOn, var signal = signals.lastWeek else { return nil }
         guard state.seen[signal.id] != true else { return nil }
         if !signal.sufficient, !weeklySeenEver, Self.thinBar(signal) { signal.sufficient = true }
         guard signal.sufficient else { return nil }
@@ -127,36 +159,29 @@ final class ReflectionStore {
         state.archived.values.contains { if case .weekly = $0 { return true } else { return false } }
     }
 
-    private static func thinBar(_ s: WeeklySignal) -> Bool { s.days >= 2 && s.words >= 150 }
-
     /// Day 7 with nothing to hand back: the first week missed even the
     /// lowered bar. Returns the date the first reflection moves to; shown
     /// once per week boundary (dismissing marks it seen).
-    func pendingThinWeek(corpus: Corpus, now: Date = .now) -> Date? {
-        guard reflectionsOn, !weeklySeenEver,
-              let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return nil }
-        guard state.seen[Self.thinID(start)] != true else { return nil }
-        let signal = Reflect.weeklySignal(start: start, corpus: corpus)
+    func pendingThinWeek(from signals: Signals, now: Date = .now) -> Date? {
+        guard reflectionsOn, !weeklySeenEver, let signal = signals.lastWeek else { return nil }
+        guard state.seen[Self.thinID(signal.startKey)] != true else { return nil }
         guard !signal.sufficient, !Self.thinBar(signal) else { return nil }
         return ReflectionCadence.followingReflectionDate(now: now)
     }
 
     func markThinSeen(now: Date = .now) {
         guard let start = ReflectionCadence.lastCompletedWeekStart(now: now) else { return }
-        state.seen[Self.thinID(start)] = true
+        state.seen[Self.thinID(DayFormat.key(for: start))] = true
         persist()
     }
 
-    private static func thinID(_ start: Date) -> String { "thin-" + DayFormat.key(for: start) }
+    private static func thinID(_ startKey: String) -> String { "thin-" + startKey }
 
-    /// The previous month's recap, or nil (no consent / already seen /
-    /// a month with no writing at all stays silent).
-    func pendingMonthly(corpus: Corpus, now: Date = .now, calendar: Calendar = .current) -> MonthlySignal? {
-        guard reflectionsOn else { return nil }
-        let prev = calendar.date(byAdding: .month, value: -1, to: now)!
-        let c = calendar.dateComponents([.year, .month], from: prev)
-        let signal = Reflect.monthlySignal(year: c.year!, month: c.month!, corpus: corpus)
-        guard state.seen[signal.id] != true, signal.days > 0 else { return nil }
+    /// The previous month's recap, or nil (reflections off / already seen /
+    /// deferred today / a month with no writing at all stays silent).
+    func pendingMonthly(from signals: Signals, now: Date = .now) -> MonthlySignal? {
+        guard reflectionsOn, let signal = signals.monthly else { return nil }
+        guard state.seen[signal.id] != true else { return nil }
         guard state.deferred?[signal.id] != DayFormat.key(for: now) else { return nil }
         return signal
     }
