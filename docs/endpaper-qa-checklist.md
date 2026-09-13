@@ -655,6 +655,12 @@ Fixes from this QA pass fold in before the upload. That's the whole gap.
 
 ## 1.0.5 — parking lot (product freeze from 2026-09-12; nothing here is scheduled)
 
+- PERF (~800 ms into Calendar, and Archive ↔ Settings, on a demo-seeded
+  phone; 2026-09-13): Calendar counts dots with one fetch per day on
+  appear — derive from the cached corpus instead. Settings builds the
+  whole export file on appear — build it on Export tap. EntryStore
+  .daysWithEntries loads every full entry to get day keys — fetch only
+  the dayKey column (propertiesToFetch). Same shape as the Find fix.
 - Daily arrival splash says "is ready" on a thin day 7 (no corpus in the splash)
 - `share_card_created` is not instrumented (ShareLink has no completion)
 - Notebook drop cap vs. the WrittenFormat grammar — decide
