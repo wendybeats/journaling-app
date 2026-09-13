@@ -98,7 +98,8 @@ targets:
         # sequence, week label, sitting in minutes, polish — submitted for
         # review 2026-09-12. 28 = perf: reflection signals computed once per
         # corpus, detached (Today was recomputing the month recap on the
-        # main thread per appearance). Replaces 27 in review. PRODUCT FREEZE
+        # main thread per appearance) + Find searches the cached snapshot
+        # off-main, debounced. Replaces 27 in review. PRODUCT FREEZE
         # otherwise. Next: 29.
         MARKETING_VERSION: 1.0.4
         CURRENT_PROJECT_VERSION: 28

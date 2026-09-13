@@ -531,6 +531,10 @@ finished.
       instant (one cached notebook fetch per appearance; the cache
       refreshes on any commit/edit, on a row-count change from iCloud,
       or after two minutes)
+- [ ] Build 28: Today appears instantly with Reflections ON (cards fill
+      in a beat later); Find stays smooth typing and deleting on a
+      demo-seeded phone; results are newest-first, at most three
+      paragraphs per day
 - [ ] Weekly deck: no page dots — the recap's reverse countdown bar on
       each timed beat (opener 4 s, beats 5.5 s); the offer/close beat
       holds. Tap the RIGHT two-thirds to continue, the LEFT third to go

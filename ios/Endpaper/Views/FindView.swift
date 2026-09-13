@@ -11,11 +11,11 @@ struct FindView: View {
     @Environment(\.modelContext) private var context
     @State private var query = ""
     @State private var openDay: String? = nil
+    @State private var results: [DayHits] = []
+    @State private var searchTask: Task<Void, Never>? = nil
     @FocusState private var focused: Bool
 
     var body: some View {
-        let results = search()
-
         VStack(spacing: 0) {
             if query.isEmpty { Spacer() }   // centered until you type
 
@@ -81,26 +81,46 @@ struct FindView: View {
             DayPageView(key: key)
         }
         .onAppear { focused = true }
+        // Perf 2026-09-13: the search used to run inside body, on the main
+        // thread, with one database fetch per day per keystroke (a seeded
+        // year = ~300 fetches a character). Now: the cached notebook
+        // snapshot, matched off-main after a short debounce.
+        .onChange(of: query) { _, q in
+            searchTask?.cancel()
+            let corpus = ReflectionStore.corpus(from: context)
+            searchTask = Task.detached(priority: .userInitiated) {
+                try? await Task.sleep(for: .milliseconds(120))
+                guard !Task.isCancelled else { return }
+                let hits = Self.search(q, in: corpus)
+                guard !Task.isCancelled else { return }
+                await MainActor.run { results = hits }
+            }
+        }
     }
 
-    private struct DayHits {
+    private struct DayHits: Sendable {
         let day: String
         let snippets: [String]
     }
 
-    private func search() -> [DayHits] {
-        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+    /// At most this many matching paragraphs per day — a common word in a
+    /// long day no longer renders every paragraph.
+    private static let snippetCap = 3
+
+    /// Pure: newest day first, paragraphs that contain the query.
+    private static func search(_ raw: String, in corpus: Corpus) -> [DayHits] {
+        let q = raw.trimmingCharacters(in: .whitespaces).lowercased()
         guard q.count >= 2 else { return [] }
 
         var hits: [DayHits] = []
-        for day in EntryStore.daysWithEntries(in: context) {
+        for day in corpus.byDay.keys.sorted(by: >) {
             var snippets: [String] = []
-            for entry in EntryStore.entries(forDay: day, in: context) {
-                for sentence in entry.text.components(separatedBy: "\n\n") {
-                    if sentence.lowercased().contains(q) {
-                        snippets.append(sentence.trimmingCharacters(in: .whitespacesAndNewlines))
-                    }
+            for text in corpus.byDay[day] ?? [] {
+                for sentence in text.components(separatedBy: "\n\n") where sentence.lowercased().contains(q) {
+                    snippets.append(sentence.trimmingCharacters(in: .whitespacesAndNewlines))
+                    if snippets.count >= snippetCap { break }
                 }
+                if snippets.count >= snippetCap { break }
             }
             if !snippets.isEmpty { hits.append(DayHits(day: day, snippets: snippets)) }
         }
