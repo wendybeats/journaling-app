@@ -37,7 +37,13 @@ execFileSync('node', [resolve(here, 'render-cards.mjs'), pack], { stdio: 'inheri
 // shortlist by week.
 const quotes = JSON.parse(readFileSync(resolve(here, 'cards/quotes.json'), 'utf8'));
 const weekNum = Number(week.slice(-2));
-const q = quotes[weekNum % quotes.length];
+// Skip any line the Live log already shows posted (2026-09-14: the W38
+// pack re-rendered a quote from Sep 4). Match on the emphasised word.
+const liveLog = readFileSync(resolve(here, 'hooks.md'), 'utf8');
+const posted = (t) => { const m = t.match(/\*([^*]+)\*/); return m ? liveLog.includes(`*${m[1]}*`) : false; };
+const unused = quotes.filter(x => !posted(x.text));
+const pool = unused.length ? unused : quotes;
+const q = pool[weekNum % pool.length];
 console.log(`rendering quote video… ("${q.text.slice(0, 32)}…" — ${q.by})`);
 execFileSync('node', [resolve(here, 'render-quote.mjs'), q.text, pack, 'quote', '', 'none', q.by], { stdio: 'inherit' });
 

@@ -31,10 +31,10 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | The one app on my phone with no red dot, no badge, no push | quiet tech | minimalists | card / clip | fresh |
 | Writing that counts because it can't be taken back | permanence | practice crowd | card | fresh |
 | My journal costs what one good paper notebook costs | price | fence-sitters | card | fresh |
-| [quote worth keeping], shown on the page it was written on | quotes | everyone | quote-motion Reel | rested |
-| Wrote this one down so it would stop following me around | quotes | everyone | quote-motion caption | live |
-| Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | fresh |
-| One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | fresh |
+| [quote worth keeping], shown on the page it was written on | quotes | everyone | quote-motion Reel | rested (3/wk maintenance) |
+| Wrote this one down so it would stop following me around | quotes | everyone | quote-motion caption | rested |
+| Lines I can't delete — a numbered series | quotes | everyone | quote-motion Reel series | dead |
+| One quote a week, written in ink | quotes | everyone | quote-motion Reel cadence | live (Mon/Wed/Fri kits) |
 | One insight a week — dots that tell it, my voice over it | dots + founder | everyone | dot-motion Reel + VO, weekly | fresh |
 | There's one thing your journal knows that you don't | curiosity gap | everyone | insight VO / founder | fresh |
 | You forget most of your days — not the big ones, the ones that made you | information gap + loss | everyone | insight VO | fresh |
@@ -43,13 +43,16 @@ Statuses: `fresh` (untested) · `live` (posted, watching) · `winner`
 | Guess how many of your own days you actually remember | generation effect | everyone | caption / cover | fresh |
 | Your notes app vs. your journal — only one matters in ten years | contrast | fence-sitters | card / VO | fresh |
 | A journal is your head, on paper | cognitive fluency | everyone | card / bio / VO close | fresh |
-| Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | live |
+| Hi — I'm building Endpaper. One take, like the journal | founder | everyone | face 60s | winner (relative: beat every quote kit) |
 | 10 years of journals. Never read them once | founder / loss aversion | lapsed journalers | face ≤20s recut, cold open | fresh |
 | Someone said something that stung. Don't answer — write these three questions | situational instruction | everyone | face ≤30s, session-framed | fresh |
 | Never forget what you want to say in your next session | therapy / self-relevance | practice crowd | face ≤30s + caption | fresh |
 | This video is one take because the product is one take | founder | practice crowd | face 60s | fresh |
 | Five books that made me stop performing in my own journal | recs | practice crowd | list card / carousel | fresh |
 | A writing exercise for the day you have nothing to say | recs | lapsed journalers | list card | fresh |
+| Writing is free now. Here's why I changed my mind | founder / pricing / build-in-public | fence-sitters | face ≤30s, cold open | fresh |
+| My journal noticed I wrote "stressed" nine times this week | glimpse / self-relevance | practice crowd | screen clip + face | fresh |
+| Your first reflection arrives seven days after you start — whatever day you start | retention / promise | everyone | screen clip, caption | fresh |
 | Journaling prompts that don't ask how you feel | recs | skeptics | list card / carousel | fresh |
 
 ## Hook psychology (ingested 2026-08-17, from viral-hooks research)
@@ -224,6 +227,18 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- W38 Monday pass (2026-09-14, results given 09-12): the five daily
+  quote kits before the cadence cut all fell — quotes family stays
+  `rested`, the numbered series is `dead`, "one quote a week" is the
+  live cadence (Mon/Wed/Fri). Founder one-take is the relative `winner`
+  (beat every quote kit on reach) → three same-family variants spawned
+  for launch week: the free-model "why I changed my mind" face, the
+  glimpse "noticed I wrote stressed nine times" screen+face, and the
+  7-days-from-your-start promise. Pack tooling fixed: the pack's quote
+  now skips Live-log lines; the price card reads "Writing is free.
+  Reflections cost about one good paper notebook." Today-page stills are
+  stale (web prototype still shows the consent card) — held from the
+  pack until preview.html catches up with 1.0.4.
 - 2026-09-12 (Wendell): **kits dialed back to 3/week.** Views tanked on
   the last five daily kits — read as the faceless-quote cadence hurting
   reach rather than helping it. New rotation via the routine: Mon quote
@@ -408,3 +423,4 @@ convert to comments better than statements.
 | 2026-09-12 | IG Reel (manual, his ~21:00 = US Sat morning) | quote-motion "Most feelings don't need fixing. They need *witnessing*." light | US-flip evening slot — warm/therapeutic for US Saturday morning; unattributed original. Bench was 2 after this (Housel off-spine, before-you-carry) → RESTOCK +5 from the Sep 12 mining pass (see Signals), 7 on the bench; Sunday Sep 13 = question day (6 questions benched) | caption "Thought of Saturday, Sep 12th at 7:19am", catalog audio, manual post |
 | 2026-09-12 | NOTE: cadence change — daily 2-kit runs END here. From Mon Sep 14: one kit Mon/Wed/Fri (quote light / quote dark / question light), US-morning slot only. Routine trig_014hCJ4ugfdWVqvAyeczyfvB updated. | | | |
 | 2026-09-14 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "You usually know the answer before you start *overthinking* it." light | NEW CADENCE debut (Mon/Wed/Fri, one kit): overthinking family (35x-mined, unattributed) for US Monday morning; quote bench 6 left after this | caption "Thought of Monday, Sep 14th at 6:58am", catalog audio, manual post |
+| 2026-09-14 | NOTE: W38 pack delivered (7 stills + captions + note). Founder variants spawned for launch week; quote video held (kits own quotes). | | | |

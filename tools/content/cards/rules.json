@@ -10,7 +10,7 @@
   { "id": "constellations", "size": 64,
     "html": "Months become constellations. A year becomes something you can hold." },
   { "id": "notebook-price", "size": 64,
-    "html": "About the price of one good paper notebook." },
+    "html": "Writing is free.<br>Reflections cost about one good paper notebook." },
   { "id": "like-ink", "size": 72,
     "html": "Write like it’s ink.<br>Because it is." }
 ]
