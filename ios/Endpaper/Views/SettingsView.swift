@@ -218,6 +218,7 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                     }
+                    MembershipTerms(onInverted: false)
                 }
 
                 rule

@@ -50,6 +50,7 @@ struct MembershipSheet: View {
                         .textCase(.uppercase)
                         .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
                 }
+                MembershipTerms()
                 Spacer()
                 Button {
                     Task {

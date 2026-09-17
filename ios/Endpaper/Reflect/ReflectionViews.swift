@@ -266,6 +266,7 @@ struct WeeklyCardView: View {
                             .textCase(.uppercase)
                             .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
                     }
+                    MembershipTerms()
                 }
                 .padding(.horizontal, Tokens.Space.screenX)
             }
@@ -522,6 +523,7 @@ struct MonthlyGateView: View {
                         .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
                 }
                 .padding(.top, Tokens.Space.sm)
+                MembershipTerms()
             }
             .padding(.horizontal, Tokens.Space.screenX)
             .padding(.bottom, 100)

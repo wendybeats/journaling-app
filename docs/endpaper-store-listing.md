@@ -64,8 +64,8 @@ hidden in production builds.
 >
 > ---
 >
-> Privacy: endpaper.space/privacy.html
-> Terms: endpaper.space/terms.html
+> Privacy Policy: https://endpaper.space/privacy.html
+> Terms of Use (EULA): https://endpaper.space/terms.html
 
 ## Keywords (100 chars max, comma-separated, no spaces)
 
@@ -133,6 +133,15 @@ set in Instrument Sans Medium above — same system as the site hero.
 > tapped, and in Settings → Membership (with Restore Purchases). A
 > reflection needs several days of writing to exist, so the reviewer may
 > not reach one during review — every other surface is available at once.
+>
+> Subscription disclosure (3.1.2(c)): every purchase surface (Settings →
+> Membership, the membership sheet, the offer at the end of a reflection,
+> the locked-reflection sheets) shows the subscription title (Endpaper
+> Membership), length (1 year), price ($39.99/year after a 7-day free
+> trial), auto-renewal terms, and working links to the Privacy Policy
+> (https://endpaper.space/privacy.html) and Terms of Use
+> (https://endpaper.space/terms.html). Both links are also in the App
+> Description. Quickest path for review: Settings → Membership.
 >
 > There is deliberately no way to edit or delete a committed entry —
 > permanence is the product's core rule, disclosed during onboarding

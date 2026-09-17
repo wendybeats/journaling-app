@@ -294,11 +294,12 @@ struct ArrivalSheet: View {
                         .textCase(.uppercase)
                         .foregroundStyle(Tokens.Text.onInverted.opacity(0.55))
                 }
+                if locked { MembershipTerms() }
             }
             .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
             .padding(.vertical, Tokens.Space.xl)
         }
-        .presentationDetents([.height(400)])
+        .presentationDetents([.height(locked ? 500 : 400)])
         .presentationDragIndicator(.hidden)
         .presentationBackground(Tokens.Surface.inverted)
         .presentationCornerRadius(Tokens.Radius.card * 2)
