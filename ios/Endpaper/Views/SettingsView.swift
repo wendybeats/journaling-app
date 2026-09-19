@@ -39,6 +39,10 @@ struct SettingsView: View {
                 .padding(.top, Tokens.Space.sm)
 
                 Text("Settings").typeDisplay()
+                    // Demo tools (sandbox/debug builds only) hide behind
+                    // seven taps here — App Review runs on a sandbox
+                    // receipt too, and must never see Seed demo (2026-09-19).
+                    .onTapGesture(count: 7) { AppEnv.toggleDemoUnlock() }
 
                 // --- One reminder, each morning ---
                 VStack(alignment: .leading, spacing: Tokens.Space.sm) {
@@ -202,6 +206,21 @@ struct SettingsView: View {
                         Text("Membership · active").typeWritten()
                         Text("Reflections, every week and month — thank you")
                             .typeMetaSmall()
+                    } else if gate.product == nil {
+                        // The App Store hasn't returned the product (offline,
+                        // or the store is slow): say so and offer a retry —
+                        // never a Join that does nothing (App Review 09-18).
+                        Text("Membership").typeWritten()
+                        Text(gate.storeUnavailable
+                             ? "The App Store didn't answer — check your connection"
+                             : "Loading from the App Store…")
+                            .typeMetaSmall()
+                        Button {
+                            Task { await TrialGate.shared.refresh() }
+                        } label: {
+                            Text("Try again").typeMeta().foregroundStyle(Tokens.Text.written)
+                        }
+                        .buttonStyle(.plain)
                     } else {
                         Button {
                             Task { await TrialGate.shared.subscribe(from: .settings) }
@@ -209,7 +228,9 @@ struct SettingsView: View {
                             Text("Join — reflections, every week").typeWritten()
                         }
                         .buttonStyle(.plain)
-                        Text("Writing is free forever · \(gate.product?.displayPrice ?? "$39.99") a year, first week free")
+                        Text(gate.hasFreeWeek
+                             ? "Writing is free forever · \(gate.product?.displayPrice ?? "$39.99") a year, first week free"
+                             : "Writing is free forever · \(gate.product?.displayPrice ?? "$39.99") a year")
                             .typeMetaSmall()
                         Button {
                             Task { await TrialGate.shared.restore() }
@@ -263,6 +284,7 @@ struct SettingsView: View {
         .offerCodeRedemption(isPresented: $redeeming)
         .sheet(isPresented: $membershipOffer) { MembershipSheet() }
         .onAppear {
+            Task { await TrialGate.shared.ensureProduct() }
             let (h, m) = ReminderManager.chosenTime
             reminderTime = Calendar.current.date(bySettingHour: h, minute: m, second: 0, of: .now) ?? .now
             exportURL = buildExport()

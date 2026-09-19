@@ -241,6 +241,7 @@ struct WeeklyCardView: View {
             PromptBeat(prompt: "That was your week") {
                 VStack(spacing: Tokens.Space.lg) {
                     Text("Every week.\nEvery month.\nA year you can hold.")
+                        .onAppear { Task { await TrialGate.shared.ensureProduct() } }
                         .font(.custom(EndpaperFont.heading, size: 32).weight(.semibold))
                         .foregroundStyle(Tokens.Text.onInverted)
                         .multilineTextAlignment(.center)
@@ -274,10 +275,8 @@ struct WeeklyCardView: View {
     }
 
     private var joinLabel: String {
-        if let price = gate.product?.displayPrice {
-            return "Join — \(price) a year, first week free"
-        }
-        return "Join — $39.99 a year, first week free"
+        let price = gate.product?.displayPrice ?? "$39.99"
+        return gate.hasFreeWeek ? "Join — \(price) a year, first week free" : "Join — \(price) a year"
     }
 
     /// The seven days as tap-size dots, filling in one by one — the week
@@ -482,7 +481,10 @@ struct MonthlyGateView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             Tokens.Surface.inverted.ignoresSafeArea()
-                .onAppear { Analytics.track(.paywallViewed, [.surface: .surface(.monthlyGate)]) }
+                .onAppear {
+                    Analytics.track(.paywallViewed, [.surface: .surface(.monthlyGate)])
+                    Task { await TrialGate.shared.ensureProduct() }
+                }
             GeometryReader { geo in
                 Circle()
                     .fill(Tokens.Text.onInverted)
@@ -507,7 +509,8 @@ struct MonthlyGateView: View {
                         if TrialGate.shared.reflectionsUnlocked { onJoin() }
                     }
                 } label: {
-                    Text("Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free")
+                    Text(gate.hasFreeWeek ? "Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free"
+                                          : "Join — \(gate.product?.displayPrice ?? "$39.99") a year")
                         .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
                         .foregroundStyle(Tokens.Surface.inverted)
                         .padding(.horizontal, Tokens.Space.xl)

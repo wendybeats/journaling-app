@@ -18,12 +18,20 @@ enum AppEnv {
     static var isTestFlight: Bool {
         Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
     }
+    /// Sandbox builds (TestFlight — and App Review, which also runs on a
+    /// sandbox receipt) show the demo tools only after the hidden unlock:
+    /// seven taps on the Settings title. DEBUG builds always show them.
     static var demoControls: Bool {
         #if DEBUG
         return true
         #else
-        return isTestFlight
+        return isTestFlight && UserDefaults.standard.bool(forKey: "endpaper.demo.unlocked")
         #endif
+    }
+
+    static func toggleDemoUnlock() {
+        let on = !UserDefaults.standard.bool(forKey: "endpaper.demo.unlocked")
+        UserDefaults.standard.set(on, forKey: "endpaper.demo.unlocked")
     }
 }
 

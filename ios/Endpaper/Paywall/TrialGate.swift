@@ -19,6 +19,15 @@ final class TrialGate: ObservableObject {
 
     @Published private(set) var subscribed = false
     @Published private(set) var product: Product?
+    /// The App Store answered but did not return our product (App Review
+    /// 2026-09-18: the reviewer tapped Join and nothing happened because
+    /// `product` was nil — a silent no-op). Purchase surfaces show a
+    /// retry instead of a dead button.
+    @Published private(set) var storeUnavailable = false
+    /// Live facts from StoreKit for the disclosure line (3.1.2(c)) — the
+    /// product's own name and whether an introductory free week exists.
+    var displayName: String { product?.displayName ?? "Endpaper Membership" }
+    var hasFreeWeek: Bool { product?.subscription?.introductoryOffer?.paymentMode == .freeTrial }
 
     /// Storefronts where Apple itself processes no payments — no paid
     /// apps, no in-app purchase, no subscriptions, and no offer-code
@@ -58,6 +67,7 @@ final class TrialGate: ObservableObject {
             UserDefaults.standard.set(unpayable, forKey: AppKeys.paymentsUnavailable)
         }
         product = try? await Product.products(for: [Self.yearlyID]).first
+        storeUnavailable = product == nil
         subscribed = await currentEntitlementExists()
         // Coarse state for analytics super-properties, readable off-actor.
         UserDefaults.standard.set(paymentsUnavailable ? "unpayable" : (subscribed ? "member" : "none"),
@@ -102,7 +112,14 @@ final class TrialGate: ObservableObject {
     /// "Keep writing" — the paywall's purchase for lapsed/offline-onboarded
     /// users. Apple applies the intro offer only if this account never
     /// used it, so nobody is promised a second free week.
+    /// Re-asks the App Store when the product is missing — every purchase
+    /// surface calls this on appear, and Join calls it before giving up.
+    func ensureProduct() async {
+        if product == nil { await refresh() }
+    }
+
     func subscribe(from surface: Analytics.Surface = .paywall) async {
+        await ensureProduct()
         guard let product else {
             Analytics.track(.purchaseFailed, [.surface: .surface(surface), .reason: .reason(.noProduct)])
             return

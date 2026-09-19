@@ -141,7 +141,17 @@ set in Instrument Sans Medium above — same system as the site hero.
 > trial), auto-renewal terms, and working links to the Privacy Policy
 > (https://endpaper.space/privacy.html) and Terms of Use
 > (https://endpaper.space/terms.html). Both links are also in the App
-> Description. Quickest path for review: Settings → Membership.
+> Description.
+>
+> WHERE THE IN-APP PURCHASE IS (2.1(b)): there is exactly one product —
+> Endpaper Membership, com.wendellbarton.endpaper.yearly, auto-renewing,
+> 1 year. Steps: launch → complete the short introduction (no purchase
+> in it) → on the page, tap ARCHIVE (top right) → SETTINGS → scroll to
+> "Membership" → tap "Join — reflections, every week". The App Store
+> purchase sheet appears. "Restore purchase" is directly beneath it. The
+> same purchase is also offered at the end of the first weekly
+> reflection and when a locked reflection is tapped, but those need a
+> week of writing to exist — Settings is the direct path.
 >
 > There is deliberately no way to edit or delete a committed entry —
 > permanence is the product's core rule, disclosed during onboarding

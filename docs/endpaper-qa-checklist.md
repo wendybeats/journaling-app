@@ -547,9 +547,11 @@ finished.
       "{weekday} · {n} words" beneath — no clock-looking figure
 - [ ] Settings: Voice language offers Match device and English only; no
       footer line under the usage switch
-- [ ] App Store build (not TestFlight): the Notebook footer shows NO
-      Seed demo / Clear demo / First day −7 / Seed glimpse (gated on the
-      sandbox receipt; DEBUG and TestFlight keep them)
+- [ ] Build 30: TestFlight shows NO demo footer until you tap the
+      "Settings" title seven times (toggle); App Store builds never
+- [ ] Build 30: Settings → Membership with the phone in Airplane Mode
+      shows "The App Store didn't answer" + Try again (never a dead
+      Join); back online, Try again restores the Join line
 
 ## 19. Anonymous usage analytics — PostHog (2026-09-11, archive 21)
 

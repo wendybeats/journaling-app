@@ -256,7 +256,8 @@ struct ArrivalSheet: View {
     private var cta: String {
         guard locked else { return "Read it" }
         if case .monthly = arrival { return "Join to read it" }
-        return "Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free"
+        let price = gate.product?.displayPrice ?? "$39.99"
+        return gate.hasFreeWeek ? "Join — \(price) a year, first week free" : "Join — \(price) a year"
     }
 
     var body: some View {
@@ -299,6 +300,7 @@ struct ArrivalSheet: View {
             .padding(.horizontal, Tokens.Space.screenX + Tokens.Space.sm)
             .padding(.vertical, Tokens.Space.xl)
         }
+        .onAppear { if locked { Task { await TrialGate.shared.ensureProduct() } } }
         .presentationDetents([.height(locked ? 500 : 400)])
         .presentationDragIndicator(.hidden)
         .presentationBackground(Tokens.Surface.inverted)

@@ -18,7 +18,9 @@ struct MembershipTerms: View {
 
     var body: some View {
         VStack(spacing: Tokens.Space.xs) {
-            Text("Endpaper Membership · 1 year · \(gate.product?.displayPrice ?? "$39.99") per year after a 7-day free trial")
+            Text(gate.hasFreeWeek
+                 ? "\(gate.displayName) · 1 year · \(gate.product?.displayPrice ?? "$39.99") per year after a 7-day free trial"
+                 : "\(gate.displayName) · 1 year · \(gate.product?.displayPrice ?? "$39.99") per year")
                 .font(.custom(EndpaperFont.meta, size: 9))
                 .tracking(9 * 0.1)
                 .textCase(.uppercase)

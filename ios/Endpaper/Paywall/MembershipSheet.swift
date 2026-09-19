@@ -13,7 +13,10 @@ struct MembershipSheet: View {
     var body: some View {
         ZStack {
             Tokens.Surface.inverted.ignoresSafeArea()
-                .onAppear { Analytics.track(.paywallViewed, [.surface: .surface(.settingsSheet)]) }
+                .onAppear {
+                    Analytics.track(.paywallViewed, [.surface: .surface(.settingsSheet)])
+                    Task { await TrialGate.shared.ensureProduct() }
+                }
             VStack(spacing: Tokens.Space.lg) {
                 Spacer()
                 Text("Reflections")
@@ -35,7 +38,8 @@ struct MembershipSheet: View {
                         if TrialGate.shared.reflectionsUnlocked { dismiss() }
                     }
                 } label: {
-                    Text("Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free")
+                    Text(gate.hasFreeWeek ? "Join — \(gate.product?.displayPrice ?? "$39.99") a year, first week free"
+                                          : "Join — \(gate.product?.displayPrice ?? "$39.99") a year")
                         .font(.custom(EndpaperFont.heading, size: 17).weight(.medium))
                         .foregroundStyle(Tokens.Surface.inverted)
                         .padding(.horizontal, Tokens.Space.xl)
