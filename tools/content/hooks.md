@@ -227,6 +227,11 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-22 (Wendell): **weekly packs stopped** — the stills weren't
+  being posted. Routine trig_01EAUsRPCfNjU22AyeBoLbHS deleted. What
+  remains: the Mon/Wed/Fri kit run (quotes are maintenance), and face /
+  situational content made by hand for TikTok + IG. Kill/scale passes
+  now happen ad hoc when results come in, not on a Monday clock.
 - W38 Monday pass (2026-09-14, results given 09-12): the five daily
   quote kits before the cadence cut all fell — quotes family stays
   `rested`, the numbered series is `dead`, "one quote a week" is the
