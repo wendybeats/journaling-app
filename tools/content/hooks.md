@@ -227,6 +227,20 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-09-23: fourth Eden mining pass (IG, last month; standard search
+  thin — 2 posts; the deep "overthinking" search fell back to the
+  standout index, 20 posts). The family holds: "you usually know the
+  answer before you start overthinking it" is now at 1.27M views / 503x
+  on a second repost — our Sep 14 kit rode the right line. Lifted as
+  rephrased originals (the sources are captions, not quotable lines,
+  so nothing is attributed): brain tired from never stopping (soulmindhub
+  11x), rumination = returning with nothing to add (goodneuroscience
+  8.8x), rushing/overthinking/people-pleasing = stress (officialdrmeli
+  86x), replaying ≠ finishing (officialdrmeli 27x), and one original on
+  the "already have the answer" spine. Bench 8 after this. Comment-bait
+  captions ("comment CALM") dominate the family's top posts — the kits'
+  silent first comment is the opposite move; worth one test of a
+  question-cut caption that asks for a word in the comments.
 - 2026-09-22 (Wendell): **weekly packs stopped** — the stills weren't
   being posted. Routine trig_01EAUsRPCfNjU22AyeBoLbHS deleted. What
   remains: the Mon/Wed/Fri kit run (quotes are maintenance), and face /
@@ -432,3 +446,4 @@ convert to comments better than statements.
 | 2026-09-16 | IG Reel (manual, his AM = US Tue evening) | quote-motion "Overthinking is the silent thief of your *energy*." dark | 3/wk cadence, Wednesday dark: the renderer stamps dark variants in the evening, so the dark kit keeps the US-evening slot (his morning) — routine wording corrected. Overthinking family (7.6x-mined, unattributed); quote bench 5 left after this | caption "Thought of Tuesday, Sep 15th at 9:50pm", catalog audio, manual post |
 | 2026-09-18 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what did I want to say last week that I've already *forgotten*?" light | 3/wk cadence, Friday question: the "next session" spine; question bench 5 left after this | caption "Asked myself on Friday, Sep 18th at 6:58am", catalog audio, manual post |
 | 2026-09-21 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "I felt so much that I started to feel *nothing* at all." light | 3/wk cadence, Monday light: the 38k-like outlier line (credited to Dostoevsky online, unverified → unattributed); numbness family for US Monday morning; quote bench 4 left after this (Housel off-spine, before-you-carry, didn't-do-weighs, peace-is-expensive) — at the floor, mining owed next Eden run | caption "Thought of Monday, Sep 21st at 7:06am", catalog audio, manual post |
+| 2026-09-23 | IG Reel (manual, his AM = US Tue evening) | quote-motion "What you didn't do weighs more than what you got *wrong*." dark | 3/wk cadence, Wednesday dark: regret/inaction line (rephrased from a 530k-view graphic, unattributed); bench was 3 on-spine → RESTOCK +5 from the Sep 23 mining pass (see Signals), 8 on the bench | caption "Thought of Tuesday, Sep 22nd at 9:36pm", catalog audio, manual post |
