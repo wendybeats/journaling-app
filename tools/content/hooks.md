@@ -227,6 +227,19 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-10-09: fifth Eden mining pass — the PROMPT family this time
+  ("journal prompt", IG, last month; deep search fell back to the standout
+  index, 20 posts). Real signal: prompt/question content outperforms
+  quote content in this niche — with.chelle "writing to release, not to
+  read" 2.5M views / 136x; missbirdboy brain-dump 1.0M / 20x;
+  un.shaped "an answer you've never said out loud" 94k / 98 comments;
+  makenzieco "if [goal] happened tomorrow I'd fear…" 56k / 9.4x. Lifted
+  three questions + two rephrased quotes (unattributed; sources are
+  captions). Both benches were below the floor with no reply on the Oct 2
+  proposal, so the six proposed questions are committed too: questions
+  bench 11, quotes 6. Read: the Friday question cut is the kit most
+  aligned with what travels here; if the numbers ever come in, test
+  swapping Monday's quote for a second question.
 - 2026-09-23: fourth Eden mining pass (IG, last month; standard search
   thin — 2 posts; the deep "overthinking" search fell back to the
   standout index, 20 posts). The family holds: "you usually know the
@@ -453,3 +466,4 @@ convert to comments better than statements.
 | 2026-10-02 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what am I calling busy that is actually *avoiding*?" light | 3/wk cadence, Friday question; question bench 3 left after this (write-if-no-one-read, never-named, story-I-tell-myself) — BELOW the floor; six new questions proposed in the delivery message, awaiting a yes | caption "Asked myself on Friday, Oct 2nd at 7:24am", catalog audio, manual post |
 | 2026-10-05 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "Rushing. Overthinking. People-pleasing. You call it normal. Your body calls it *stress*." light | 3/wk cadence, Monday light: nervous-system family (Sep 23 restock, rephrased from an 86x caption, unattributed); quote bench 5 left after this; questions 3 (below floor, six proposed Oct 2, no reply yet) | caption "Thought of Monday, Oct 5th at 7:01am", catalog audio, manual post |
 | 2026-10-07 | IG Reel (manual, his AM = US Tue evening) | quote-motion "Replaying the conversation is not the same as *finishing* it." dark | 3/wk cadence, Wednesday dark: rumination family (Sep 23 restock, rephrased from a 27x caption, unattributed); quote bench 4 left after this (Housel off-spine, before-you-carry, peace-is-expensive, already-have) — at the floor; questions 3 (below floor) | caption "Thought of Tuesday, Oct 6th at 9:36pm", catalog audio, manual post |
+| 2026-10-09 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what did I feel this week that I never *named*?" light | 3/wk cadence, Friday question; bench was 2 after this → RESTOCK (Oct 9 mining pass + the Oct 2 six): questions 11, quotes 6 | caption "Asked myself on Friday, Oct 9th at 6:59am", catalog audio, manual post |
