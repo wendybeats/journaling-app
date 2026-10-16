@@ -227,6 +227,19 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-10-16: sixth Eden mining pass — "nervous system" family (IG, last
+  month, deep → standout index, 20 posts). This is the biggest family
+  seen in six passes: flowwithmegg "the parts of you you're trying to
+  change aren't broken" 2.5M / 190x; thelaurenhyland survival-skills
+  list 978k / 214x; wisdombybarbara "nobody taught us to read our own
+  bodies" 649k / 117x; talkingwithmorgan "the bar for rest is
+  underground" 510k / 49x; awakeningwithbrian "saying nothing kept the
+  house from getting louder" 1.7M. Lifted five rephrased lines
+  (unattributed; sources are captions). Quote bench 9. Read: the
+  survival-skill / "it made sense once" framing is the shape — gentle
+  diagnosis, no blame — and it's adjacent to Endpaper's "it reads you
+  back" without being therapy-speak. Candidate for a founder piece:
+  "the word that kept coming up was *fine*".
 - 2026-10-09: fifth Eden mining pass — the PROMPT family this time
   ("journal prompt", IG, last month; deep search fell back to the standout
   index, 20 posts). Real signal: prompt/question content outperforms
@@ -469,3 +482,4 @@ convert to comments better than statements.
 | 2026-10-09 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what did I feel this week that I never *named*?" light | 3/wk cadence, Friday question; bench was 2 after this → RESTOCK (Oct 9 mining pass + the Oct 2 six): questions 11, quotes 6 | caption "Asked myself on Friday, Oct 9th at 6:59am", catalog audio, manual post |
 | 2026-10-12 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "Half of overthinking is just avoiding the answer you already *have*." light | 3/wk cadence, Monday light: the "already have the answer" spine (Sep 23 original); first render's frame one caught two letters — re-rendered, verified on "H"; quote bench 5 left after this; questions 11 | caption "Thought of Monday, Oct 12th at 7:20am", catalog audio, manual post |
 | 2026-10-14 | IG Reel (manual, his AM = US Tue evening) | quote-motion "Understanding why you're anxious has never once made you *less* anxious." dark | 3/wk cadence, Wednesday dark: anxiety family (Oct 9 restock, rephrased from a 3.2x caption, unattributed); quote bench 4 left after this (Housel off-spine, before-you-carry, peace-is-expensive, release-not-reading) — at the floor; questions 11 | caption "Thought of Tuesday, Oct 13th at 9:44pm", catalog audio, manual post |
+| 2026-10-16 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what's the answer I've never said *out loud*?" light | 3/wk cadence, Friday question (Oct 9 restock, from the un.shaped 98-comment post); questions 10 left; quote bench was 4 → RESTOCK +5 from the Oct 16 nervous-system pass, 9 | caption "Asked myself on Friday, Oct 16th at 7:03am", catalog audio, manual post |
