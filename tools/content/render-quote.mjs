@@ -98,12 +98,16 @@ for (const [sizeName, viewport] of SIZES) {
       recordVideo: { dir: vidDir, size: viewport },
     });
     const page = await ctx.newPage();
+    const recordingStartedAt = Date.now();   // recordVideo begins with the page
     const url = 'file://' + resolve(here, 'cards/quote-motion.html')
       + `?text=${encodeURIComponent(text)}&theme=${theme}&at=${encodeURIComponent(stamps[theme])}`
       + (dateArg ? `&date=${dateArg}` : '');
     await page.goto(url);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
+    // Trim to the first painted letter, measured — never a guessed offset.
+    const firstLetterAt = await page.evaluate(() => window.__firstLetterAt || 0);
+    const trim = firstLetterAt ? Math.max(0, (firstLetterAt - recordingStartedAt) / 1000 + 0.05) : 0.4;
     const video = page.video();
     await ctx.close();
     const webm = await video.path();
@@ -113,8 +117,8 @@ for (const [sizeName, viewport] of SIZES) {
       execFileSync(ffmpeg, [
         '-y', '-hide_banner', '-loglevel', 'error',
         // Trim the page-load frames so frame one already shows the huge
-        // first letter (the template waits for fonts, then types it).
-        '-ss', '0.4',
+        // first letter — to the template's own first-letter stamp.
+        '-ss', trim.toFixed(3),
         '-i', webm,
         '-c:v', 'libx264', '-crf', '19', '-preset', 'medium',
         '-pix_fmt', 'yuv420p', '-an',

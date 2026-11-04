@@ -167,7 +167,15 @@
         if (ch === ' ') d += 60;
         if (',;'.includes(ch)) d += 240;
         if ('.?!'.includes(ch)) d += 380;
-        if (first) { first = false; await pause(700); continue; }  // the hang — ~0.5s after the front trim
+        if (first) {
+          first = false;
+          // Stamp the first painted letter so the renderer can trim exactly
+          // to it (a fixed trim caught blank frames on cold containers and
+          // two-letter frames on warm ones — 2026-10/11).
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          window.__firstLetterAt = Date.now();
+          await pause(700); continue;  // the hang
+        }
         await pause(d);
       }
     }
