@@ -239,6 +239,10 @@ convert to comments better than statements.
   the template's first-painted-letter stamp instead of a fixed 0.4 s —
   the blank / two-letter first frames (Oct 12, Oct 26, Nov 2) came from
   cold vs warm page loads; three kits re-rendered by hand, no more.
+  Nov 6 follow-up: the wall-clock stamp drifted against the recording's
+  own timeline (a three-letter first frame), so the trim is now found IN
+  the video — the first luma change in the centre band once the page
+  background is up — with the stamp as fallback. Verified on both themes.
 - 2026-10-16: sixth Eden mining pass — "nervous system" family (IG, last
   month, deep → standout index, 20 posts). This is the biggest family
   seen in six passes: flowwithmegg "the parts of you you're trying to
@@ -503,3 +507,4 @@ convert to comments better than statements.
 | 2026-10-30 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "if the thing I want happened tomorrow, what would I be *afraid* of?" light | 3/wk cadence, Friday question (Oct 9 restock, from the makenzieco 9.4x fear-inventory post); questions 8 left; quotes 5 | caption "Asked myself on Friday, Oct 30th at 7:11am", catalog audio, manual post |
 | 2026-11-02 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "If your relaxing weekend is a list, the bar for rest is *underground*." light | 3/wk cadence, Monday light: nervous-system family (Oct 16 restock, rephrased from the 510k / 49x talkingwithmorgan post, unattributed); first render's frame one was BLANK (cursor only — capture began before the page painted; third flaky first frame on a cold container, all light variants; re-render fixes it — the renderer wants a fonts.ready + one-frame settle before recording); quote bench 4 left after this — at the floor; questions 8 | caption "Thought of Monday, Nov 2nd at 7:09am", catalog audio, manual post |
 | 2026-11-04 | IG Reel (manual, his AM = US Tue evening) | quote-motion "Write it down before it turns into something you *carry*." dark | 3/wk cadence, Wednesday dark: session-framed original (Sep 9 restock); first render with the measured trim — frame one clean first try; quote bench was 3 → RESTOCK +5 from the Nov 4 people-pleasing pass, 8; questions 8 | caption "Thought of Tuesday, Nov 3rd at 9:15pm", catalog audio, manual post |
+| 2026-11-06 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what did I decide this week without noticing I'd *decided*?" light | 3/wk cadence, Friday question (Oct 9 restock, original); renderer trim now frame-scanned — both themes verified clean on the first try; questions 7 left; quotes 8 | caption "Asked myself on Friday, Nov 6th at 7:13am", catalog audio, manual post |

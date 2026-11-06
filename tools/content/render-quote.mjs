@@ -85,6 +85,37 @@ function captionFor(stamp) {
   return `${from}Thought of ${day}, ${mon} ${d}${ord} at ${t}`;
 }
 
+
+/// Time of the first frame on which the first letter is painted: the
+/// first luma change in the centre band (where only the typed word lives)
+/// once the band sits on the page background. Null if nothing is found.
+function firstLetterTime(webm, theme) {
+  if (!ffmpeg) return null;
+  let log = '';
+  try {
+    execFileSync(ffmpeg, [
+      '-hide_banner', '-loglevel', 'info', '-t', '4', '-i', webm,
+      '-vf', 'crop=iw:ih*0.2:0:ih*0.4,signalstats,metadata=print:file=-',
+      '-f', 'null', '-',
+    ], { stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 });
+  } catch (e) { log = String(e.stdout || '') + String(e.stderr || ''); }
+  const frames = [];
+  let t = null;
+  for (const line of log.split('\n')) {
+    const mt = line.match(/pts_time:([\d.]+)/);
+    if (mt) t = parseFloat(mt[1]);
+    const my = line.match(/lavfi\.signalstats\.YAVG=([\d.]+)/);
+    if (my && t !== null) frames.push({ t, y: parseFloat(my[1]) });
+  }
+  if (frames.length < 3) return null;
+  const bg = theme === 'dark' ? 21 : 230;      // char / bone, as luma
+  for (let i = 1; i < frames.length; i++) {
+    const prev = frames[i - 1], cur = frames[i];
+    if (Math.abs(prev.y - bg) <= 8 && Math.abs(cur.y - prev.y) > 0.3) return cur.t;
+  }
+  return null;
+}
+
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 
 const stamps = { light: stampFor('light'), dark: stampFor('dark') };
@@ -105,19 +136,23 @@ for (const [sizeName, viewport] of SIZES) {
     await page.goto(url);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForFunction(() => window.__done === true, null, { timeout: 60000 });
-    // Trim to the first painted letter, measured — never a guessed offset.
     const firstLetterAt = await page.evaluate(() => window.__firstLetterAt || 0);
-    const trim = firstLetterAt ? Math.max(0, (firstLetterAt - recordingStartedAt) / 1000 + 0.05) : 0.4;
+    const stampTrim = firstLetterAt ? Math.max(0, (firstLetterAt - recordingStartedAt) / 1000) : 0.4;
     const video = page.video();
     await ctx.close();
     const webm = await video.path();
     const name = `${slug}-${sizeName}-${theme}`;
     if (ffmpeg) {
       const mp4 = resolve(out, `${name}.mp4`);
+      // Trim to the first painted letter, FOUND IN THE VIDEO ITSELF: the
+      // wall-clock stamp drifts against the recording's timeline (2026-11-06:
+      // a three-letter first frame), so scan the centre band's luma for the
+      // first change after the page background is up. Stamp is the fallback.
+      const trim = firstLetterTime(webm, theme) ?? stampTrim;
       execFileSync(ffmpeg, [
         '-y', '-hide_banner', '-loglevel', 'error',
         // Trim the page-load frames so frame one already shows the huge
-        // first letter — to the template's own first-letter stamp.
+        // first letter.
         '-ss', trim.toFixed(3),
         '-i', webm,
         '-c:v', 'libx264', '-crf', '19', '-preset', 'medium',
