@@ -227,6 +227,24 @@ convert to comments better than statements.
   unposted (fallback offer stands); pinned post caption still says "in
   review" — needs the live link + founding update; launch Reel pending
   the price flip to Get.
+- 2026-11-23: eighth Eden mining pass — two queries, quarter window,
+  standout index (overthinking/nervous-system @ mid tier 2x+, 25 posts;
+  people-pleasing/rumination @ micro tier 3x+, 25 posts). The family
+  holds and the two halves have fused: panic.relief "the thought of
+  disappointing them feels worse than disappointing yourself" 48.9k
+  likes / 365x; itsamayawithwifi (Threads) "no longer willing to abandon
+  ourselves to keep others comfortable" 7.5k / 153x on 78k;
+  andreaschreiber "permission was never coming, so I stopped waiting"
+  109k views / 19x on 19k; rachel_fearnley "your body isn't broken,
+  it's been drawing the boundaries you couldn't" 14.8x; qissaofislam
+  "you've replayed it 100 times and it changed nothing" (low outlier,
+  but the cleanest rumination sentence in the set and the same beat as
+  panic.relief's "replay conversations"). Five rephrased lines lifted
+  (unattributed; sources are captions). Quote bench 3 → 8. Read: micro
+  accounts (10–100k) are producing the biggest multipliers now — the
+  line travels on its own, not on the account — which is the right
+  signal for a 0-baseline account like ours. Still no quote-card
+  format beating prompt content in-niche; keep Friday on questions.
 - 2026-11-04: seventh Eden mining pass — "people pleasing" (IG, last
   month, deep → standout index, 20 posts). Same shape as the nervous-
   system family, one step more specific: brokenquotes "you cannot make
@@ -514,3 +532,4 @@ convert to comments better than statements.
 | 2026-11-16 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "At some point you have to disappoint people to live a life that feels *honest*." light | 3/wk cadence, Monday light: people-pleasing family (Nov 4 restock, unattributed); frame-scanned trim — frame one clean first try (single A); quotes 5 left; questions 6 | caption "Thought of Monday, Nov 16th at 6:59am", catalog audio, manual post |
 | 2026-11-18 | IG Reel (manual, his AM = US Tue evening) | quote-motion "Some pages are for release, not for *reading*." dark | 3/wk cadence, Wednesday dark: release / rumination family (Nov 4 restock, unattributed, journaling-framed); frame-scanned trim — frame one clean first try (single S); quotes 4 left — AT the floor, restock due next quote run (Nov 23); questions 6 | caption "Thought of Tuesday, Nov 17th at 9:34pm", catalog audio, manual post |
 | 2026-11-20 | IG Reel (manual, his ~21:00 = US Fri morning) | QUESTION-CUT "what did I say yes to this week that my body said *no* to?" light | 3/wk cadence, Friday question (Oct 9 restock, original — nervous-system / people-pleasing family, week-framed); frame-scanned trim — frame one clean first try (single W); questions 5 left; quotes 4 (at the floor — restock due Nov 23) | caption "Asked myself on Friday, Nov 20th at 7:15am", catalog audio, manual post |
+| 2026-11-23 | IG Reel (manual, his ~21:00 = US Mon morning) | quote-motion "Being liked can cost you your *identity*." light | 3/wk cadence, Monday light: people-pleasing family (Nov 4 restock, unattributed); frame-scanned trim — frame one clean first try (single B); quote bench was 3 → RESTOCK +5 from the Nov 23 pass, 8; questions 5 | caption "Thought of Monday, Nov 23rd at 6:51am", catalog audio, manual post |
